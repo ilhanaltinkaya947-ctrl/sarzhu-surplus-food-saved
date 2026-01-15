@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { Header } from "@/components/Header";
 import { MapView } from "@/components/MapView";
+import { FloatingSearchBar } from "@/components/FloatingSearchBar";
+import { BottomCard } from "@/components/BottomCard";
+import { ShopDrawer } from "@/components/ShopDrawer";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Shop {
@@ -24,6 +26,8 @@ export default function MapPage() {
   const [shops, setShops] = useState<Shop[]>([]);
   const [bags, setBags] = useState<MysteryBag[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -45,23 +49,47 @@ export default function MapPage() {
     fetchData();
   }, []);
 
+  const handleShopClick = (shop: Shop) => {
+    setSelectedShop(shop);
+    setDrawerOpen(true);
+  };
+
+  const getSelectedBag = () => {
+    if (!selectedShop) return null;
+    return bags.find((bag) => bag.shop_id === selectedShop.id) || null;
+  };
+
   return (
-    <div className="relative h-screen w-full overflow-hidden">
-      <Header title="Sarzhu" showSearch transparent />
-      
+    <div className="relative h-screen w-screen overflow-hidden">
+      {/* Fullscreen Map - Background Layer */}
       {loading ? (
-        <div className="flex h-full items-center justify-center">
+        <div className="flex h-full w-full items-center justify-center bg-muted">
           <div className="flex flex-col items-center gap-3">
             <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
             <p className="text-sm text-muted-foreground">Loading shops...</p>
           </div>
         </div>
       ) : (
-        <MapView shops={shops} bags={bags} />
+        <MapView 
+          shops={shops} 
+          bags={bags} 
+          onShopClick={handleShopClick}
+        />
       )}
-      
-      {/* Bottom fade for nav */}
-      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background/60 to-transparent" />
+
+      {/* Floating Search Bar */}
+      <FloatingSearchBar />
+
+      {/* Bottom Card with Categories */}
+      <BottomCard />
+
+      {/* Shop Detail Drawer */}
+      <ShopDrawer
+        shop={selectedShop}
+        bag={getSelectedBag()}
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+      />
     </div>
   );
 }

@@ -23,6 +23,7 @@ interface MapViewProps {
   shops: Shop[];
   bags: MysteryBag[];
   followedShopIds?: string[];
+  onShopClick?: (shop: Shop) => void;
 }
 
 // Panfilov Street, Almaty coordinates
@@ -87,7 +88,7 @@ const createPopupContent = (shop: Shop, bag?: MysteryBag) => {
   `;
 };
 
-export function MapView({ shops, bags, followedShopIds = [] }: MapViewProps) {
+export function MapView({ shops, bags, followedShopIds = [], onShopClick }: MapViewProps) {
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
 
@@ -141,13 +142,12 @@ export function MapView({ shops, bags, followedShopIds = [] }: MapViewProps) {
         icon: createPinIcon(isFollowed),
       }).addTo(mapRef.current!);
 
-      marker.bindPopup(createPopupContent(shop, bag), {
-        className: "shop-popup",
-        closeButton: false,
-        maxWidth: 240,
+      // Click to open drawer instead of popup
+      marker.on("click", () => {
+        onShopClick?.(shop);
       });
     });
-  }, [shops, bags, followedShopIds]);
+  }, [shops, bags, followedShopIds, onShopClick]);
 
   return (
     <div className="absolute inset-0">
