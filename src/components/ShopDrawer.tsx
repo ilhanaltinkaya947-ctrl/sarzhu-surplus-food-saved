@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Clock, MapPin, Heart, X, Loader2, Package, Sparkles } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import confetti from "canvas-confetti";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -154,6 +154,13 @@ export function ShopDrawer({
     onOpenChange(false);
   };
 
+  const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    // Close if dragged down more than 100px OR flicked down fast
+    if (info.offset.y > 100 || info.velocity.y > 500) {
+      handleClose();
+    }
+  };
+
   return (
     <>
       {/* Backdrop */}
@@ -180,17 +187,20 @@ export function ShopDrawer({
             exit={{ y: "100%" }}
             transition={{ 
               type: "spring", 
-              damping: 30, 
+              damping: 25, 
               stiffness: 300,
-              mass: 0.8,
             }}
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 0.5 }}
+            onDragEnd={handleDragEnd}
             className="fixed bottom-0 left-0 right-0 z-50 h-[85dvh] rounded-t-3xl bg-white shadow-2xl overflow-hidden flex flex-col pointer-events-auto"
             onClick={(e) => e.stopPropagation()}
             onTouchStart={(e) => e.stopPropagation()}
             onTouchMove={(e) => e.stopPropagation()}
           >
-            {/* Drag Handle */}
-            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+            {/* Drag Handle - Large hit area */}
+            <div className="w-full h-12 flex items-center justify-center cursor-grab active:cursor-grabbing flex-shrink-0 touch-none">
               <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
             </div>
 
