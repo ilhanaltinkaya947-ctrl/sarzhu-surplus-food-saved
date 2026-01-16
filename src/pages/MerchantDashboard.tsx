@@ -1,22 +1,19 @@
 import { useState, useEffect, useCallback } from "react";
 import { 
-  Camera, 
   Minus, 
   Plus, 
-  Check, 
-  X, 
   Clock, 
   DollarSign,
   ShoppingBag,
-  AlertCircle
+  AlertCircle,
+  CheckCircle2
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
-import { QRScannerModal } from "@/components/merchant/QRScannerModal";
-import { ScanResultOverlay } from "@/components/merchant/ScanResultOverlay";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ShopData {
   id: string;
@@ -41,14 +38,11 @@ export default function MerchantDashboard() {
   
   const [shop, setShop] = useState<ShopData | null>(null);
   const [activeOrders, setActiveOrders] = useState<OrderWithDetails[]>([]);
+  const [completedOrders, setCompletedOrders] = useState<OrderWithDetails[]>([]);
   const [todayRevenue, setTodayRevenue] = useState(0);
   const [ordersToPickup, setOrdersToPickup] = useState(0);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
-  
-  // Scanner state
-  const [scannerOpen, setScannerOpen] = useState(false);
-  const [scanResult, setScanResult] = useState<{ success: boolean; message: string } | null>(null);
 
   // Fetch shop data
   const fetchShopData = useCallback(async () => {
@@ -103,12 +97,15 @@ export default function MerchantDashboard() {
         if (ordersError) throw ordersError;
 
         const orders = ordersData || [];
-        setActiveOrders(orders.filter(o => o.status === "reserved"));
-        setOrdersToPickup(orders.filter(o => o.status === "reserved").length);
+        const reserved = orders.filter(o => o.status === "reserved");
+        const pickedUp = orders.filter(o => o.status === "picked_up");
+        
+        setActiveOrders(reserved);
+        setCompletedOrders(pickedUp);
+        setOrdersToPickup(reserved.length);
         
         // Calculate revenue from picked up orders
-        const pickedUpCount = orders.filter(o => o.status === "picked_up").length;
-        setTodayRevenue(pickedUpCount * (bagData.discounted_price || 0));
+        setTodayRevenue(pickedUp.length * (bagData.discounted_price || 0));
       }
     } catch (error) {
       console.error("Error fetching shop data:", error);
@@ -127,6 +124,41 @@ export default function MerchantDashboard() {
       fetchShopData();
     }
   }, [authLoading, fetchShopData]);
+
+  // Real-time subscription for order updates
+  useEffect(() => {
+    if (!shop?.mysteryBagId) return;
+
+    const channel = supabase
+      .channel('merchant-orders')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'orders',
+          filter: `bag_id=eq.${shop.mysteryBagId}`,
+        },
+        (payload) => {
+          console.log('Order update:', payload);
+          // Refresh data on any order change
+          fetchShopData();
+          
+          // Show notification for picked up orders
+          if (payload.eventType === 'UPDATE' && (payload.new as any).status === 'picked_up') {
+            toast({
+              title: "Order Collected! ✓",
+              description: `Order #${(payload.new as any).id.slice(0, 8).toUpperCase()} has been picked up`,
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [shop?.mysteryBagId, fetchShopData, toast]);
 
   // Update bag quantity
   const updateBagQuantity = async (delta: number) => {
@@ -159,63 +191,6 @@ export default function MerchantDashboard() {
     }
   };
 
-  // Handle QR scan
-  const handleScan = async (orderId: string) => {
-    setScannerOpen(false);
-
-    try {
-      // Look up the order
-      const { data: order, error: orderError } = await supabase
-        .from("orders")
-        .select("*, mystery_bags!inner(shop_id)")
-        .eq("id", orderId)
-        .maybeSingle();
-
-      if (orderError || !order) {
-        setScanResult({ success: false, message: "Order not found" });
-        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-        return;
-      }
-
-      // Check if this order belongs to this shop
-      if (order.mystery_bags.shop_id !== shop?.id) {
-        setScanResult({ success: false, message: "Order belongs to another shop" });
-        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-        return;
-      }
-
-      // Check if already picked up
-      if (order.status === "picked_up") {
-        setScanResult({ success: false, message: "Already picked up" });
-        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-        return;
-      }
-
-      // Mark as picked up
-      const { error: updateError } = await supabase
-        .from("orders")
-        .update({ status: "picked_up" })
-        .eq("id", orderId);
-
-      if (updateError) throw updateError;
-
-      setScanResult({ success: true, message: "Order confirmed!" });
-      
-      // Play success sound
-      playSuccessSound();
-      
-      // Refresh data
-      fetchShopData();
-
-      // Auto close after 3 seconds
-      setTimeout(() => setScanResult(null), 3000);
-    } catch (error) {
-      console.error("Error processing scan:", error);
-      setScanResult({ success: false, message: "Error processing order" });
-      if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-    }
-  };
-
   // Manual pickup confirmation
   const handleManualPickup = async (orderId: string) => {
     try {
@@ -239,29 +214,6 @@ export default function MerchantDashboard() {
         description: "Failed to update order",
         variant: "destructive",
       });
-    }
-  };
-
-  const playSuccessSound = () => {
-    try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-      oscillator.frequency.setValueAtTime(1000, audioContext.currentTime + 0.1);
-      oscillator.frequency.setValueAtTime(1200, audioContext.currentTime + 0.2);
-      
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-      
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.3);
-    } catch (e) {
-      // Audio not supported
     }
   };
 
@@ -326,7 +278,7 @@ export default function MerchantDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pb-safe">
       {/* Header */}
       <header className="border-b border-border px-6 py-4 pt-safe">
         <div className="flex items-center justify-between">
@@ -348,7 +300,7 @@ export default function MerchantDashboard() {
         </div>
       </header>
 
-      <main className="px-6 py-6 space-y-6 pb-safe">
+      <main className="px-6 py-6 space-y-6">
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-4">
           {/* Orders to Pickup */}
@@ -419,60 +371,81 @@ export default function MerchantDashboard() {
             </div>
           ) : (
             <div className="space-y-3">
-              {activeOrders.map((order) => (
-                <div
-                  key={order.id}
-                  className="flex items-center justify-between rounded-2xl border-2 border-foreground bg-white p-4"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-xl bg-secondary flex items-center justify-center">
-                      <Clock className="h-6 w-6 text-foreground" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-foreground">
-                        {formatTime(order.created_at)}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        #{order.id.slice(0, 8).toUpperCase()}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => handleManualPickup(order.id)}
-                    className="h-12 rounded-xl bg-emerald-500 px-4 font-semibold text-white transition-all active:scale-95"
+              <AnimatePresence mode="popLayout">
+                {activeOrders.map((order) => (
+                  <motion.div
+                    key={order.id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9, x: 100 }}
+                    className="flex items-center justify-between rounded-2xl border-2 border-foreground bg-white p-4"
                   >
-                    Mark Done
-                  </button>
-                </div>
-              ))}
+                    <div className="flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-xl bg-secondary flex items-center justify-center">
+                        <Clock className="h-6 w-6 text-foreground" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-foreground">
+                          {formatTime(order.created_at)}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          #{order.id.slice(0, 8).toUpperCase()}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleManualPickup(order.id)}
+                      className="h-12 rounded-xl bg-emerald-500 px-4 font-semibold text-white transition-all active:scale-95"
+                    >
+                      Mark Done
+                    </button>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
           )}
         </div>
+
+        {/* Completed Today */}
+        {completedOrders.length > 0 && (
+          <div>
+            <h2 className="text-lg font-bold text-foreground mb-4">
+              Completed Today ({completedOrders.length})
+            </h2>
+            <div className="space-y-3">
+              <AnimatePresence mode="popLayout">
+                {completedOrders.slice(0, 5).map((order) => (
+                  <motion.div
+                    key={order.id}
+                    layout
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center justify-between rounded-2xl border-2 border-emerald-200 bg-emerald-50 p-4"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-xl bg-emerald-100 flex items-center justify-center">
+                        <CheckCircle2 className="h-6 w-6 text-emerald-600" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-foreground">
+                          {formatTime(order.created_at)}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          #{order.id.slice(0, 8).toUpperCase()}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-sm font-semibold text-emerald-600">
+                      Picked up
+                    </span>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </div>
+        )}
       </main>
-
-      {/* Scan Button - Fixed at bottom */}
-      <div className="fixed bottom-0 left-0 right-0 p-6 bg-white border-t border-border pb-safe">
-        <button
-          onClick={() => setScannerOpen(true)}
-          className="w-full h-16 rounded-2xl bg-foreground flex items-center justify-center gap-3 font-bold text-white text-lg transition-all active:scale-[0.98]"
-        >
-          <Camera className="h-6 w-6" />
-          SCAN QR CODE
-        </button>
-      </div>
-
-      {/* QR Scanner Modal */}
-      <QRScannerModal
-        isOpen={scannerOpen}
-        onClose={() => setScannerOpen(false)}
-        onScan={handleScan}
-      />
-
-      {/* Scan Result Overlay */}
-      <ScanResultOverlay
-        result={scanResult}
-        onClose={() => setScanResult(null)}
-      />
     </div>
   );
 }
