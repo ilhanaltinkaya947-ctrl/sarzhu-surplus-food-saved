@@ -38,87 +38,105 @@ const formatPrice = (price: number) => {
   }).format(price);
 };
 
-const createPinIcon = (isFollowed: boolean, hasAvailability: boolean = true) => {
+const createPinIcon = (isFollowed: boolean, imageUrl: string | null) => {
   // Using theme colors - earthy green for default, gold for followed
   const primaryColor = isFollowed ? "#F59E0B" : "#3D8B5F";
   const glowColor = isFollowed ? "rgba(245, 158, 11, 0.4)" : "rgba(61, 139, 95, 0.3)";
+  const defaultImage = "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=100&h=100&fit=crop";
+  const logoSrc = imageUrl || defaultImage;
   
   return L.divIcon({
     className: "custom-pin",
     html: `
       <div class="pin-container" style="
         position: relative;
-        width: 44px;
-        height: 44px;
+        width: 52px;
+        height: 58px;
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         justify-content: center;
       ">
         <!-- Pulse ring for followed shops -->
         ${isFollowed ? `
           <div style="
             position: absolute;
-            width: 44px;
-            height: 44px;
+            top: 0;
+            width: 52px;
+            height: 52px;
             border-radius: 50%;
             background: ${glowColor};
             animation: pulse-ring 2s ease-out infinite;
           "></div>
         ` : ''}
         
-        <!-- Main pin circle -->
-        <div style="
+        <!-- Main pin circle with logo -->
+        <div class="pin-main" style="
           position: relative;
-          width: 36px;
-          height: 36px;
+          width: 48px;
+          height: 48px;
           border-radius: 50%;
           background: white;
-          box-shadow: 0 2px 12px -2px rgba(0,0,0,0.2), 0 0 0 3px ${primaryColor};
+          box-shadow: 0 3px 14px -2px rgba(0,0,0,0.25), 0 0 0 3px ${primaryColor};
           display: flex;
           align-items: center;
           justify-content: center;
+          overflow: hidden;
           transition: transform 0.2s ease, box-shadow 0.2s ease;
         ">
-          <!-- Inner icon -->
-          <div style="
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: ${primaryColor};
-            display: flex;
-            align-items: center;
-            justify-content: center;
-          ">
-            ${isFollowed ? `
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
+          <!-- Shop logo/image -->
+          <img 
+            src="${logoSrc}" 
+            alt="Shop logo"
+            style="
+              width: 42px;
+              height: 42px;
+              border-radius: 50%;
+              object-fit: cover;
+            "
+            onerror="this.src='${defaultImage}'"
+          />
+          
+          <!-- Followed badge -->
+          ${isFollowed ? `
+            <div style="
+              position: absolute;
+              top: -2px;
+              right: -2px;
+              width: 18px;
+              height: 18px;
+              border-radius: 50%;
+              background: linear-gradient(135deg, #F59E0B, #D97706);
+              border: 2px solid white;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+            ">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="white">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
               </svg>
-            ` : `
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
-                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0Z"/>
-                <circle cx="12" cy="10" r="3" fill="${primaryColor}" stroke="white" stroke-width="1.5"/>
-              </svg>
-            `}
-          </div>
+            </div>
+          ` : ''}
         </div>
         
-        <!-- Bottom indicator dot -->
+        <!-- Bottom pointer -->
         <div style="
           position: absolute;
-          bottom: -2px;
+          bottom: 0;
           left: 50%;
           transform: translateX(-50%);
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: ${primaryColor};
-          box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+          width: 0;
+          height: 0;
+          border-left: 8px solid transparent;
+          border-right: 8px solid transparent;
+          border-top: 10px solid ${primaryColor};
+          filter: drop-shadow(0 2px 2px rgba(0,0,0,0.15));
         "></div>
       </div>
     `,
-    iconSize: [44, 48],
-    iconAnchor: [22, 46],
-    popupAnchor: [0, -40],
+    iconSize: [52, 58],
+    iconAnchor: [26, 58],
+    popupAnchor: [0, -52],
   });
 };
 
@@ -219,7 +237,7 @@ export function MapView({ shops, bags, followedShopIds = [], onShopClick }: MapV
       const bag = getBagForShop(shop.id);
       
       const marker = L.marker([shop.lat, shop.long], {
-        icon: createPinIcon(isFollowed),
+        icon: createPinIcon(isFollowed, shop.image_url),
       }).addTo(mapRef.current!);
 
       // Click to open drawer instead of popup
