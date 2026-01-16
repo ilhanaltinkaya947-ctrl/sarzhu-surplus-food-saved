@@ -23,6 +23,7 @@ interface MapViewProps {
   shops: Shop[];
   bags: MysteryBag[];
   followedShopIds?: string[];
+  selectedShopId?: string | null;
   onShopClick?: (shop: Shop) => void;
 }
 
@@ -61,12 +62,18 @@ const categoryStyles = {
   default: { bg: '#3D8B5F', icon: `<svg viewBox="0 0 24 24" width="16" height="16" fill="white"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22" fill="#3D8B5F" stroke="white" stroke-width="1.5"/></svg>` },
 };
 
-const createPinIcon = (isFollowed: boolean, imageUrl: string | null, shopName: string, shopDescription: string | null) => {
+const createPinIcon = (isFollowed: boolean, imageUrl: string | null, shopName: string, shopDescription: string | null, isActive: boolean = false) => {
   const primaryColor = isFollowed ? "#F59E0B" : "#3D8B5F";
+  const activeColor = "#F59E0B";
   const glowColor = isFollowed ? "rgba(245, 158, 11, 0.4)" : "rgba(61, 139, 95, 0.3)";
   const hasValidImage = imageUrl && imageUrl.trim() !== '';
   const category = detectCategory(shopName, shopDescription);
   const catStyle = categoryStyles[category];
+  
+  // Scale and border for active state
+  const scale = isActive ? 'scale(1.2)' : 'scale(1)';
+  const borderColor = isActive ? activeColor : primaryColor;
+  const borderWidth = isActive ? '4px' : '3px';
   
   // Fallback content when no image
   const fallbackContent = `
@@ -94,6 +101,7 @@ const createPinIcon = (isFollowed: boolean, imageUrl: string | null, shopName: s
         height: 44px;
         border-radius: 50%;
         object-fit: cover;
+        background: transparent;
       "
       onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
     />
@@ -113,14 +121,16 @@ const createPinIcon = (isFollowed: boolean, imageUrl: string | null, shopName: s
   return L.divIcon({
     className: "custom-pin",
     html: `
-      <div class="pin-container" style="
+      <div class="pin-wrapper" style="
         position: relative;
         width: 60px;
         height: 68px;
         display: flex;
         align-items: flex-start;
         justify-content: center;
-        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+        transform: ${scale};
+        transform-origin: bottom center;
+        transition: transform 0.2s ease;
       ">
         <!-- Pulse ring for followed shops -->
         ${isFollowed ? `
@@ -142,21 +152,22 @@ const createPinIcon = (isFollowed: boolean, imageUrl: string | null, shopName: s
           height: 52px;
           border-radius: 50%;
           background: white;
-          box-shadow: 0 0 0 3px ${primaryColor}, 0 6px 20px -4px rgba(0,0,0,0.35);
+          border: ${borderWidth} solid ${borderColor};
+          box-shadow: 0 4px 12px -2px rgba(0,0,0,0.3);
           display: flex;
           align-items: center;
           justify-content: center;
           overflow: hidden;
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
+          transition: all 0.2s ease;
         ">
           ${hasValidImage ? imageContent : fallbackContent}
           
-          <!-- Followed badge -->
-          ${isFollowed ? `
+          <!-- Followed/Active badge -->
+          ${(isFollowed || isActive) ? `
             <div style="
               position: absolute;
-              top: -3px;
-              right: -3px;
+              top: -4px;
+              right: -4px;
               width: 20px;
               height: 20px;
               border-radius: 50%;
@@ -184,7 +195,7 @@ const createPinIcon = (isFollowed: boolean, imageUrl: string | null, shopName: s
           height: 0;
           border-left: 10px solid transparent;
           border-right: 10px solid transparent;
-          border-top: 12px solid ${primaryColor};
+          border-top: 12px solid ${borderColor};
         "></div>
       </div>
     `,
@@ -223,9 +234,10 @@ const createPopupContent = (shop: Shop, bag?: MysteryBag) => {
   `;
 };
 
-export function MapView({ shops, bags, followedShopIds = [], onShopClick }: MapViewProps) {
+export function MapView({ shops, bags, followedShopIds = [], selectedShopId, onShopClick }: MapViewProps) {
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
+  const markersRef = useRef<Map<string, L.Marker>>(new Map());
 
   const getBagForShop = (shopId: string) => {
     return bags.find((bag) => bag.shop_id === shopId);
@@ -274,32 +286,41 @@ export function MapView({ shops, bags, followedShopIds = [], onShopClick }: MapV
     };
   }, []);
 
-  // Update markers when shops change
+  // Update markers when shops or selection change
   useEffect(() => {
     if (!mapRef.current) return;
 
     // Clear existing markers
-    mapRef.current.eachLayer((layer) => {
-      if (layer instanceof L.Marker) {
-        mapRef.current?.removeLayer(layer);
-      }
+    markersRef.current.forEach((marker) => {
+      mapRef.current?.removeLayer(marker);
     });
+    markersRef.current.clear();
 
     // Add markers for each shop
     shops.forEach((shop) => {
       const isFollowed = followedShopIds.includes(shop.id);
-      const bag = getBagForShop(shop.id);
+      const isActive = selectedShopId === shop.id;
       
       const marker = L.marker([shop.lat, shop.long], {
-        icon: createPinIcon(isFollowed, shop.image_url, shop.name, shop.description),
+        icon: createPinIcon(isFollowed, shop.image_url, shop.name, shop.description, isActive),
+        zIndexOffset: isActive ? 1000 : 0,
       }).addTo(mapRef.current!);
 
-      // Click to open drawer instead of popup
+      // Store marker reference
+      markersRef.current.set(shop.id, marker);
+
+      // Single click: flyTo + open drawer
       marker.on("click", () => {
+        // Fly to the shop location
+        mapRef.current?.flyTo([shop.lat, shop.long], 17, {
+          duration: 0.6,
+          easeLinearity: 0.25,
+        });
+        // Open the drawer
         onShopClick?.(shop);
       });
     });
-  }, [shops, bags, followedShopIds, onShopClick]);
+  }, [shops, bags, followedShopIds, selectedShopId, onShopClick]);
 
   // Expose flyTo for external use - fast 0.6s animation
   const flyToShop = (lat: number, long: number) => {
@@ -319,26 +340,25 @@ export function MapView({ shops, bags, followedShopIds = [], onShopClick }: MapV
         style={{ background: "hsl(var(--muted))" }}
       />
       <style>{`
-        .shop-popup .leaflet-popup-content-wrapper {
-          padding: 0;
-          border-radius: 16px;
-          overflow: hidden;
-          box-shadow: 0 8px 30px -8px rgba(0,0,0,0.15);
+        /* Remove all default Leaflet marker backgrounds */
+        .leaflet-marker-icon {
+          background: transparent !important;
+          border: none !important;
         }
-        .shop-popup .leaflet-popup-content {
-          margin: 0;
-          position: relative;
-        }
-        .shop-popup .leaflet-popup-tip {
-          background: white;
+        .leaflet-marker-shadow {
+          display: none !important;
         }
         .custom-pin {
           background: transparent !important;
           border: none !important;
+          box-shadow: none !important;
         }
-        .custom-pin:hover .pin-container > div:nth-child(2) {
-          transform: scale(1.1);
-          box-shadow: 0 4px 16px -2px rgba(0,0,0,0.25), 0 0 0 3px currentColor;
+        .custom-pin > * {
+          background: transparent !important;
+        }
+        /* Disable default tooltips/titles */
+        .leaflet-tooltip {
+          display: none !important;
         }
         @keyframes pulse-ring {
           0% {
