@@ -60,7 +60,7 @@ export default function MapPage() {
   };
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden">
+    <div className="relative h-[100dvh] w-screen overflow-hidden pointer-events-none">
       {/* Fullscreen Map - Background Layer */}
       {loading ? (
         <div className="flex h-full w-full items-center justify-center bg-muted">
@@ -70,18 +70,24 @@ export default function MapPage() {
           </div>
         </div>
       ) : (
-        <MapView 
-          shops={shops} 
-          bags={bags} 
-          onShopClick={handleShopClick}
-        />
+        <div className="pointer-events-auto">
+          <MapView 
+            shops={shops} 
+            bags={bags} 
+            onShopClick={handleShopClick}
+          />
+        </div>
       )}
 
       {/* Floating Search Bar */}
-      <FloatingSearchBar />
+      <div className="pointer-events-auto">
+        <FloatingSearchBar />
+      </div>
 
       {/* Bottom Card with Categories */}
-      <BottomCard />
+      <div className="pointer-events-auto">
+        <BottomCard />
+      </div>
 
       {/* Shop Detail Drawer */}
       <ShopDrawer
