@@ -1,15 +1,9 @@
 import { useState } from "react";
-import { Clock, MapPin, Heart, X, Loader2 } from "lucide-react";
+import { Clock, MapPin, Heart, X, Loader2, Package, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerClose,
-} from "@/components/ui/drawer";
 import { AuthModal } from "./AuthModal";
 import { OrderConfirmationModal } from "./OrderConfirmationModal";
 import type { User } from "@supabase/supabase-js";
@@ -76,7 +70,7 @@ export function ShopDrawer({
       confetti({
         particleCount: 80,
         spread: 60,
-        origin: { x: 0.15, y: 0.3 },
+        origin: { x: 0.1, y: 0.2 },
         colors: ['#F59E0B', '#EF4444', '#EC4899', '#8B5CF6'],
         ticks: 150,
         gravity: 1.2,
@@ -87,13 +81,11 @@ export function ShopDrawer({
   };
 
   const handleReserveClick = async () => {
-    // Check if user is logged in
     if (!user) {
       setAuthModalOpen(true);
       return;
     }
 
-    // Check if bag is available
     if (!bag || bag.quantity_available <= 0) {
       toast.error("Sorry, this bag is sold out!");
       return;
@@ -102,8 +94,6 @@ export function ShopDrawer({
     setReserving(true);
 
     try {
-      // Start reservation transaction
-      // 1. Check current quantity
       const { data: currentBag, error: fetchError } = await supabase
         .from("mystery_bags")
         .select("quantity_available")
@@ -117,7 +107,6 @@ export function ShopDrawer({
         return;
       }
 
-      // 2. Decrement quantity
       const { error: updateError } = await supabase
         .from("mystery_bags")
         .update({ quantity_available: currentBag.quantity_available - 1 })
@@ -125,7 +114,6 @@ export function ShopDrawer({
 
       if (updateError) throw updateError;
 
-      // 3. Create order
       const { data: newOrder, error: orderError } = await supabase
         .from("orders")
         .insert({
@@ -138,13 +126,11 @@ export function ShopDrawer({
 
       if (orderError) throw orderError;
 
-      // Success!
       setConfirmedOrderId(newOrder.id);
-      onOpenChange(false); // Close drawer
-      setConfirmationOpen(true); // Open confirmation modal
+      onOpenChange(false);
+      setConfirmationOpen(true);
       onReservationComplete?.();
 
-      // Celebration confetti
       confetti({
         particleCount: 150,
         spread: 100,
@@ -161,117 +147,178 @@ export function ShopDrawer({
   };
 
   const handleAuthSuccess = () => {
-    // After successful auth, try to reserve
     handleReserveClick();
+  };
+
+  const handleClose = () => {
+    onOpenChange(false);
   };
 
   return (
     <>
-      <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className="max-h-[50vh] rounded-t-3xl focus:outline-none">
-          {/* Header Image */}
-          <div className="relative h-40 w-full overflow-hidden rounded-t-3xl">
-            <img
-              src={shop.image_url || "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800"}
-              alt={shop.name}
-              className="h-full w-full object-cover"
-            />
-            
-            {/* Discount Badge */}
-            {discount > 0 && (
-              <span className="absolute top-4 left-16 rounded-lg bg-destructive px-3 py-1 text-sm font-bold text-destructive-foreground">
-                -{discount}%
-              </span>
-            )}
-            
-            {/* Favorite Button - Top Left */}
-            <button 
-              onClick={handleFavoriteClick}
-              className="absolute top-4 left-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm shadow-md touch-active transition-all duration-200 active:scale-95"
-            >
-              <Heart 
-                className={`h-5 w-5 transition-colors duration-200 ${
-                  isFavorite 
-                    ? 'fill-red-500 text-red-500' 
-                    : 'text-foreground'
-                }`} 
-              />
-            </button>
-            
-            {/* Close Button - Top Right */}
-            <DrawerClose className="absolute top-4 right-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm shadow-md touch-active transition-all duration-200 active:scale-95">
-              <X className="h-5 w-5 text-foreground" />
-            </DrawerClose>
-          </div>
+      {/* Backdrop */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+            onClick={handleClose}
+          />
+        )}
+      </AnimatePresence>
 
-          <div className="flex-1 overflow-y-auto px-5 pt-4 pb-6">
-            <DrawerHeader className="p-0 mb-4">
-              <DrawerTitle className="text-xl font-bold text-foreground text-left">
-                {shop.name}
-              </DrawerTitle>
-            </DrawerHeader>
-
-            {/* Info Row */}
-            <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-              <div className="flex items-center gap-1.5">
-                <Clock className="h-4 w-4" />
-                <span>Pick up: 6PM - 8PM</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <MapPin className="h-4 w-4" />
-                <span>350m away</span>
-              </div>
+      {/* Super Drawer */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ 
+              type: "spring", 
+              damping: 30, 
+              stiffness: 300,
+              mass: 0.8,
+            }}
+            className="fixed bottom-0 left-0 right-0 z-50 h-[85dvh] rounded-t-3xl bg-white shadow-2xl overflow-hidden flex flex-col"
+          >
+            {/* Drag Handle */}
+            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+              <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
             </div>
 
-            {/* Description */}
-            {shop.description && (
-              <p className="text-sm text-muted-foreground mb-6">
-                {shop.description}
-              </p>
-            )}
+            {/* Hero Image */}
+            <div className="relative h-56 w-full overflow-hidden flex-shrink-0">
+              <img
+                src={shop.image_url || "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800"}
+                alt={shop.name}
+                className="h-full w-full object-cover"
+              />
+              
+              {/* Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+              
+              {/* Discount Badge */}
+              {discount > 0 && (
+                <span className="absolute bottom-4 left-4 rounded-lg bg-destructive px-3 py-1.5 text-sm font-bold text-white shadow-lg">
+                  -{discount}% OFF
+                </span>
+              )}
+              
+              {/* Favorite Button - Top Left */}
+              <button 
+                onClick={handleFavoriteClick}
+                className="absolute top-4 left-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/95 backdrop-blur-sm shadow-lg touch-active transition-all duration-200 active:scale-95"
+              >
+                <Heart 
+                  className={`h-5 w-5 transition-colors duration-200 ${
+                    isFavorite 
+                      ? 'fill-red-500 text-red-500' 
+                      : 'text-gray-700'
+                  }`} 
+                />
+              </button>
+              
+              {/* Close Button - Top Right */}
+              <button
+                onClick={handleClose}
+                className="absolute top-4 right-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/95 backdrop-blur-sm shadow-lg touch-active transition-all duration-200 active:scale-95"
+              >
+                <X className="h-5 w-5 text-gray-700" />
+              </button>
+            </div>
 
-            {/* Mystery Bag Card */}
-            {bag && (
-              <div className="rounded-2xl bg-secondary p-4 mb-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-semibold text-foreground">Mystery Bag</h4>
-                    <p className={`text-sm mt-0.5 ${bag.quantity_available > 0 ? 'text-muted-foreground' : 'text-destructive font-medium'}`}>
-                      {bag.quantity_available > 0 
-                        ? `${bag.quantity_available} left` 
-                        : 'Sold out'}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-sm text-muted-foreground line-through">
-                      {formatPrice(bag.original_price)}
-                    </span>
-                    <span className="ml-2 text-lg font-bold text-primary">
-                      {formatPrice(bag.discounted_price)}
-                    </span>
-                  </div>
+            {/* Scrollable Body */}
+            <div className="flex-1 overflow-y-auto px-5 pt-5 pb-4">
+              {/* Title */}
+              <h1 className="text-3xl font-bold text-gray-900 mb-3">
+                {shop.name}
+              </h1>
+
+              {/* Status Badges */}
+              <div className="flex flex-wrap items-center gap-2 mb-5">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1.5 text-sm font-medium text-emerald-700">
+                  <Clock className="h-4 w-4" />
+                  Open until 23:00
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-600">
+                  <MapPin className="h-4 w-4" />
+                  350m away
+                </span>
+              </div>
+
+              {/* Description */}
+              {shop.description && (
+                <p className="text-gray-600 leading-relaxed mb-6">
+                  {shop.description}
+                </p>
+              )}
+
+              {/* What's in the bag Section */}
+              <div className="mb-6">
+                <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-3">
+                  <Sparkles className="h-5 w-5 text-amber-500" />
+                  What's in the bag?
+                </h3>
+                <div className="rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100 p-4">
+                  <p className="text-gray-600 text-sm">
+                    A surprise selection of delicious items that would otherwise go to waste. 
+                    Contents vary daily based on what's available!
+                  </p>
                 </div>
               </div>
-            )}
-          </div>
 
-          {/* Fixed Reserve Button */}
-          <div className="border-t border-border px-5 py-4 pb-safe">
-            <button 
-              onClick={handleReserveClick}
-              disabled={reserving || !bag || bag.quantity_available <= 0}
-              className="w-full rounded-2xl bg-primary py-4 text-center font-semibold text-primary-foreground shadow-lg touch-active transition-transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {reserving && <Loader2 className="h-5 w-5 animate-spin" />}
-              {!bag || bag.quantity_available <= 0 
-                ? "Sold Out" 
-                : reserving 
-                  ? "Reserving..." 
-                  : "Reserve Now"}
-            </button>
-          </div>
-        </DrawerContent>
-      </Drawer>
+              {/* Mystery Bag Card */}
+              {bag && (
+                <div className="rounded-2xl bg-gray-50 border border-gray-100 p-5">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
+                      <Package className="h-7 w-7 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-semibold text-gray-900 text-lg">Mystery Bag</h4>
+                        <div className="text-right">
+                          <span className="text-sm text-gray-400 line-through block">
+                            {formatPrice(bag.original_price)}
+                          </span>
+                          <span className="text-xl font-bold text-primary">
+                            {formatPrice(bag.discounted_price)}
+                          </span>
+                        </div>
+                      </div>
+                      <p className={`text-sm mt-1 ${bag.quantity_available > 0 ? 'text-gray-500' : 'text-red-500 font-medium'}`}>
+                        {bag.quantity_available > 0 
+                          ? `${bag.quantity_available} bags left today` 
+                          : 'Sold out for today'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Fixed Footer */}
+            <div className="border-t border-gray-100 px-5 py-4 pb-safe bg-white flex-shrink-0">
+              <button 
+                onClick={handleReserveClick}
+                disabled={reserving || !bag || bag.quantity_available <= 0}
+                className="w-full rounded-2xl bg-primary py-4 text-center font-semibold text-primary-foreground shadow-lg touch-active transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {reserving && <Loader2 className="h-5 w-5 animate-spin" />}
+                {!bag || bag.quantity_available <= 0 
+                  ? "Sold Out" 
+                  : reserving 
+                    ? "Reserving..." 
+                    : `Reserve for ${bag ? formatPrice(bag.discounted_price) : ''}`}
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Auth Modal */}
       <AuthModal 
