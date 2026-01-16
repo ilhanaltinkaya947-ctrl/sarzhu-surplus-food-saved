@@ -138,9 +138,9 @@ export function BottomCard({
         )}
       </AnimatePresence>
 
-      {/* Sheet Container */}
+      {/* Unified Page Sheet Container */}
       <motion.div 
-        className="fixed bottom-0 left-0 right-0 z-50"
+        className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none"
         initial={false}
         animate={{ 
           y: isHidden ? "100%" : 0,
@@ -150,8 +150,8 @@ export function BottomCard({
       >
         <motion.div 
           className={cn(
-            "mx-2 mb-2 rounded-t-[32px] pointer-events-auto overflow-hidden",
-            "backdrop-blur-xl bg-white/95 border border-white/50",
+            "mx-2 mb-2 flex flex-col pointer-events-auto",
+            "bg-white rounded-t-[32px]",
             "shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.2)]"
           )}
           style={{ 
@@ -164,103 +164,100 @@ export function BottomCard({
           animate={controls}
           transition={springConfig}
         >
-          <div className="flex flex-col h-full">
-            {/* Pull Handle - Large touch area, always draggable */}
-            <motion.div 
-              className="w-full flex items-center justify-center py-3 cursor-grab active:cursor-grabbing touch-none flex-shrink-0"
-              onClick={toggleExpanded}
-            >
-              <div className="h-1 w-10 rounded-full bg-gray-400/60" />
-            </motion.div>
-            
-            {/* Content area */}
-            <div 
-              ref={scrollRef}
-              className={cn(
-                "flex-1 px-4",
-                isExpanded 
-                  ? "overflow-y-auto overscroll-contain scroll-smooth" 
-                  : "overflow-hidden"
-              )}
-              style={{
-                touchAction: isExpanded ? 'pan-y' : 'none',
-              }}
-            >
-              {!isExpanded ? (
-                /* Collapsed State - Chips + Button */
-                <div className="pb-safe">
-                  {/* Categories chips */}
-                  <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide -mx-4 px-4">
-                    {categories.map((category) => {
-                      const Icon = category.icon;
-                      const isActive = activeCategory === category.id;
-                      
-                      return (
-                        <button
-                          key={category.id}
-                          onClick={() => handleCategoryClick(category.id)}
-                          className={cn(
-                            "flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-medium transition-all touch-active",
-                            isActive
-                              ? "bg-primary text-primary-foreground shadow-md"
-                              : "bg-gray-100/80 text-gray-700"
-                          )}
-                        >
-                          <Icon className="h-4 w-4" />
-                          {category.label}
-                        </button>
-                      );
-                    })}
-                  </div>
+          {/* Drag Handle - Inside the white container */}
+          <div 
+            className="w-full flex items-center justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing flex-shrink-0"
+            onClick={toggleExpanded}
+          >
+            <div className="h-1 w-10 rounded-full bg-gray-300" />
+          </div>
+          
+          {/* Scrollable Content Area */}
+          <div 
+            ref={scrollRef}
+            className={cn(
+              "flex-1 px-4 min-h-0",
+              isExpanded 
+                ? "overflow-y-auto overscroll-contain" 
+                : "overflow-hidden"
+            )}
+            style={{
+              touchAction: isExpanded ? 'pan-y' : 'none',
+            }}
+          >
+            {!isExpanded ? (
+              /* Collapsed State - Chips */
+              <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide -mx-4 px-4">
+                {categories.map((category) => {
+                  const Icon = category.icon;
+                  const isActive = activeCategory === category.id;
                   
-                  {/* Scan QR Button */}
-                  <button className="flex w-full items-center justify-center gap-3 rounded-2xl bg-primary py-3.5 text-primary-foreground font-semibold shadow-lg touch-active transition-transform active:scale-[0.98]">
-                    <QrCode className="h-5 w-5" />
-                    Scan QR to Reserve
-                  </button>
+                  return (
+                    <button
+                      key={category.id}
+                      onClick={() => handleCategoryClick(category.id)}
+                      className={cn(
+                        "flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-medium transition-all",
+                        isActive
+                          ? "bg-primary text-primary-foreground shadow-md"
+                          : "bg-gray-100 text-gray-700"
+                      )}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {category.label}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              /* Expanded State - Visual Feed */
+              <div className="pb-4">
+                {/* Section Header */}
+                <div className="flex items-center justify-between mb-4 sticky top-0 bg-white py-2 -mx-4 px-4 z-10">
+                  <h3 className="text-lg font-bold text-gray-900">Featured Deals</h3>
+                  <button className="text-sm font-medium text-primary">See all</button>
                 </div>
-              ) : (
-                /* Expanded State - Yandex Go Visual Feed */
-                <div className="pb-24">
-                  {/* Section Header */}
-                  <div className="flex items-center justify-between mb-4 sticky top-0 bg-white/95 backdrop-blur-sm py-2 -mx-4 px-4 z-10">
-                    <h3 className="text-lg font-bold text-gray-900">Featured Deals</h3>
-                    <button className="text-sm font-medium text-primary">See all</button>
-                  </div>
-                  
-                  {/* Marketing Banner - Full Width */}
-                  <MarketingBanner className="mb-5" />
-                  
-                  {/* 2-Column Food Cards Grid */}
-                  <div className="grid grid-cols-2 gap-3 pb-8">
-                    {shops.map((shop) => {
-                      const bag = getBagForShop(shop.id);
-                      
-                      return (
-                        <FoodCard
-                          key={shop.id}
-                          id={shop.id}
-                          name={shop.name}
-                          imageUrl={shop.image_url}
-                          description={shop.description}
-                          originalPrice={bag?.original_price}
-                          discountedPrice={bag?.discounted_price}
-                          bagsLeft={bag?.quantity_available}
-                          onClick={() => onShopClick?.(shop)}
-                        />
-                      );
-                    })}
-                  </div>
-                  
-                  {/* Empty State */}
-                  {shops.length === 0 && (
-                    <div className="text-center py-12">
-                      <p className="text-gray-500">No shops available nearby</p>
-                    </div>
-                  )}
+                
+                {/* Marketing Banner */}
+                <MarketingBanner className="mb-5" />
+                
+                {/* 2-Column Food Cards Grid */}
+                <div className="grid grid-cols-2 gap-3">
+                  {shops.map((shop) => {
+                    const bag = getBagForShop(shop.id);
+                    
+                    return (
+                      <FoodCard
+                        key={shop.id}
+                        id={shop.id}
+                        name={shop.name}
+                        imageUrl={shop.image_url}
+                        description={shop.description}
+                        originalPrice={bag?.original_price}
+                        discountedPrice={bag?.discounted_price}
+                        bagsLeft={bag?.quantity_available}
+                        onClick={() => onShopClick?.(shop)}
+                      />
+                    );
+                  })}
                 </div>
-              )}
-            </div>
+                
+                {/* Empty State */}
+                {shops.length === 0 && (
+                  <div className="text-center py-12">
+                    <p className="text-gray-500">No shops available nearby</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          
+          {/* Bottom Action Button - Always visible, inside the white container */}
+          <div className="flex-shrink-0 px-4 pb-4 pt-2 bg-white">
+            <button className="flex w-full items-center justify-center gap-3 rounded-2xl bg-primary py-3.5 text-primary-foreground font-semibold shadow-lg transition-transform active:scale-[0.98]">
+              <QrCode className="h-5 w-5" />
+              Scan QR to Reserve
+            </button>
           </div>
         </motion.div>
       </motion.div>
