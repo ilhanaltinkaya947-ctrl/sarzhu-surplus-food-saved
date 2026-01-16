@@ -128,9 +128,9 @@ export function BottomSheet({
         )}
       </AnimatePresence>
 
-      {/* Single Expandable Card Container */}
+      {/* Single Expandable Card Container - Anchored to absolute bottom */}
       <motion.div
-        className="fixed bottom-0 left-0 right-0 z-50 mx-2 mb-2"
+        className="fixed bottom-0 left-0 right-0 z-50"
         initial={false}
         animate={{
           y: isHidden ? "100%" : 0,
@@ -140,8 +140,8 @@ export function BottomSheet({
       >
         <motion.div
           className={cn(
-            "flex flex-col bg-white rounded-t-[32px]",
-            "shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.2)]",
+            "flex flex-col bg-white rounded-t-[32px] rounded-b-none",
+            "shadow-[0_-5px_20px_-5px_rgba(0,0,0,0.1)]",
             "overflow-hidden"
           )}
           animate={{ height: currentHeight }}
@@ -244,8 +244,11 @@ export function BottomSheet({
             )}
           </motion.div>
 
-          {/* Footer: Sticky Scan QR Button */}
-          <div className="flex-shrink-0 px-4 pb-4 pt-2 bg-white">
+          {/* Footer: Sticky Scan QR Button with safe area padding */}
+          <div 
+            className="flex-shrink-0 px-4 pt-2 bg-white"
+            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
+          >
             <button className="flex w-full items-center justify-center gap-3 rounded-2xl bg-primary py-3.5 text-primary-foreground font-semibold shadow-lg transition-transform active:scale-[0.98]">
               <QrCode className="h-5 w-5" />
               Scan QR to Reserve
