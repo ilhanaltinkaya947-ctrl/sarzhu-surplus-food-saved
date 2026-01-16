@@ -1,4 +1,5 @@
 import { Clock, MapPin, Heart, X } from "lucide-react";
+import confetti from "canvas-confetti";
 import {
   Drawer,
   DrawerContent,
@@ -29,6 +30,8 @@ interface ShopDrawerProps {
   bag: MysteryBag | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  isFavorite: boolean;
+  onToggleFavorite: (shopId: string) => void;
 }
 
 const formatPrice = (price: number) => {
@@ -39,12 +42,35 @@ const formatPrice = (price: number) => {
   }).format(price);
 };
 
-export function ShopDrawer({ shop, bag, open, onOpenChange }: ShopDrawerProps) {
+export function ShopDrawer({ 
+  shop, 
+  bag, 
+  open, 
+  onOpenChange, 
+  isFavorite, 
+  onToggleFavorite 
+}: ShopDrawerProps) {
   if (!shop) return null;
 
   const discount = bag
     ? Math.round((1 - bag.discounted_price / bag.original_price) * 100)
     : 0;
+
+  const handleFavoriteClick = () => {
+    // Trigger confetti if adding to favorites
+    if (!isFavorite) {
+      confetti({
+        particleCount: 80,
+        spread: 60,
+        origin: { x: 0.15, y: 0.3 },
+        colors: ['#F59E0B', '#EF4444', '#EC4899', '#8B5CF6'],
+        ticks: 150,
+        gravity: 1.2,
+        scalar: 0.9,
+      });
+    }
+    onToggleFavorite(shop.id);
+  };
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
@@ -56,17 +82,32 @@ export function ShopDrawer({ shop, bag, open, onOpenChange }: ShopDrawerProps) {
             alt={shop.name}
             className="h-full w-full object-cover"
           />
+          
+          {/* Discount Badge */}
           {discount > 0 && (
-            <span className="absolute top-4 left-4 rounded-lg bg-destructive px-3 py-1 text-sm font-bold text-destructive-foreground">
+            <span className="absolute top-4 left-16 rounded-lg bg-destructive px-3 py-1 text-sm font-bold text-destructive-foreground">
               -{discount}%
             </span>
           )}
-          <DrawerClose className="absolute top-4 right-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm shadow-md touch-active">
+          
+          {/* Favorite Button - Top Left */}
+          <button 
+            onClick={handleFavoriteClick}
+            className="absolute top-4 left-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm shadow-md touch-active transition-all duration-200 active:scale-95"
+          >
+            <Heart 
+              className={`h-5 w-5 transition-colors duration-200 ${
+                isFavorite 
+                  ? 'fill-red-500 text-red-500' 
+                  : 'text-foreground'
+              }`} 
+            />
+          </button>
+          
+          {/* Close Button - Top Right */}
+          <DrawerClose className="absolute top-4 right-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm shadow-md touch-active transition-all duration-200 active:scale-95">
             <X className="h-5 w-5 text-foreground" />
           </DrawerClose>
-          <button className="absolute bottom-4 right-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm shadow-md touch-active">
-            <Heart className="h-5 w-5 text-foreground" />
-          </button>
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 pt-4 pb-6">
