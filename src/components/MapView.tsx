@@ -63,17 +63,22 @@ const categoryStyles = {
 };
 
 const createPinIcon = (isFollowed: boolean, imageUrl: string | null, shopName: string, shopDescription: string | null, isActive: boolean = false) => {
-  const primaryColor = isFollowed ? "#F59E0B" : "#3D8B5F";
-  const activeColor = "#F59E0B";
-  const glowColor = isFollowed ? "rgba(245, 158, 11, 0.4)" : "rgba(61, 139, 95, 0.3)";
+  // Colors - keep white border for default/favorite, emerald for selected
+  const defaultBorderColor = "#FFFFFF";
+  const activeBorderColor = "#10B981"; // Emerald-500
   const hasValidImage = imageUrl && imageUrl.trim() !== '';
   const category = detectCategory(shopName, shopDescription);
   const catStyle = categoryStyles[category];
   
-  // Scale and border for active state
-  const scale = isActive ? 'scale(1.2)' : 'scale(1)';
-  const borderColor = isActive ? activeColor : primaryColor;
+  // State-based styling
+  const scale = isActive ? 'scale(1.3)' : 'scale(1)';
+  const borderColor = isActive ? activeBorderColor : defaultBorderColor;
   const borderWidth = isActive ? '4px' : '3px';
+  const pointerColor = isActive ? activeBorderColor : "#3D8B5F";
+  const shadowStyle = isActive 
+    ? '0 4px 20px -2px rgba(16, 185, 129, 0.5), 0 0 0 4px rgba(16, 185, 129, 0.2)' 
+    : '0 4px 12px -2px rgba(0,0,0,0.3)';
+  const animationClass = isActive ? 'pin-active-pulse' : '';
   
   // Fallback content when no image
   const fallbackContent = `
@@ -118,8 +123,31 @@ const createPinIcon = (isFollowed: boolean, imageUrl: string | null, shopName: s
     </div>
   `;
   
+  // Heart badge for favorites (always visible on favorited shops)
+  const heartBadge = isFollowed ? `
+    <div style="
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #EF4444;
+      border: 2px solid white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      z-index: 10;
+    ">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="1">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+      </svg>
+    </div>
+  ` : '';
+  
   return L.divIcon({
-    className: "custom-pin",
+    className: `custom-pin ${animationClass}`,
     html: `
       <div class="pin-wrapper" style="
         position: relative;
@@ -130,21 +158,8 @@ const createPinIcon = (isFollowed: boolean, imageUrl: string | null, shopName: s
         justify-content: center;
         transform: ${scale};
         transform-origin: bottom center;
-        transition: transform 0.2s ease;
+        transition: transform 0.25s ease;
       ">
-        <!-- Pulse ring for followed shops -->
-        ${isFollowed ? `
-          <div style="
-            position: absolute;
-            top: 2px;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: ${glowColor};
-            animation: pulse-ring 2s ease-out infinite;
-          "></div>
-        ` : ''}
-        
         <!-- Main pin circle with logo -->
         <div class="pin-main" style="
           position: relative;
@@ -153,36 +168,27 @@ const createPinIcon = (isFollowed: boolean, imageUrl: string | null, shopName: s
           border-radius: 50%;
           background: white;
           border: ${borderWidth} solid ${borderColor};
-          box-shadow: 0 4px 12px -2px rgba(0,0,0,0.3);
+          box-shadow: ${shadowStyle};
           display: flex;
           align-items: center;
           justify-content: center;
-          overflow: hidden;
-          transition: all 0.2s ease;
+          overflow: visible;
+          transition: all 0.25s ease;
         ">
-          ${hasValidImage ? imageContent : fallbackContent}
+          <div style="
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          ">
+            ${hasValidImage ? imageContent : fallbackContent}
+          </div>
           
-          <!-- Followed/Active badge -->
-          ${(isFollowed || isActive) ? `
-            <div style="
-              position: absolute;
-              top: -4px;
-              right: -4px;
-              width: 20px;
-              height: 20px;
-              border-radius: 50%;
-              background: linear-gradient(135deg, #F59E0B, #D97706);
-              border: 2px solid white;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-            ">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="white">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-              </svg>
-            </div>
-          ` : ''}
+          <!-- Heart badge for favorites -->
+          ${heartBadge}
         </div>
         
         <!-- Bottom pointer -->
@@ -195,7 +201,8 @@ const createPinIcon = (isFollowed: boolean, imageUrl: string | null, shopName: s
           height: 0;
           border-left: 10px solid transparent;
           border-right: 10px solid transparent;
-          border-top: 12px solid ${borderColor};
+          border-top: 12px solid ${pointerColor};
+          transition: border-color 0.25s ease;
         "></div>
       </div>
     `,
@@ -360,14 +367,16 @@ export function MapView({ shops, bags, followedShopIds = [], selectedShopId, onS
         .leaflet-tooltip {
           display: none !important;
         }
-        @keyframes pulse-ring {
-          0% {
-            transform: scale(0.8);
-            opacity: 1;
+        /* Active pin pulsing shadow animation */
+        .pin-active-pulse .pin-main {
+          animation: active-pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes active-pulse {
+          0%, 100% {
+            box-shadow: 0 4px 20px -2px rgba(16, 185, 129, 0.5), 0 0 0 4px rgba(16, 185, 129, 0.2);
           }
-          100% {
-            transform: scale(1.4);
-            opacity: 0;
+          50% {
+            box-shadow: 0 4px 25px -2px rgba(16, 185, 129, 0.7), 0 0 0 8px rgba(16, 185, 129, 0.1);
           }
         }
       `}</style>
