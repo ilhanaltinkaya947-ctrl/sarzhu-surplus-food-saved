@@ -38,31 +38,97 @@ const formatPrice = (price: number) => {
   }).format(price);
 };
 
-const createPinIcon = (isFollowed: boolean, imageUrl: string | null) => {
-  // Using theme colors - earthy green for default, gold for followed
+// Category detection from shop name/description
+const detectCategory = (name: string, description: string | null): 'bakery' | 'coffee' | 'grocery' | 'default' => {
+  const text = `${name} ${description || ''}`.toLowerCase();
+  if (text.includes('bakery') || text.includes('bread') || text.includes('pastry') || text.includes('cake') || text.includes('пекарня')) {
+    return 'bakery';
+  }
+  if (text.includes('coffee') || text.includes('café') || text.includes('cafe') || text.includes('кофе') || text.includes('espresso')) {
+    return 'coffee';
+  }
+  if (text.includes('grocery') || text.includes('market') || text.includes('fresh') || text.includes('organic') || text.includes('магазин')) {
+    return 'grocery';
+  }
+  return 'default';
+};
+
+// Category styling configs
+const categoryStyles = {
+  bakery: { bg: '#F97316', icon: `<text x="12" y="17" font-size="14" text-anchor="middle">🥐</text>` },
+  coffee: { bg: '#78350F', icon: `<text x="12" y="17" font-size="14" text-anchor="middle">☕</text>` },
+  grocery: { bg: '#16A34A', icon: `<text x="12" y="17" font-size="14" text-anchor="middle">🥦</text>` },
+  default: { bg: '#3D8B5F', icon: `<svg viewBox="0 0 24 24" width="16" height="16" fill="white"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22" fill="#3D8B5F" stroke="white" stroke-width="1.5"/></svg>` },
+};
+
+const createPinIcon = (isFollowed: boolean, imageUrl: string | null, shopName: string, shopDescription: string | null) => {
   const primaryColor = isFollowed ? "#F59E0B" : "#3D8B5F";
   const glowColor = isFollowed ? "rgba(245, 158, 11, 0.4)" : "rgba(61, 139, 95, 0.3)";
-  const defaultImage = "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=100&h=100&fit=crop";
-  const logoSrc = imageUrl || defaultImage;
+  const hasValidImage = imageUrl && imageUrl.trim() !== '';
+  const category = detectCategory(shopName, shopDescription);
+  const catStyle = categoryStyles[category];
+  
+  // Fallback content when no image
+  const fallbackContent = `
+    <div style="
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: ${catStyle.bg};
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    ">
+      <svg width="24" height="24" viewBox="0 0 24 24">${catStyle.icon}</svg>
+    </div>
+  `;
+
+  // Image content with onerror fallback
+  const imageContent = `
+    <img 
+      src="${imageUrl}" 
+      alt="${shopName}"
+      class="pin-logo"
+      style="
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        object-fit: cover;
+      "
+      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+    />
+    <div class="pin-fallback" style="
+      display: none;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: ${catStyle.bg};
+      align-items: center;
+      justify-content: center;
+    ">
+      <svg width="24" height="24" viewBox="0 0 24 24">${catStyle.icon}</svg>
+    </div>
+  `;
   
   return L.divIcon({
     className: "custom-pin",
     html: `
       <div class="pin-container" style="
         position: relative;
-        width: 52px;
-        height: 58px;
+        width: 60px;
+        height: 68px;
         display: flex;
         align-items: flex-start;
         justify-content: center;
+        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
       ">
         <!-- Pulse ring for followed shops -->
         ${isFollowed ? `
           <div style="
             position: absolute;
-            top: 0;
-            width: 52px;
-            height: 52px;
+            top: 2px;
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
             background: ${glowColor};
             animation: pulse-ring 2s ease-out infinite;
@@ -72,45 +138,34 @@ const createPinIcon = (isFollowed: boolean, imageUrl: string | null) => {
         <!-- Main pin circle with logo -->
         <div class="pin-main" style="
           position: relative;
-          width: 48px;
-          height: 48px;
+          width: 52px;
+          height: 52px;
           border-radius: 50%;
           background: white;
-          box-shadow: 0 3px 14px -2px rgba(0,0,0,0.25), 0 0 0 3px ${primaryColor};
+          box-shadow: 0 0 0 3px ${primaryColor}, 0 6px 20px -4px rgba(0,0,0,0.35);
           display: flex;
           align-items: center;
           justify-content: center;
           overflow: hidden;
           transition: transform 0.2s ease, box-shadow 0.2s ease;
         ">
-          <!-- Shop logo/image -->
-          <img 
-            src="${logoSrc}" 
-            alt="Shop logo"
-            style="
-              width: 42px;
-              height: 42px;
-              border-radius: 50%;
-              object-fit: cover;
-            "
-            onerror="this.src='${defaultImage}'"
-          />
+          ${hasValidImage ? imageContent : fallbackContent}
           
           <!-- Followed badge -->
           ${isFollowed ? `
             <div style="
               position: absolute;
-              top: -2px;
-              right: -2px;
-              width: 18px;
-              height: 18px;
+              top: -3px;
+              right: -3px;
+              width: 20px;
+              height: 20px;
               border-radius: 50%;
               background: linear-gradient(135deg, #F59E0B, #D97706);
               border: 2px solid white;
               display: flex;
               align-items: center;
               justify-content: center;
-              box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+              box-shadow: 0 2px 6px rgba(0,0,0,0.2);
             ">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="white">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
@@ -127,16 +182,15 @@ const createPinIcon = (isFollowed: boolean, imageUrl: string | null) => {
           transform: translateX(-50%);
           width: 0;
           height: 0;
-          border-left: 8px solid transparent;
-          border-right: 8px solid transparent;
-          border-top: 10px solid ${primaryColor};
-          filter: drop-shadow(0 2px 2px rgba(0,0,0,0.15));
+          border-left: 10px solid transparent;
+          border-right: 10px solid transparent;
+          border-top: 12px solid ${primaryColor};
         "></div>
       </div>
     `,
-    iconSize: [52, 58],
-    iconAnchor: [26, 58],
-    popupAnchor: [0, -52],
+    iconSize: [60, 68],
+    iconAnchor: [30, 68],
+    popupAnchor: [0, -60],
   });
 };
 
@@ -237,7 +291,7 @@ export function MapView({ shops, bags, followedShopIds = [], onShopClick }: MapV
       const bag = getBagForShop(shop.id);
       
       const marker = L.marker([shop.lat, shop.long], {
-        icon: createPinIcon(isFollowed, shop.image_url),
+        icon: createPinIcon(isFollowed, shop.image_url, shop.name, shop.description),
       }).addTo(mapRef.current!);
 
       // Click to open drawer instead of popup
