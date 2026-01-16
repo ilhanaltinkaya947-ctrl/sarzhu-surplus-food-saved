@@ -282,8 +282,7 @@ export function MapView({ shops, bags, followedShopIds = [], selectedShopId, onS
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(map);
 
-    // Add zoom control to top right
-    L.control.zoom({ position: "topright" }).addTo(map);
+    // Zoom control disabled - mobile users use pinch to zoom
 
     mapRef.current = map;
 
