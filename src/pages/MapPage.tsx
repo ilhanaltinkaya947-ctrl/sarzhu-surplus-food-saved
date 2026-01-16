@@ -4,6 +4,7 @@ import { FloatingSearchBar } from "@/components/FloatingSearchBar";
 import { BottomCard } from "@/components/BottomCard";
 import { ShopDrawer } from "@/components/ShopDrawer";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 interface Shop {
@@ -24,6 +25,7 @@ interface MysteryBag {
 }
 
 export default function MapPage() {
+  const { user } = useAuth();
   const [shops, setShops] = useState<Shop[]>([]);
   const [bags, setBags] = useState<MysteryBag[]>([]);
   const [loading, setLoading] = useState(true);
@@ -125,6 +127,12 @@ export default function MapPage() {
     ? followedShopIds.includes(selectedShop.id) 
     : false;
 
+  const handleReservationComplete = useCallback(async () => {
+    // Refresh bags data after reservation
+    const { data: bagsData } = await supabase.from("mystery_bags").select("*");
+    if (bagsData) setBags(bagsData);
+  }, []);
+
   return (
     <div className="relative h-[100dvh] w-screen overflow-hidden pointer-events-none">
       {/* Fullscreen Map - Background Layer */}
@@ -165,6 +173,8 @@ export default function MapPage() {
         onOpenChange={setDrawerOpen}
         isFavorite={isSelectedShopFavorite}
         onToggleFavorite={handleToggleFavorite}
+        user={user}
+        onReservationComplete={handleReservationComplete}
       />
     </div>
   );
