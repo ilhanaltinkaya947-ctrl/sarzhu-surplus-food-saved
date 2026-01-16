@@ -99,17 +99,26 @@ export function MapView({ shops, bags, followedShopIds = [], onShopClick }: MapV
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
 
-    // Initialize map with smooth inertia settings
+    // Initialize map with "Heavy & Smooth" 2GIS-like physics
     const map = L.map(mapContainerRef.current, {
       center: CENTER,
       zoom: DEFAULT_ZOOM,
       zoomControl: false,
+      // MAP PHYSICS - "Heavy" feel
       inertia: true,
-      inertiaDeceleration: 3000,
+      inertiaDeceleration: 10000,
       inertiaMaxSpeed: 1500,
-      easeLinearity: 0.25,
-      worldCopyJump: true,
-    });
+      easeLinearity: 0.5,
+      // ZOOM SMOOTHNESS - No "jumping"
+      zoomSnap: 0,
+      zoomDelta: 0.5,
+      wheelPxPerZoomLevel: 120,
+      // TOUCH SETTINGS
+      tapTolerance: 15,
+      bounceAtZoomLimits: false,
+      // RENDERING - Canvas for performance
+      preferCanvas: true,
+    } as L.MapOptions);
 
     // Add tile layer
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
