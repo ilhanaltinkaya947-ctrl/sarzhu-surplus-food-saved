@@ -74,6 +74,7 @@ export default function MapPage() {
           <MapView 
             shops={shops} 
             bags={bags} 
+            selectedShopId={selectedShop?.id}
             onShopClick={handleShopClick}
           />
         </div>
