@@ -99,11 +99,16 @@ export function MapView({ shops, bags, followedShopIds = [], onShopClick }: MapV
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
 
-    // Initialize map
+    // Initialize map with smooth inertia settings
     const map = L.map(mapContainerRef.current, {
       center: CENTER,
       zoom: DEFAULT_ZOOM,
       zoomControl: false,
+      inertia: true,
+      inertiaDeceleration: 3000,
+      inertiaMaxSpeed: 1500,
+      easeLinearity: 0.25,
+      worldCopyJump: true,
     });
 
     // Add tile layer
@@ -149,8 +154,18 @@ export function MapView({ shops, bags, followedShopIds = [], onShopClick }: MapV
     });
   }, [shops, bags, followedShopIds, onShopClick]);
 
+  // Expose flyTo for external use
+  const flyToShop = (lat: number, long: number) => {
+    if (mapRef.current) {
+      mapRef.current.flyTo([lat, long], 17, {
+        duration: 1.5,
+        easeLinearity: 0.25,
+      });
+    }
+  };
+
   return (
-    <div className="absolute inset-0">
+    <div className="absolute inset-0 z-0">
       <div 
         ref={mapContainerRef} 
         className="h-full w-full"

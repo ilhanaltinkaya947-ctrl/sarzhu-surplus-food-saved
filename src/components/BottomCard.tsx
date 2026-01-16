@@ -23,8 +23,8 @@ export function BottomCard({ onCategoryChange }: BottomCardProps) {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 pb-safe">
-      <div className="rounded-t-3xl bg-white shadow-[0_-8px_40px_-12px_rgba(0,0,0,0.15)]">
+    <div className="fixed bottom-0 left-0 right-0 z-[9999] pb-[env(safe-area-inset-bottom)] mb-4">
+      <div className="rounded-t-3xl bg-white shadow-[0_-8px_40px_-12px_rgba(0,0,0,0.25)]">
         <div className="p-4 pt-5">
           {/* Handle bar */}
           <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-muted" />
