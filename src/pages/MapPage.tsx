@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { MapView } from "@/components/MapView";
 import { FloatingSearchBar } from "@/components/FloatingSearchBar";
 import { BottomCard } from "@/components/BottomCard";
 import { ShopDrawer } from "@/components/ShopDrawer";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface Shop {
   id: string;
@@ -28,6 +29,7 @@ export default function MapPage() {
   const [loading, setLoading] = useState(true);
   const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [followedShopIds, setFollowedShopIds] = useState<string[]>([]);
 
   useEffect(() => {
     async function fetchData() {
@@ -39,6 +41,19 @@ export default function MapPage() {
 
         if (shopsRes.data) setShops(shopsRes.data);
         if (bagsRes.data) setBags(bagsRes.data);
+
+        // Try to fetch user follows if logged in
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: follows } = await supabase
+            .from("user_follows")
+            .select("shop_id")
+            .eq("user_id", user.id);
+          
+          if (follows) {
+            setFollowedShopIds(follows.map(f => f.shop_id));
+          }
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -54,10 +69,61 @@ export default function MapPage() {
     setDrawerOpen(true);
   };
 
+  const handleToggleFavorite = useCallback(async (shopId: string) => {
+    const isFavorite = followedShopIds.includes(shopId);
+    
+    // Optimistic update - update UI immediately
+    if (isFavorite) {
+      setFollowedShopIds(prev => prev.filter(id => id !== shopId));
+    } else {
+      setFollowedShopIds(prev => [...prev, shopId]);
+    }
+
+    // Try to persist to database
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        // User not logged in - show toast but keep local state
+        toast.info("Sign in to save your favorites permanently");
+        return;
+      }
+
+      if (isFavorite) {
+        // Remove from favorites
+        await supabase
+          .from("user_follows")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("shop_id", shopId);
+        toast.success("Removed from favorites");
+      } else {
+        // Add to favorites
+        await supabase
+          .from("user_follows")
+          .insert({ user_id: user.id, shop_id: shopId });
+        toast.success("Added to favorites! ⭐");
+      }
+    } catch (error) {
+      console.error("Error updating favorite:", error);
+      // Revert optimistic update on error
+      if (isFavorite) {
+        setFollowedShopIds(prev => [...prev, shopId]);
+      } else {
+        setFollowedShopIds(prev => prev.filter(id => id !== shopId));
+      }
+      toast.error("Failed to update favorite");
+    }
+  }, [followedShopIds]);
+
   const getSelectedBag = () => {
     if (!selectedShop) return null;
     return bags.find((bag) => bag.shop_id === selectedShop.id) || null;
   };
+
+  const isSelectedShopFavorite = selectedShop 
+    ? followedShopIds.includes(selectedShop.id) 
+    : false;
 
   return (
     <div className="relative h-[100dvh] w-screen overflow-hidden pointer-events-none">
@@ -74,6 +140,7 @@ export default function MapPage() {
           <MapView 
             shops={shops} 
             bags={bags} 
+            followedShopIds={followedShopIds}
             selectedShopId={selectedShop?.id}
             onShopClick={handleShopClick}
           />
@@ -96,6 +163,8 @@ export default function MapPage() {
         bag={getSelectedBag()}
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
+        isFavorite={isSelectedShopFavorite}
+        onToggleFavorite={handleToggleFavorite}
       />
     </div>
   );
