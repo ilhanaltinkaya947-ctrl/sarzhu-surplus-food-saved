@@ -164,8 +164,9 @@ export function ShopDrawer({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm pointer-events-auto"
             onClick={handleClose}
+            onTouchStart={(e) => e.stopPropagation()}
           />
         )}
       </AnimatePresence>
@@ -183,7 +184,10 @@ export function ShopDrawer({
               stiffness: 300,
               mass: 0.8,
             }}
-            className="fixed bottom-0 left-0 right-0 z-50 h-[85dvh] rounded-t-3xl bg-white shadow-2xl overflow-hidden flex flex-col"
+            className="fixed bottom-0 left-0 right-0 z-50 h-[85dvh] rounded-t-3xl bg-white shadow-2xl overflow-hidden flex flex-col pointer-events-auto"
+            onClick={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+            onTouchMove={(e) => e.stopPropagation()}
           >
             {/* Drag Handle */}
             <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
@@ -232,7 +236,7 @@ export function ShopDrawer({
             </div>
 
             {/* Scrollable Body */}
-            <div className="flex-1 overflow-y-auto px-5 pt-5 pb-4">
+            <div className="flex-1 overflow-y-auto px-5 pt-5 pb-4 overscroll-contain">
               {/* Title */}
               <h1 className="text-3xl font-bold text-gray-900 mb-3">
                 {shop.name}

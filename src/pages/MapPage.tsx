@@ -146,14 +146,14 @@ export default function MapPage() {
     <div className="relative h-[100dvh] w-screen overflow-hidden pointer-events-none">
       {/* Fullscreen Map - Background Layer z-0 */}
       {loading ? (
-        <div className="flex h-full w-full items-center justify-center bg-muted">
+        <div className="flex h-full w-full items-center justify-center bg-muted pointer-events-auto">
           <div className="flex flex-col items-center gap-3">
             <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
             <p className="text-sm text-muted-foreground">Loading shops...</p>
           </div>
         </div>
       ) : (
-        <div className="pointer-events-auto">
+        <div className={drawerOpen ? "pointer-events-none" : "pointer-events-auto"}>
           <MapView 
             shops={shops} 
             bags={bags} 
