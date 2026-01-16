@@ -99,20 +99,23 @@ export function MapView({ shops, bags, followedShopIds = [], onShopClick }: MapV
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
 
-    // Initialize map with "Heavy & Smooth" 2GIS-like physics
+    // Initialize map with fast, responsive 2GIS-like physics
     const map = L.map(mapContainerRef.current, {
       center: CENTER,
       zoom: DEFAULT_ZOOM,
       zoomControl: false,
-      // MAP PHYSICS - "Heavy" feel
+      // ANIMATION SPEED - Fast & snappy
+      zoomAnimation: true,
+      markerZoomAnimation: true,
+      // MAP PHYSICS - Heavy friction for sharp stops
       inertia: true,
       inertiaDeceleration: 10000,
       inertiaMaxSpeed: 1500,
-      easeLinearity: 0.5,
-      // ZOOM SMOOTHNESS - No "jumping"
-      zoomSnap: 0,
-      zoomDelta: 0.5,
-      wheelPxPerZoomLevel: 120,
+      easeLinearity: 0.25,
+      // ZOOM PHYSICS - Tight & responsive
+      zoomSnap: 0.5,
+      zoomDelta: 1,
+      wheelPxPerZoomLevel: 60,
       // TOUCH SETTINGS
       tapTolerance: 15,
       bounceAtZoomLimits: false,
@@ -163,11 +166,11 @@ export function MapView({ shops, bags, followedShopIds = [], onShopClick }: MapV
     });
   }, [shops, bags, followedShopIds, onShopClick]);
 
-  // Expose flyTo for external use
+  // Expose flyTo for external use - fast 0.6s animation
   const flyToShop = (lat: number, long: number) => {
     if (mapRef.current) {
       mapRef.current.flyTo([lat, long], 17, {
-        duration: 1.5,
+        duration: 0.6,
         easeLinearity: 0.25,
       });
     }
