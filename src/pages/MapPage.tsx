@@ -171,7 +171,12 @@ export default function MapPage() {
 
       {/* Bottom Card with Categories - z-40, hides when drawer opens */}
       <div className="pointer-events-auto">
-        <BottomCard isHidden={drawerOpen} />
+        <BottomCard 
+          isHidden={drawerOpen} 
+          shops={shops}
+          bags={bags}
+          onShopClick={handleShopClick}
+        />
       </div>
 
       {/* Shop Detail Drawer - z-50 */}
