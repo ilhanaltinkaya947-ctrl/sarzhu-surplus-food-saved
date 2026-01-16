@@ -133,9 +133,18 @@ export default function MapPage() {
     if (bagsData) setBags(bagsData);
   }, []);
 
+  // Handle drawer close to deselect shop
+  const handleDrawerChange = (open: boolean) => {
+    setDrawerOpen(open);
+    if (!open) {
+      // Clear selection when drawer closes
+      setTimeout(() => setSelectedShop(null), 300);
+    }
+  };
+
   return (
     <div className="relative h-[100dvh] w-screen overflow-hidden pointer-events-none">
-      {/* Fullscreen Map - Background Layer */}
+      {/* Fullscreen Map - Background Layer z-0 */}
       {loading ? (
         <div className="flex h-full w-full items-center justify-center bg-muted">
           <div className="flex flex-col items-center gap-3">
@@ -155,27 +164,29 @@ export default function MapPage() {
         </div>
       )}
 
-      {/* Floating Search Bar */}
+      {/* Floating Search Bar - z-20 */}
       <div className="pointer-events-auto">
         <FloatingSearchBar />
       </div>
 
-      {/* Bottom Card with Categories */}
+      {/* Bottom Card with Categories - z-40, hides when drawer opens */}
       <div className="pointer-events-auto">
-        <BottomCard />
+        <BottomCard isHidden={drawerOpen} />
       </div>
 
-      {/* Shop Detail Drawer */}
-      <ShopDrawer
-        shop={selectedShop}
-        bag={getSelectedBag()}
-        open={drawerOpen}
-        onOpenChange={setDrawerOpen}
-        isFavorite={isSelectedShopFavorite}
-        onToggleFavorite={handleToggleFavorite}
-        user={user}
-        onReservationComplete={handleReservationComplete}
-      />
+      {/* Shop Detail Drawer - z-50 */}
+      <div className="pointer-events-auto">
+        <ShopDrawer
+          shop={selectedShop}
+          bag={getSelectedBag()}
+          open={drawerOpen}
+          onOpenChange={handleDrawerChange}
+          isFavorite={isSelectedShopFavorite}
+          onToggleFavorite={handleToggleFavorite}
+          user={user}
+          onReservationComplete={handleReservationComplete}
+        />
+      </div>
     </div>
   );
 }
