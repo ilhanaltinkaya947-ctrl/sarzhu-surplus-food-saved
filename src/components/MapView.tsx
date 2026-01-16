@@ -38,24 +38,87 @@ const formatPrice = (price: number) => {
   }).format(price);
 };
 
-const createPinIcon = (isFollowed: boolean) => {
-  const color = isFollowed ? "#EAB308" : "#3D8B5F";
-  const shadowColor = isFollowed ? "#CA8A04" : "#2D6A4F";
+const createPinIcon = (isFollowed: boolean, hasAvailability: boolean = true) => {
+  // Using theme colors - earthy green for default, gold for followed
+  const primaryColor = isFollowed ? "#F59E0B" : "#3D8B5F";
+  const glowColor = isFollowed ? "rgba(245, 158, 11, 0.4)" : "rgba(61, 139, 95, 0.3)";
   
   return L.divIcon({
     className: "custom-pin",
     html: `
-      <div style="position: relative; width: 40px; height: 50px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
-        <svg width="40" height="50" viewBox="0 0 40 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M20 0C8.954 0 0 8.954 0 20c0 15 20 30 20 30s20-15 20-30C40 8.954 31.046 0 20 0z" fill="${color}" stroke="${shadowColor}" stroke-width="2"/>
-          <circle cx="20" cy="18" r="8" fill="white" fill-opacity="0.9"/>
-          ${isFollowed ? `<path d="M20 12l1.5 3 3.5.5-2.5 2.5.5 3.5-3-1.5-3 1.5.5-3.5-2.5-2.5 3.5-.5z" fill="${color}"/>` : `<circle cx="20" cy="18" r="4" fill="${color}"/>`}
-        </svg>
+      <div class="pin-container" style="
+        position: relative;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      ">
+        <!-- Pulse ring for followed shops -->
+        ${isFollowed ? `
+          <div style="
+            position: absolute;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: ${glowColor};
+            animation: pulse-ring 2s ease-out infinite;
+          "></div>
+        ` : ''}
+        
+        <!-- Main pin circle -->
+        <div style="
+          position: relative;
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          background: white;
+          box-shadow: 0 2px 12px -2px rgba(0,0,0,0.2), 0 0 0 3px ${primaryColor};
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        ">
+          <!-- Inner icon -->
+          <div style="
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: ${primaryColor};
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          ">
+            ${isFollowed ? `
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+            ` : `
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
+                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0Z"/>
+                <circle cx="12" cy="10" r="3" fill="${primaryColor}" stroke="white" stroke-width="1.5"/>
+              </svg>
+            `}
+          </div>
+        </div>
+        
+        <!-- Bottom indicator dot -->
+        <div style="
+          position: absolute;
+          bottom: -2px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: ${primaryColor};
+          box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        "></div>
       </div>
     `,
-    iconSize: [40, 50],
-    iconAnchor: [20, 50],
-    popupAnchor: [0, -45],
+    iconSize: [44, 48],
+    iconAnchor: [22, 46],
+    popupAnchor: [0, -40],
   });
 };
 
@@ -200,6 +263,20 @@ export function MapView({ shops, bags, followedShopIds = [], onShopClick }: MapV
         .custom-pin {
           background: transparent !important;
           border: none !important;
+        }
+        .custom-pin:hover .pin-container > div:nth-child(2) {
+          transform: scale(1.1);
+          box-shadow: 0 4px 16px -2px rgba(0,0,0,0.25), 0 0 0 3px currentColor;
+        }
+        @keyframes pulse-ring {
+          0% {
+            transform: scale(0.8);
+            opacity: 1;
+          }
+          100% {
+            transform: scale(1.4);
+            opacity: 0;
+          }
         }
       `}</style>
     </div>
