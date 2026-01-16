@@ -150,8 +150,9 @@ export function BottomCard({
       >
         <motion.div 
           className={cn(
-            "mx-2 mb-2 rounded-t-3xl shadow-[0_-8px_40px_-12px_rgba(0,0,0,0.3)] pointer-events-auto overflow-hidden",
-            "backdrop-blur-xl bg-white/95 border border-white/50"
+            "mx-2 mb-2 rounded-t-[32px] pointer-events-auto overflow-hidden",
+            "backdrop-blur-xl bg-white/95 border border-white/50",
+            "shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.2)]"
           )}
           style={{ 
             height: isExpanded ? expandedHeight : COLLAPSED_HEIGHT,
