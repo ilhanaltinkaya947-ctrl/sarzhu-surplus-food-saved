@@ -1,7 +1,25 @@
-import { QrCode, Utensils, Coffee, Cake, Salad, ShoppingBag, Pizza, IceCream, Sandwich, Apple } from "lucide-react";
+import { QrCode, Utensils, Coffee, Cake, Salad, ShoppingBag } from "lucide-react";
 import { motion, PanInfo, useAnimation } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { FoodCard, MarketingBanner } from "./FoodCard";
+
+interface Shop {
+  id: string;
+  name: string;
+  lat: number;
+  long: number;
+  image_url: string | null;
+  description: string | null;
+}
+
+interface MysteryBag {
+  id: string;
+  shop_id: string;
+  quantity_available: number;
+  original_price: number;
+  discounted_price: number;
+}
 
 const categories = [
   { id: "all", label: "All", icon: Utensils },
@@ -11,30 +29,26 @@ const categories = [
   { id: "grocery", label: "Grocery", icon: ShoppingBag },
 ];
 
-// Expanded grid categories
-const expandedCategories = [
-  { id: "all", label: "All Food", icon: Utensils, color: "bg-emerald-500" },
-  { id: "bakery", label: "Bakery", icon: Cake, color: "bg-amber-500" },
-  { id: "coffee", label: "Coffee", icon: Coffee, color: "bg-amber-700" },
-  { id: "healthy", label: "Healthy", icon: Salad, color: "bg-green-500" },
-  { id: "grocery", label: "Grocery", icon: ShoppingBag, color: "bg-blue-500" },
-  { id: "pizza", label: "Pizza", icon: Pizza, color: "bg-red-500" },
-  { id: "dessert", label: "Desserts", icon: IceCream, color: "bg-pink-500" },
-  { id: "sandwich", label: "Sandwiches", icon: Sandwich, color: "bg-orange-500" },
-  { id: "fruits", label: "Fruits", icon: Apple, color: "bg-lime-500" },
-];
-
 interface BottomCardProps {
   onCategoryChange?: (category: string) => void;
+  onShopClick?: (shop: Shop) => void;
   isHidden?: boolean;
+  shops?: Shop[];
+  bags?: MysteryBag[];
 }
 
-// Snap point heights
+// Snap point heights - increased for visual feed
 const COLLAPSED_HEIGHT = 180;
-const EXPANDED_HEIGHT = 450;
+const EXPANDED_HEIGHT = 520;
 const DRAG_THRESHOLD = 100;
 
-export function BottomCard({ onCategoryChange, isHidden = false }: BottomCardProps) {
+export function BottomCard({ 
+  onCategoryChange, 
+  onShopClick,
+  isHidden = false, 
+  shops = [], 
+  bags = [] 
+}: BottomCardProps) {
   const [activeCategory, setActiveCategory] = useState("all");
   const [isExpanded, setIsExpanded] = useState(false);
   const controls = useAnimation();
@@ -71,6 +85,10 @@ export function BottomCard({ onCategoryChange, isHidden = false }: BottomCardPro
       setIsExpanded(true);
       controls.start({ y: -(EXPANDED_HEIGHT - COLLAPSED_HEIGHT) });
     }
+  };
+
+  const getBagForShop = (shopId: string) => {
+    return bags.find((bag) => bag.shop_id === shopId);
   };
 
   return (
@@ -151,61 +169,44 @@ export function BottomCard({ onCategoryChange, isHidden = false }: BottomCardPro
                 </button>
               </>
             ) : (
-              /* Expanded State - Category Grid */
+              /* Expanded State - Yandex Go Visual Feed */
               <>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Browse Categories</h3>
+                {/* Section Header */}
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-gray-900">Featured Deals</h3>
+                  <button className="text-sm font-medium text-primary">See all</button>
+                </div>
                 
-                {/* Category Grid */}
-                <div className="grid grid-cols-3 gap-3 mb-4">
-                  {expandedCategories.map((category) => {
-                    const Icon = category.icon;
-                    const isActive = activeCategory === category.id;
+                {/* Marketing Banner - Full Width */}
+                <MarketingBanner className="mb-4" />
+                
+                {/* 2-Column Food Cards Grid */}
+                <div className="grid grid-cols-2 gap-3">
+                  {shops.slice(0, 6).map((shop) => {
+                    const bag = getBagForShop(shop.id);
                     
                     return (
-                      <button
-                        key={category.id}
-                        onClick={() => handleCategoryClick(category.id)}
-                        className={cn(
-                          "flex flex-col items-center justify-center gap-2 p-4 rounded-2xl transition-all touch-active",
-                          isActive 
-                            ? "bg-primary text-primary-foreground scale-95" 
-                            : "bg-gray-50 text-gray-700 hover:bg-gray-100"
-                        )}
-                      >
-                        <div className={cn(
-                          "w-12 h-12 rounded-xl flex items-center justify-center",
-                          isActive ? "bg-white/20" : category.color
-                        )}>
-                          <Icon className={cn("h-6 w-6", isActive ? "" : "text-white")} />
-                        </div>
-                        <span className="text-xs font-medium">{category.label}</span>
-                      </button>
+                      <FoodCard
+                        key={shop.id}
+                        id={shop.id}
+                        name={shop.name}
+                        imageUrl={shop.image_url}
+                        description={shop.description}
+                        originalPrice={bag?.original_price}
+                        discountedPrice={bag?.discounted_price}
+                        bagsLeft={bag?.quantity_available}
+                        onClick={() => onShopClick?.(shop)}
+                      />
                     );
                   })}
                 </div>
                 
-                {/* Near you section */}
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Near You</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                    <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
-                      <Cake className="h-6 w-6 text-amber-600" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-gray-900">3 Bakeries</p>
-                      <p className="text-sm text-gray-500">within 500m</p>
-                    </div>
+                {/* Empty State */}
+                {shops.length === 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">No shops available nearby</p>
                   </div>
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                    <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
-                      <Coffee className="h-6 w-6 text-amber-700" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-gray-900">5 Coffee Shops</p>
-                      <p className="text-sm text-gray-500">within 1km</p>
-                    </div>
-                  </div>
-                </div>
+                )}
               </>
             )}
           </div>
