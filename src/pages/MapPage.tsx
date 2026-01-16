@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { MapView } from "@/components/MapView";
 import { FloatingSearchBar } from "@/components/FloatingSearchBar";
-import { BottomCard } from "@/components/BottomCard";
+import { BottomSheet } from "@/components/BottomSheet";
 import { ShopDrawer } from "@/components/ShopDrawer";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -169,9 +169,9 @@ export default function MapPage() {
         <FloatingSearchBar />
       </div>
 
-      {/* Bottom Card with Categories - z-40, hides when drawer opens */}
+      {/* Bottom Sheet - z-50, hides when drawer opens */}
       <div className="pointer-events-auto">
-        <BottomCard 
+        <BottomSheet 
           isHidden={drawerOpen} 
           shops={shops}
           bags={bags}

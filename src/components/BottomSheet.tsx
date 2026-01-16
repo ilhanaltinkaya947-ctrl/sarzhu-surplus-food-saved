@@ -1,5 +1,5 @@
 import { QrCode, Utensils, Coffee, Cake, Salad, ShoppingBag } from "lucide-react";
-import { motion, PanInfo, useAnimation, AnimatePresence } from "framer-motion";
+import { motion, PanInfo, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useState, useRef } from "react";
 import { FoodCard, MarketingBanner } from "./FoodCard";
@@ -29,7 +29,7 @@ const categories = [
   { id: "grocery", label: "Grocery", icon: ShoppingBag },
 ];
 
-interface BottomCardProps {
+interface BottomSheetProps {
   onCategoryChange?: (category: string) => void;
   onShopClick?: (shop: Shop) => void;
   isHidden?: boolean;
@@ -37,30 +37,38 @@ interface BottomCardProps {
   bags?: MysteryBag[];
 }
 
-// Snap point heights - 70/30 split
-const COLLAPSED_HEIGHT = 160;
-const EXPANDED_RATIO = 0.70; // 70% of viewport
-const DRAG_THRESHOLD = 80;
+// Height constants
+const COLLAPSED_HEIGHT = 180;
+const EXPANDED_HEIGHT_RATIO = 0.70; // 70dvh
+const DRAG_THRESHOLD = 100;
 
-export function BottomCard({ 
-  onCategoryChange, 
+// Spring physics for native feel
+const springConfig = {
+  type: "spring" as const,
+  stiffness: 250,
+  damping: 30,
+};
+
+export function BottomSheet({
+  onCategoryChange,
   onShopClick,
-  isHidden = false, 
-  shops = [], 
-  bags = [] 
-}: BottomCardProps) {
+  isHidden = false,
+  shops = [],
+  bags = [],
+}: BottomSheetProps) {
   const [activeCategory, setActiveCategory] = useState("all");
   const [isExpanded, setIsExpanded] = useState(false);
-  const controls = useAnimation();
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Calculate expanded height dynamically (70% of viewport)
+  // Calculate expanded height (70% of viewport)
   const getExpandedHeight = () => {
-    if (typeof window !== 'undefined') {
-      return window.innerHeight * EXPANDED_RATIO;
+    if (typeof window !== "undefined") {
+      return window.innerHeight * EXPANDED_HEIGHT_RATIO;
     }
-    return 500; // fallback
+    return 500;
   };
+
+  const currentHeight = isExpanded ? getExpandedHeight() : COLLAPSED_HEIGHT;
 
   const handleCategoryClick = (categoryId: string) => {
     setActiveCategory(categoryId);
@@ -69,35 +77,27 @@ export function BottomCard({
 
   const collapseSheet = () => {
     setIsExpanded(false);
-    controls.start({ y: 0 });
     if (scrollRef.current) {
       scrollRef.current.scrollTop = 0;
     }
   };
 
   const expandSheet = () => {
-    const expandedHeight = getExpandedHeight();
     setIsExpanded(true);
-    controls.start({ y: -(expandedHeight - COLLAPSED_HEIGHT) });
   };
 
   const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const { offset, velocity } = info;
-    const expandedHeight = getExpandedHeight();
-    
+
     // Dragged UP or flicked UP fast -> Expand
     if (offset.y < -DRAG_THRESHOLD || velocity.y < -400) {
-      setIsExpanded(true);
-      controls.start({ y: -(expandedHeight - COLLAPSED_HEIGHT) });
-    } 
+      expandSheet();
+    }
     // Dragged DOWN or flicked DOWN fast -> Collapse
     else if (offset.y > DRAG_THRESHOLD || velocity.y > 400) {
       collapseSheet();
     }
-    // Not enough movement -> Snap back to current state
-    else {
-      controls.start({ y: isExpanded ? -(expandedHeight - COLLAPSED_HEIGHT) : 0 });
-    }
+    // Otherwise stay in current state
   };
 
   const toggleExpanded = () => {
@@ -112,18 +112,9 @@ export function BottomCard({
     return bags.find((bag) => bag.shop_id === shopId);
   };
 
-  const expandedHeight = getExpandedHeight();
-
-  // Spring config for smooth, consistent animations
-  const springConfig = {
-    type: "spring" as const,
-    damping: 30,
-    stiffness: 250,
-  };
-
   return (
     <>
-      {/* Blur Overlay - sits behind sheet (z-40), on top of map (z-0) */}
+      {/* Blur Overlay - z-40 */}
       <AnimatePresence>
         {isExpanded && !isHidden && (
           <motion.div
@@ -133,69 +124,57 @@ export function BottomCard({
             transition={springConfig}
             className="fixed inset-0 z-40 backdrop-blur-[2px] bg-black/20"
             onClick={collapseSheet}
-            style={{ pointerEvents: 'auto' }}
           />
         )}
       </AnimatePresence>
 
-      {/* Unified Page Sheet Container */}
-      <motion.div 
-        className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none"
+      {/* Single Expandable Card Container */}
+      <motion.div
+        className="fixed bottom-0 left-0 right-0 z-50 mx-2 mb-2"
         initial={false}
-        animate={{ 
+        animate={{
           y: isHidden ? "100%" : 0,
           opacity: isHidden ? 0 : 1,
         }}
         transition={springConfig}
       >
-        <motion.div 
+        <motion.div
           className={cn(
-            "mx-2 mb-2 flex flex-col pointer-events-auto",
-            "bg-white rounded-t-[32px]",
-            "shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.2)]"
+            "flex flex-col bg-white rounded-t-[32px]",
+            "shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.2)]",
+            "overflow-hidden"
           )}
-          style={{ 
-            height: isExpanded ? expandedHeight : COLLAPSED_HEIGHT,
-          }}
-          drag="y"
-          dragConstraints={{ top: -(expandedHeight - COLLAPSED_HEIGHT), bottom: 0 }}
-          dragElastic={{ top: 0.05, bottom: 0.15 }}
-          onDragEnd={handleDragEnd}
-          animate={controls}
+          animate={{ height: currentHeight }}
           transition={springConfig}
+          drag="y"
+          dragConstraints={{ top: 0, bottom: 0 }}
+          dragElastic={{ top: 0.1, bottom: 0.1 }}
+          onDragEnd={handleDragEnd}
         >
-          {/* Drag Handle - Inside the white container */}
-          <div 
-            className="w-full flex items-center justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing flex-shrink-0"
+          {/* Header: Drag Handle + Title */}
+          <div
+            className="flex-shrink-0 cursor-grab active:cursor-grabbing"
             onClick={toggleExpanded}
           >
-            <div className="h-1 w-10 rounded-full bg-gray-300" />
-          </div>
-          
-          {/* Scrollable Content Area */}
-          <div 
-            ref={scrollRef}
-            className={cn(
-              "flex-1 px-4 min-h-0",
-              isExpanded 
-                ? "overflow-y-auto overscroll-contain" 
-                : "overflow-hidden"
-            )}
-            style={{
-              touchAction: isExpanded ? 'pan-y' : 'none',
-            }}
-          >
-            {!isExpanded ? (
-              /* Collapsed State - Chips */
-              <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide -mx-4 px-4">
+            {/* Drag Handle Pill */}
+            <div className="flex items-center justify-center pt-3 pb-2">
+              <div className="h-1 w-10 rounded-full bg-gray-300" />
+            </div>
+
+            {/* Category Chips - Always Visible */}
+            <div className="px-4 pb-3">
+              <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4">
                 {categories.map((category) => {
                   const Icon = category.icon;
                   const isActive = activeCategory === category.id;
-                  
+
                   return (
                     <button
                       key={category.id}
-                      onClick={() => handleCategoryClick(category.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCategoryClick(category.id);
+                      }}
                       className={cn(
                         "flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-medium transition-all",
                         isActive
@@ -209,23 +188,36 @@ export function BottomCard({
                   );
                 })}
               </div>
-            ) : (
-              /* Expanded State - Visual Feed */
+            </div>
+          </div>
+
+          {/* Body: Scrollable Food Grid - Only visible when expanded */}
+          <motion.div
+            ref={scrollRef}
+            className={cn(
+              "flex-1 min-h-0 px-4",
+              isExpanded ? "overflow-y-auto overscroll-contain" : "overflow-hidden"
+            )}
+            animate={{ opacity: isExpanded ? 1 : 0 }}
+            transition={{ duration: 0.2 }}
+            style={{ touchAction: isExpanded ? "pan-y" : "none" }}
+          >
+            {isExpanded && (
               <div className="pb-4">
                 {/* Section Header */}
                 <div className="flex items-center justify-between mb-4 sticky top-0 bg-white py-2 -mx-4 px-4 z-10">
                   <h3 className="text-lg font-bold text-gray-900">Featured Deals</h3>
                   <button className="text-sm font-medium text-primary">See all</button>
                 </div>
-                
+
                 {/* Marketing Banner */}
                 <MarketingBanner className="mb-5" />
-                
+
                 {/* 2-Column Food Cards Grid */}
                 <div className="grid grid-cols-2 gap-3">
                   {shops.map((shop) => {
                     const bag = getBagForShop(shop.id);
-                    
+
                     return (
                       <FoodCard
                         key={shop.id}
@@ -241,7 +233,7 @@ export function BottomCard({
                     );
                   })}
                 </div>
-                
+
                 {/* Empty State */}
                 {shops.length === 0 && (
                   <div className="text-center py-12">
@@ -250,9 +242,9 @@ export function BottomCard({
                 )}
               </div>
             )}
-          </div>
-          
-          {/* Bottom Action Button - Always visible, inside the white container */}
+          </motion.div>
+
+          {/* Footer: Sticky Scan QR Button */}
           <div className="flex-shrink-0 px-4 pb-4 pt-2 bg-white">
             <button className="flex w-full items-center justify-center gap-3 rounded-2xl bg-primary py-3.5 text-primary-foreground font-semibold shadow-lg transition-transform active:scale-[0.98]">
               <QrCode className="h-5 w-5" />
