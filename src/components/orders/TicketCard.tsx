@@ -1,5 +1,6 @@
-import { Clock, ChevronRight } from "lucide-react";
+import { Clock } from "lucide-react";
 import { motion } from "framer-motion";
+import { SwipeToConfirm } from "./SwipeToConfirm";
 
 interface TicketCardProps {
   order: {
@@ -9,10 +10,11 @@ interface TicketCardProps {
     shop_name: string;
     shop_image: string | null;
   };
-  onShowQR: () => void;
+  onConfirmPickup: () => void;
+  isProcessing?: boolean;
 }
 
-export function TicketCard({ order, onShowQR }: TicketCardProps) {
+export function TicketCard({ order, onConfirmPickup, isProcessing = false }: TicketCardProps) {
   const shortOrderId = order.id.slice(0, 8).toUpperCase();
   
   const formatPickupTime = () => {
@@ -96,13 +98,12 @@ export function TicketCard({ order, onShowQR }: TicketCardProps) {
 
       {/* Bottom Section - Action */}
       {order.status === "reserved" ? (
-        <button
-          onClick={onShowQR}
-          className="flex w-full items-center justify-between p-4 transition-colors active:bg-secondary/50"
-        >
-          <span className="font-semibold text-foreground">Show QR Code</span>
-          <ChevronRight className="h-5 w-5 text-muted-foreground" />
-        </button>
+        <div className="p-4">
+          <SwipeToConfirm 
+            onConfirm={onConfirmPickup} 
+            disabled={isProcessing}
+          />
+        </div>
       ) : (
         <div className="p-4">
           <span className="text-sm text-muted-foreground">Thanks for saving food! 🌱</span>
