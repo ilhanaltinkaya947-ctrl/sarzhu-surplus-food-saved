@@ -1,5 +1,5 @@
 import { Utensils, Coffee, Cake, Salad, ShoppingBag, Crown } from "lucide-react";
-import { motion, PanInfo, AnimatePresence, useDragControls } from "framer-motion";
+import { motion, PanInfo, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useState, useRef } from "react";
 import { FoodCard, MarketingBanner } from "./FoodCard";
@@ -41,17 +41,18 @@ interface BottomSheetProps {
   selectedShop?: Shop | null;
 }
 
-// Height constants
-const EXPANDED_HEIGHT = '85dvh';
-const VELOCITY_THRESHOLD = 500;
-const OFFSET_THRESHOLD = 50;
+// Collapsed state shows ~130px (handle + chips + button), rest slides off-screen
+const COLLAPSED_Y = "calc(100% - 130px)";
+const OPEN_Y = 0;
+const VELOCITY_THRESHOLD = 300;
+const OFFSET_THRESHOLD = 40;
 
-// Softer spring physics for buttery feel
+// Soft & heavy spring physics for premium 60fps feel
 const springConfig = {
   type: "spring" as const,
-  stiffness: 120,
-  damping: 20,
-  mass: 1,
+  stiffness: 80,  // Very soft (default ~300)
+  damping: 20,    // Gentle braking
+  mass: 1.2,      // Adds "weight"
 };
 
 // Service fee constant
@@ -92,16 +93,16 @@ export function BottomSheet({
     setIsExpanded(true);
   };
 
-  // Handle pan gesture on the drag handle area only
-  const handleHandlePan = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  // Handle drag end on the entire sheet
+  const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const { offset, velocity } = info;
 
-    // Flicked UP fast OR dragged up significantly -> Expand
-    if (velocity.y < -VELOCITY_THRESHOLD || offset.y < -OFFSET_THRESHOLD) {
+    // Dragged UP or flicked UP -> Open
+    if (offset.y < -OFFSET_THRESHOLD || velocity.y < -VELOCITY_THRESHOLD) {
       expandSheet();
     }
-    // Flicked DOWN fast OR dragged down significantly -> Collapse
-    else if (velocity.y > VELOCITY_THRESHOLD || offset.y > OFFSET_THRESHOLD) {
+    // Dragged DOWN or flicked DOWN -> Close
+    else if (offset.y > OFFSET_THRESHOLD || velocity.y > VELOCITY_THRESHOLD) {
       collapseSheet();
     }
   };
@@ -173,31 +174,30 @@ export function BottomSheet({
         }}
         transition={springConfig}
       >
-        {/* Main Sheet - Height animates, always anchored to bottom */}
+        {/* Main Sheet - Fixed tall height, slides via Y translation (GPU accelerated) */}
         <motion.div
           className={cn(
             "flex flex-col bg-white rounded-t-[32px] rounded-b-none",
             "shadow-[0_-5px_20px_-5px_rgba(0,0,0,0.1)]",
-            "overflow-hidden"
+            "h-[85dvh] overflow-hidden"
           )}
-          animate={{ height: isExpanded ? EXPANDED_HEIGHT : 'auto' }}
+          animate={{ y: isExpanded ? OPEN_Y : COLLAPSED_Y }}
           transition={springConfig}
+          drag="y"
+          dragConstraints={{ top: 0, bottom: 0 }}
+          dragElastic={0.05}
+          onDragEnd={handleDragEnd}
         >
-          {/* Drag Handle Area - Gesture detection here only */}
-          <motion.div
-            className="flex-shrink-0 cursor-grab active:cursor-grabbing touch-none"
-            drag="y"
-            dragConstraints={{ top: 0, bottom: 0 }}
-            dragElastic={0}
-            onDragEnd={handleHandlePan}
-            style={{ y: 0 }}
+          {/* Drag Handle Area */}
+          <div
+            className="flex-shrink-0 cursor-grab active:cursor-grabbing"
             onClick={toggleExpanded}
           >
             {/* Drag Handle Pill */}
             <div className="flex items-center justify-center pt-3 pb-4">
               <div className="h-1 w-10 rounded-full bg-gray-300" />
             </div>
-          </motion.div>
+          </div>
 
           {/* Content Area: Chips + List - flex-1 takes available space */}
           <div className="flex-1 min-h-0 flex flex-col">
