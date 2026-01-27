@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Send } from "lucide-react";
+import { X, Send, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface Message {
   id: string;
@@ -15,28 +17,6 @@ interface JoeChatProps {
   open: boolean;
   onClose: () => void;
 }
-
-const JOE_RESPONSES: Record<string, string> = {
-  bakery: "I smell fresh pastries at Panfilov Bakery! They have 3 Mystery Bags left. 🥐",
-  bread: "I smell fresh pastries at Panfilov Bakery! They have 3 Mystery Bags left. 🥐",
-  coffee: "Woof! Coffee Boom on Dostyk has amazing surplus coffee and treats! ☕",
-  sushi: "I found some sushi spots! Check Sushi Master - they often have evening deals. 🍣",
-  pizza: "Pizza Palace has mystery bags after 8 PM! My tail is wagging! 🍕",
-  cheap: "The best deals are usually after 6 PM. Set a reminder and I'll help you hunt! 💰",
-  help: "I can help you find: 🥐 Bakeries, ☕ Coffee shops, 🍣 Sushi, 🍕 Pizza, and more! Just tell me what you're craving!",
-};
-
-const getJoeResponse = (userMessage: string): string => {
-  const lowerMessage = userMessage.toLowerCase();
-  
-  for (const [keyword, response] of Object.entries(JOE_RESPONSES)) {
-    if (lowerMessage.includes(keyword)) {
-      return response;
-    }
-  }
-  
-  return "Yum! Let me check my map... 🗺️ Try using the filters above, or ask me about bakeries, coffee, sushi, or pizza!";
-};
 
 export function JoeChat({ open, onClose }: JoeChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -74,8 +54,8 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
     }
   }, [open]);
 
-  const handleSend = () => {
-    if (!inputValue.trim()) return;
+  const handleSend = async () => {
+    if (!inputValue.trim() || isTyping) return;
 
     const userMessage: Message = {
       id: `user-${Date.now()}`,
@@ -88,17 +68,46 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
     setInputValue("");
     setIsTyping(true);
 
-    // Joe responds after a delay
-    setTimeout(() => {
+    try {
+      // Build conversation history for context
+      const conversationHistory = messages
+        .filter(m => m.id !== "greeting")
+        .map(m => ({
+          role: m.isJoe ? "assistant" : "user",
+          content: m.text,
+        }));
+
+      const { data, error } = await supabase.functions.invoke("joe-chat", {
+        body: {
+          message: userMessage.text,
+          conversationHistory,
+        },
+      });
+
+      if (error) throw error;
+
       const joeResponse: Message = {
         id: `joe-${Date.now()}`,
-        text: getJoeResponse(userMessage.text),
+        text: data.response || "Woof! Something went wrong. Try again! 🐕",
         isJoe: true,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, joeResponse]);
+    } catch (error) {
+      console.error("Error calling Joe:", error);
+      
+      // Fallback response
+      const fallbackResponse: Message = {
+        id: `joe-${Date.now()}`,
+        text: "Woof! I'm having trouble sniffing right now. Try asking me again! 🐾",
+        isJoe: true,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, fallbackResponse]);
+      toast.error("Joe is temporarily unavailable");
+    } finally {
       setIsTyping(false);
-    }, 800 + Math.random() * 500);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -138,7 +147,7 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
                 </div>
                 <div>
                   <h3 className="font-bold text-sm">Joe the Food Rescue Pup</h3>
-                  <p className="text-xs opacity-80">Always sniffing for deals 🐾</p>
+                  <p className="text-xs opacity-80">Powered by AI 🐾</p>
                 </div>
               </div>
               <Button
@@ -208,15 +217,20 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Ask Joe..."
+                  placeholder="Ask Joe about deals..."
+                  disabled={isTyping}
                   className="flex-1 rounded-full bg-muted border-0 focus-visible:ring-[#FFB800]"
                 />
                 <Button
                   onClick={handleSend}
-                  disabled={!inputValue.trim()}
+                  disabled={!inputValue.trim() || isTyping}
                   className="h-10 w-10 rounded-full bg-[#FFB800] hover:bg-[#E5A600] text-black p-0"
                 >
-                  <Send className="h-4 w-4" />
+                  {isTyping ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
             </div>
