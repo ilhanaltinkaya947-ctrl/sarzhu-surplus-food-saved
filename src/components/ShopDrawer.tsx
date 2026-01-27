@@ -194,14 +194,14 @@ export function ShopDrawer({
             dragConstraints={{ top: 0, bottom: 0 }}
             dragElastic={{ top: 0, bottom: 0.5 }}
             onDragEnd={handleDragEnd}
-            className="fixed bottom-0 left-0 right-0 z-50 h-[85dvh] rounded-t-3xl bg-white shadow-2xl overflow-hidden flex flex-col pointer-events-auto"
+            className="fixed bottom-0 left-0 right-0 z-50 h-[85dvh] rounded-t-3xl bg-[hsl(var(--sheet-bg))] shadow-2xl overflow-hidden flex flex-col pointer-events-auto transition-colors duration-500"
             onClick={(e) => e.stopPropagation()}
             onTouchStart={(e) => e.stopPropagation()}
             onTouchMove={(e) => e.stopPropagation()}
           >
             {/* Drag Handle - Large hit area */}
             <div className="w-full h-12 flex items-center justify-center cursor-grab active:cursor-grabbing flex-shrink-0 touch-none">
-              <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
+              <div className="w-12 h-1.5 bg-[hsl(var(--sheet-muted))]/30 rounded-full" />
             </div>
 
             {/* Hero Image */}
@@ -225,13 +225,13 @@ export function ShopDrawer({
               {/* Favorite Button - Top Left */}
               <button 
                 onClick={handleFavoriteClick}
-                className="absolute top-4 left-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/95 backdrop-blur-sm shadow-lg touch-active transition-all duration-200 active:scale-95"
+                className="absolute top-4 left-4 flex h-11 w-11 items-center justify-center rounded-full bg-[hsl(var(--sheet-bg))]/95 backdrop-blur-sm shadow-lg touch-active transition-all duration-200 active:scale-95"
               >
                 <Heart 
                   className={`h-5 w-5 transition-colors duration-200 ${
                     isFavorite 
                       ? 'fill-red-500 text-red-500' 
-                      : 'text-gray-700'
+                      : 'text-[hsl(var(--sheet-muted))]'
                   }`} 
                 />
               </button>
@@ -239,26 +239,26 @@ export function ShopDrawer({
               {/* Close Button - Top Right */}
               <button
                 onClick={handleClose}
-                className="absolute top-4 right-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/95 backdrop-blur-sm shadow-lg touch-active transition-all duration-200 active:scale-95"
+                className="absolute top-4 right-4 flex h-11 w-11 items-center justify-center rounded-full bg-[hsl(var(--sheet-bg))]/95 backdrop-blur-sm shadow-lg touch-active transition-all duration-200 active:scale-95"
               >
-                <X className="h-5 w-5 text-gray-700" />
+                <X className="h-5 w-5 text-[hsl(var(--sheet-foreground))]" />
               </button>
             </div>
 
             {/* Scrollable Body */}
             <div className="flex-1 overflow-y-auto px-5 pt-5 pb-4 overscroll-contain">
               {/* Title */}
-              <h1 className="text-3xl font-bold text-gray-900 mb-3">
+              <h1 className="text-3xl font-bold text-[hsl(var(--sheet-foreground))] mb-3 transition-colors duration-500">
                 {shop.name}
               </h1>
 
               {/* Status Badges */}
               <div className="flex flex-wrap items-center gap-2 mb-5">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1.5 text-sm font-medium text-emerald-700">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1.5 text-sm font-medium text-emerald-500 transition-colors duration-500">
                   <Clock className="h-4 w-4" />
                   Open until 23:00
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-600">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(var(--muted))] px-3 py-1.5 text-sm font-medium text-[hsl(var(--sheet-muted))] transition-colors duration-500">
                   <MapPin className="h-4 w-4" />
                   350m away
                 </span>
@@ -266,19 +266,19 @@ export function ShopDrawer({
 
               {/* Description */}
               {shop.description && (
-                <p className="text-gray-600 leading-relaxed mb-6">
+                <p className="text-[hsl(var(--sheet-muted))] leading-relaxed mb-6 transition-colors duration-500">
                   {shop.description}
                 </p>
               )}
 
               {/* What's in the bag Section */}
               <div className="mb-6">
-                <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-3">
-                  <Sparkles className="h-5 w-5 text-amber-500" />
+                <h3 className="flex items-center gap-2 text-lg font-semibold text-[hsl(var(--sheet-foreground))] mb-3 transition-colors duration-500">
+                  <Sparkles className="h-5 w-5 text-primary transition-colors duration-500" />
                   What's in the bag?
                 </h3>
-                <div className="rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100 p-4">
-                  <p className="text-gray-600 text-sm">
+                <div className="rounded-2xl bg-[hsl(var(--info-box-bg))] border border-[hsl(var(--info-box-border))] p-4 transition-colors duration-500">
+                  <p className="text-[hsl(var(--sheet-muted))] text-sm transition-colors duration-500">
                     A surprise selection of delicious items that would otherwise go to waste. 
                     Contents vary daily based on what's available!
                   </p>
@@ -287,24 +287,24 @@ export function ShopDrawer({
 
               {/* Mystery Bag Card */}
               {bag && (
-                <div className="rounded-2xl bg-gray-50 border border-gray-100 p-5">
+                <div className="rounded-2xl bg-[hsl(var(--muted))] border border-[hsl(var(--border))] p-5 transition-colors duration-500">
                   <div className="flex items-start gap-4">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
-                      <Package className="h-7 w-7 text-primary" />
+                    <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/15 transition-colors duration-500">
+                      <Package className="h-7 w-7 text-primary transition-colors duration-500" />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <h4 className="font-semibold text-gray-900 text-lg">Mystery Bag</h4>
+                        <h4 className="font-semibold text-[hsl(var(--sheet-foreground))] text-lg transition-colors duration-500">Mystery Bag</h4>
                         <div className="text-right">
-                          <span className="text-sm text-gray-400 line-through block">
+                          <span className="text-sm text-[hsl(var(--sheet-muted))] line-through block transition-colors duration-500">
                             {formatPrice(bag.original_price)}
                           </span>
-                          <span className="text-xl font-bold text-primary">
+                          <span className="text-xl font-bold text-primary transition-colors duration-500">
                             {formatPrice(bag.discounted_price)}
                           </span>
                         </div>
                       </div>
-                      <p className={`text-sm mt-1 ${bag.quantity_available > 0 ? 'text-gray-500' : 'text-red-500 font-medium'}`}>
+                      <p className={`text-sm mt-1 transition-colors duration-500 ${bag.quantity_available > 0 ? 'text-[hsl(var(--sheet-muted))]' : 'text-red-500 font-medium'}`}>
                         {bag.quantity_available > 0 
                           ? `${bag.quantity_available} bags left today` 
                           : 'Sold out for today'}
@@ -316,7 +316,7 @@ export function ShopDrawer({
             </div>
 
             {/* Fixed Footer */}
-            <div className="border-t border-gray-100 px-5 py-4 pb-safe bg-white flex-shrink-0">
+            <div className="border-t border-[hsl(var(--border))] px-5 py-4 pb-safe bg-[hsl(var(--sheet-bg))] flex-shrink-0 transition-colors duration-500">
               <button 
                 onClick={handleReserveClick}
                 disabled={reserving || !bag || bag.quantity_available <= 0}

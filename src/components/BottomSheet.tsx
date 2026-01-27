@@ -196,8 +196,8 @@ export function BottomSheet({
       <motion.div
         className={cn(
           "fixed bottom-0 left-0 right-0 z-50",
-          "bg-card rounded-t-[32px] rounded-b-none",
-          "shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.15)]"
+          "bg-[hsl(var(--sheet-bg,var(--card)))] rounded-t-[32px] rounded-b-none",
+          "shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.15)] transition-colors duration-500"
         )}
         style={{ touchAction: 'none' }}
         initial={false}
@@ -319,8 +319,8 @@ export function BottomSheet({
             {isOpen && (
               <div className="pb-4">
                 {/* Section Header */}
-                <div className="flex items-center justify-between mb-4 sticky top-0 bg-card py-2 -mx-4 px-4 z-10">
-                  <h3 className="text-lg font-bold text-card-foreground">Featured Deals</h3>
+                <div className="flex items-center justify-between mb-4 sticky top-0 bg-[hsl(var(--sheet-bg,var(--card)))] py-2 -mx-4 px-4 z-10 transition-colors duration-500">
+                  <h3 className="text-lg font-bold text-[hsl(var(--sheet-foreground,var(--card-foreground)))]">Featured Deals</h3>
                   <button className="text-sm font-medium text-primary">See all</button>
                 </div>
 
@@ -360,7 +360,7 @@ export function BottomSheet({
 
           {/* Section 3: Footer - Reserve Button (always visible, mt-auto pins to bottom) */}
           <div 
-            className="flex-none mt-auto px-4 pt-4 bg-card border-t border-border"
+            className="flex-none mt-auto px-4 pt-4 bg-[hsl(var(--sheet-bg,var(--card)))] border-t border-border transition-colors duration-500"
             style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
           >
             {/* Pack Leader VIP Badge */}
