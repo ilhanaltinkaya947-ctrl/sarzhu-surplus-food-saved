@@ -41,13 +41,12 @@ interface BottomSheetProps {
   selectedShop?: Shop | null;
 }
 
-// Y-based sliding - sheet is always 85dvh tall, slides down to collapse
-const COLLAPSED_Y = "calc(100% - 220px)"; // Shows 220px (header + chips + button)
-const EXPANDED_Y = 0;
-const DRAG_THRESHOLD = 80;
-const VELOCITY_THRESHOLD = 400;
+// Height-based animation - button always visible
+const COLLAPSED_HEIGHT = '230px'; // Handle + Chips + Button
+const EXPANDED_HEIGHT = '85dvh';
+const DRAG_THRESHOLD = 40;
 
-// Responsive spring physics
+// Snappy iOS-style spring physics
 const springTransition = {
   type: "spring" as const,
   stiffness: 300,
@@ -94,14 +93,12 @@ export function BottomSheet({
 
   // Snap to state based on drag gesture
   const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    const { offset, velocity } = info;
-
-    // Dragged UP significantly or flicked UP -> Open
-    if (offset.y < -DRAG_THRESHOLD || velocity.y < -VELOCITY_THRESHOLD) {
+    // Drag Up -> Open
+    if (info.offset.y < -DRAG_THRESHOLD) {
       openSheet();
     }
-    // Dragged DOWN significantly or flicked DOWN -> Close
-    else if (offset.y > DRAG_THRESHOLD || velocity.y > VELOCITY_THRESHOLD) {
+    // Drag Down -> Close
+    else if (info.offset.y > DRAG_THRESHOLD) {
       closeSheet();
     }
   };
@@ -160,42 +157,39 @@ export function BottomSheet({
         )}
       </AnimatePresence>
 
-      {/* Main Sheet Container - Anchored to bottom */}
+      {/* Main Sheet - Height animates, drag for gesture detection only */}
       <motion.div
-        className="fixed bottom-0 left-0 right-0 z-50"
+        className={cn(
+          "fixed bottom-0 left-0 right-0 z-50",
+          "bg-white rounded-t-[32px] rounded-b-none",
+          "shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.15)]"
+        )}
+        style={{ touchAction: 'none' }}
         initial={false}
-        animate={{
-          y: isHidden ? "100%" : 0,
+        animate={{ 
+          height: isHidden ? 0 : (isOpen ? EXPANDED_HEIGHT : COLLAPSED_HEIGHT),
           opacity: isHidden ? 0 : 1,
         }}
         transition={springTransition}
+        drag="y"
+        dragConstraints={{ top: 0, bottom: 0 }}
+        dragElastic={0.05}
+        onDragEnd={handleDragEnd}
       >
-        {/* Main Sheet - Fixed 85dvh height, slides via Y translation */}
-        <motion.div
-          className={cn(
-            "flex flex-col bg-white rounded-t-[32px] rounded-b-none",
-            "shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)]",
-            "h-[85dvh] overflow-hidden"
-          )}
-          animate={{ y: isOpen ? EXPANDED_Y : COLLAPSED_Y }}
-          transition={springTransition}
-          drag="y"
-          dragConstraints={{ top: -500, bottom: 0 }}
-          dragElastic={0.2}
-          onDragEnd={handleDragEnd}
-        >
+        {/* Full Height Flex Column */}
+        <div className="flex flex-col h-full">
           {/* Section 1: Header - Handle + Chips */}
-          <div className="flex-none pt-4 px-4">
+          <div className="flex-none pt-2 px-4">
             {/* Drag Handle */}
             <div 
-              className="flex items-center justify-center pb-4 cursor-grab active:cursor-grabbing"
+              className="flex items-center justify-center py-3 cursor-grab active:cursor-grabbing"
               onClick={toggleSheet}
             >
               <div className="h-1 w-10 rounded-full bg-gray-300" />
             </div>
 
             {/* Category Chips */}
-            <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-4">
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-3">
               {categories.map((category) => {
                 const Icon = category.icon;
                 const isActive = activeCategory === category.id;
@@ -222,12 +216,12 @@ export function BottomSheet({
             </div>
           </div>
 
-          {/* Section 2: Body - Scrollable List (hidden when collapsed) */}
+          {/* Section 2: Body - Scrollable List */}
           <motion.div
             ref={scrollRef}
             className={cn(
-              "flex-1 min-h-0 px-4",
-              isOpen ? "overflow-y-auto overscroll-contain" : "h-0 overflow-hidden"
+              "flex-1 min-h-0 px-4 overflow-hidden",
+              isOpen && "overflow-y-auto overscroll-contain"
             )}
             animate={{ opacity: isOpen ? 1 : 0 }}
             transition={{ duration: 0.15 }}
@@ -275,9 +269,9 @@ export function BottomSheet({
             )}
           </motion.div>
 
-          {/* Section 3: Footer - Reserve Button (always visible) */}
+          {/* Section 3: Footer - Reserve Button (always visible, mt-auto pins to bottom) */}
           <div 
-            className="flex-none px-4 pt-4 bg-white border-t border-gray-100"
+            className="flex-none mt-auto px-4 pt-4 bg-white border-t border-gray-50"
             style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
           >
             {/* Pack Leader VIP Badge */}
@@ -308,7 +302,7 @@ export function BottomSheet({
               }
             </button>
           </div>
-        </motion.div>
+        </div>
       </motion.div>
     </>
   );
