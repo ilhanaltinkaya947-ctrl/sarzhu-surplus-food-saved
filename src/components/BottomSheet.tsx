@@ -1,5 +1,5 @@
 import { Utensils, Coffee, Cake, Salad, ShoppingBag, Crown } from "lucide-react";
-import { motion, PanInfo, AnimatePresence } from "framer-motion";
+import { motion, PanInfo, AnimatePresence, useDragControls } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useState, useRef } from "react";
 import { FoodCard, MarketingBanner } from "./FoodCard";
@@ -41,10 +41,10 @@ interface BottomSheetProps {
   selectedShop?: Shop | null;
 }
 
-// Height constants - collapsed is just enough for handle + chips + button
-const COLLAPSED_HEIGHT = 'auto';
-const EXPANDED_HEIGHT_RATIO = 0.70; // 70dvh
-const DRAG_THRESHOLD = 100;
+// Height constants
+const EXPANDED_HEIGHT = '85dvh';
+const VELOCITY_THRESHOLD = 500;
+const OFFSET_THRESHOLD = 50;
 
 // Softer spring physics for buttery feel
 const springConfig = {
@@ -76,14 +76,6 @@ export function BottomSheet({
   // Check if user is Pack Leader (20+ points)
   const isPackLeader = profile && profile.loyalty_points >= 20;
 
-  // Calculate expanded height (70% of viewport)
-  const getExpandedHeight = () => {
-    if (typeof window !== "undefined") {
-      return window.innerHeight * EXPANDED_HEIGHT_RATIO;
-    }
-    return 500;
-  };
-
   const handleCategoryClick = (categoryId: string) => {
     setActiveCategory(categoryId);
     onCategoryChange?.(categoryId);
@@ -100,18 +92,18 @@ export function BottomSheet({
     setIsExpanded(true);
   };
 
-  const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  // Handle pan gesture on the drag handle area only
+  const handleHandlePan = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const { offset, velocity } = info;
 
-    // Dragged UP or flicked UP fast -> Expand
-    if (offset.y < -DRAG_THRESHOLD || velocity.y < -400) {
+    // Flicked UP fast OR dragged up significantly -> Expand
+    if (velocity.y < -VELOCITY_THRESHOLD || offset.y < -OFFSET_THRESHOLD) {
       expandSheet();
     }
-    // Dragged DOWN or flicked DOWN fast -> Collapse
-    else if (offset.y > DRAG_THRESHOLD || velocity.y > 400) {
+    // Flicked DOWN fast OR dragged down significantly -> Collapse
+    else if (velocity.y > VELOCITY_THRESHOLD || offset.y > OFFSET_THRESHOLD) {
       collapseSheet();
     }
-    // Otherwise stay in current state
   };
 
   const toggleExpanded = () => {
@@ -181,30 +173,31 @@ export function BottomSheet({
         }}
         transition={springConfig}
       >
+        {/* Main Sheet - Height animates, always anchored to bottom */}
         <motion.div
           className={cn(
             "flex flex-col bg-white rounded-t-[32px] rounded-b-none",
             "shadow-[0_-5px_20px_-5px_rgba(0,0,0,0.1)]",
-            "overflow-hidden",
-            !isExpanded && "justify-start"
+            "overflow-hidden"
           )}
-          animate={{ height: isExpanded ? getExpandedHeight() : 'auto' }}
+          animate={{ height: isExpanded ? EXPANDED_HEIGHT : 'auto' }}
           transition={springConfig}
-          drag="y"
-          dragConstraints={{ top: 0, bottom: 0 }}
-          dragElastic={0.2}
-          onDragEnd={handleDragEnd}
         >
-          {/* Header: Drag Handle */}
-          <div
-            className="flex-shrink-0 cursor-grab active:cursor-grabbing"
+          {/* Drag Handle Area - Gesture detection here only */}
+          <motion.div
+            className="flex-shrink-0 cursor-grab active:cursor-grabbing touch-none"
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={0}
+            onDragEnd={handleHandlePan}
+            style={{ y: 0 }}
             onClick={toggleExpanded}
           >
-            {/* Drag Handle Pill - centered with padding */}
+            {/* Drag Handle Pill */}
             <div className="flex items-center justify-center pt-3 pb-4">
               <div className="h-1 w-10 rounded-full bg-gray-300" />
             </div>
-          </div>
+          </motion.div>
 
           {/* Content Area: Chips + List - flex-1 takes available space */}
           <div className="flex-1 min-h-0 flex flex-col">
