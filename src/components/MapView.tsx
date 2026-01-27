@@ -1,6 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { useTier } from "@/contexts/TierContext";
 
 interface Shop {
   id: string;
@@ -62,10 +63,17 @@ const categoryStyles = {
   default: { bg: '#3D8B5F', icon: `<svg viewBox="0 0 24 24" width="16" height="16" fill="white"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22" fill="#3D8B5F" stroke="white" stroke-width="1.5"/></svg>` },
 };
 
-const createPinIcon = (isFollowed: boolean, imageUrl: string | null, shopName: string, shopDescription: string | null, isActive: boolean = false) => {
-  // Colors - Yorkie Gold for selected, white for default
+const createPinIcon = (
+  isFollowed: boolean, 
+  imageUrl: string | null, 
+  shopName: string, 
+  shopDescription: string | null, 
+  isActive: boolean = false,
+  tierColors?: { primary: string; borderColor: string }
+) => {
+  // Theme-aware colors
   const defaultBorderColor = "#FFFFFF";
-  const activeBorderColor = "#FFB800"; // Yorkie Gold
+  const activeBorderColor = tierColors?.borderColor || "#FFB800"; // Uses tier primary as active border
   const hasValidImage = imageUrl && imageUrl.trim() !== '';
   const category = detectCategory(shopName, shopDescription);
   const catStyle = categoryStyles[category];
@@ -75,8 +83,9 @@ const createPinIcon = (isFollowed: boolean, imageUrl: string | null, shopName: s
   const borderColor = isActive ? activeBorderColor : defaultBorderColor;
   const borderWidth = isActive ? '4px' : '3px';
   const pointerColor = isActive ? activeBorderColor : "#1E293B"; // Yorkie Steel for pointer
+  const shadowColor = tierColors?.borderColor || '#FFB800';
   const shadowStyle = isActive 
-    ? '0 4px 20px -2px rgba(255, 184, 0, 0.5), 0 0 0 4px rgba(255, 184, 0, 0.2)' 
+    ? `0 4px 20px -2px ${shadowColor}80, 0 0 0 4px ${shadowColor}33` 
     : '0 4px 12px -2px rgba(0,0,0,0.3)';
   const animationClass = isActive ? 'pin-active-pulse' : '';
   
@@ -245,6 +254,14 @@ export function MapView({ shops, bags, followedShopIds = [], selectedShopId, onS
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<Map<string, L.Marker>>(new Map());
+  const { currentTier } = useTier();
+
+  // Compute theme-aware pin colors
+  const tierColors = {
+    primary: `hsl(${currentTier.colors.primary})`,
+    borderColor: currentTier.name === 'Joe' ? '#FFB800' : 
+                 currentTier.name === 'Shrek' ? '#0F172A' : '#00F0FF',
+  };
 
   const getBagForShop = (shopId: string) => {
     return bags.find((bag) => bag.shop_id === shopId);
@@ -308,7 +325,7 @@ export function MapView({ shops, bags, followedShopIds = [], selectedShopId, onS
       const isActive = selectedShopId === shop.id;
       
       const marker = L.marker([shop.lat, shop.long], {
-        icon: createPinIcon(isFollowed, shop.image_url, shop.name, shop.description, isActive),
+        icon: createPinIcon(isFollowed, shop.image_url, shop.name, shop.description, isActive, tierColors),
         zIndexOffset: isActive ? 1000 : 0,
       }).addTo(mapRef.current!);
 
@@ -326,7 +343,7 @@ export function MapView({ shops, bags, followedShopIds = [], selectedShopId, onS
         onShopClick?.(shop);
       });
     });
-  }, [shops, bags, followedShopIds, selectedShopId, onShopClick]);
+  }, [shops, bags, followedShopIds, selectedShopId, onShopClick, tierColors.borderColor]);
 
   // Expose flyTo for external use - fast 0.6s animation
   const flyToShop = (lat: number, long: number) => {
@@ -338,11 +355,14 @@ export function MapView({ shops, bags, followedShopIds = [], selectedShopId, onS
     }
   };
 
+  // Dynamic pulse color based on tier
+  const pulseColor = tierColors.borderColor;
+
   return (
     <div className="absolute inset-0 z-0">
       <div 
         ref={mapContainerRef} 
-        className="h-full w-full"
+        className="h-full w-full transition-colors duration-500"
         style={{ background: "hsl(var(--muted))" }}
       />
       <style>{`
@@ -366,16 +386,16 @@ export function MapView({ shops, bags, followedShopIds = [], selectedShopId, onS
         .leaflet-tooltip {
           display: none !important;
         }
-        /* Active pin pulsing shadow animation - Yorkie Gold */
+        /* Active pin pulsing shadow animation - Uses tier color */
         .pin-active-pulse .pin-main {
           animation: active-pulse 1.5s ease-in-out infinite;
         }
         @keyframes active-pulse {
           0%, 100% {
-            box-shadow: 0 4px 20px -2px rgba(255, 184, 0, 0.5), 0 0 0 4px rgba(255, 184, 0, 0.2);
+            box-shadow: 0 4px 20px -2px ${pulseColor}80, 0 0 0 4px ${pulseColor}33;
           }
           50% {
-            box-shadow: 0 4px 25px -2px rgba(255, 184, 0, 0.7), 0 0 0 8px rgba(255, 184, 0, 0.1);
+            box-shadow: 0 4px 25px -2px ${pulseColor}B3, 0 0 0 8px ${pulseColor}1A;
           }
         }
       `}</style>

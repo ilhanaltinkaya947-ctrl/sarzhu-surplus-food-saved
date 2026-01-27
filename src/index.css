@@ -5,7 +5,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Gou Design System - Joe the Yorkshire Terrier Brand */
+/* Gou Design System - Dynamic Dog Tier Theming */
 
 @layer base {
   :root {
@@ -20,7 +20,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 215 28% 17%;
 
-    /* Primary - Yorkie Gold */
+    /* Primary - Yorkie Gold (default) */
     --primary: 43 100% 50%;
     --primary-foreground: 215 28% 17%;
 
@@ -46,6 +46,11 @@
     --ring: 43 100% 50%;
 
     --radius: 0.5rem;
+
+    /* Deep Theming tokens */
+    --map-pin-color: 43 100% 50%;
+    --price-tag-bg: 43 100% 50%;
+    --price-tag-fg: 215 28% 17%;
 
     /* Custom Gou tokens */
     --pin-default: 43 100% 50%;
@@ -95,6 +100,78 @@
     --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
     --tracking-normal: 0em;
     --spacing: 0.25rem;
+  }
+
+  /* ========================================
+     TIER 1: JOE (Warm & Friendly - Default)
+     ======================================== */
+  [data-theme='joe'] {
+    --primary: 43 100% 50%;
+    --primary-foreground: 215 28% 17%;
+    --background: 0 0% 100%;
+    --foreground: 215 28% 17%;
+    --card: 0 0% 100%;
+    --card-foreground: 215 28% 17%;
+    --muted: 210 40% 98%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 43 100% 50%;
+    --accent-foreground: 215 28% 17%;
+    --border: 214 32% 91%;
+    --map-pin-color: 43 100% 50%;
+    --price-tag-bg: 43 100% 50%;
+    --price-tag-fg: 215 28% 17%;
+    --gradient-hero: linear-gradient(135deg, hsl(43 100% 50%), hsl(35 100% 45%));
+  }
+
+  /* ========================================
+     TIER 2: SHREK (Luxury Monochrome)
+     ======================================== */
+  [data-theme='shrek'] {
+    --primary: 222 47% 11%;
+    --primary-foreground: 0 0% 100%;
+    --background: 220 14% 96%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --muted: 220 14% 90%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 222 47% 11%;
+    --accent-foreground: 0 0% 100%;
+    --border: 220 13% 91%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --map-pin-color: 222 47% 11%;
+    --price-tag-bg: 222 47% 11%;
+    --price-tag-fg: 0 0% 100%;
+    --gradient-hero: linear-gradient(135deg, hsl(222 47% 11%), hsl(222 47% 20%));
+    --shadow-card: 0 4px 20px -4px hsl(222 47% 11% / 0.1);
+    --shadow-elevated: 0 8px 30px -8px hsl(222 47% 11% / 0.15);
+  }
+
+  /* ========================================
+     TIER 3: ZEUS (Cyberpunk Exclusive)
+     ======================================== */
+  [data-theme='zeus'] {
+    --primary: 183 100% 50%;
+    --primary-foreground: 0 0% 0%;
+    --background: 222 47% 5%;
+    --foreground: 0 0% 100%;
+    --card: 222 47% 8%;
+    --card-foreground: 0 0% 100%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 183 100% 50%;
+    --accent-foreground: 0 0% 0%;
+    --border: 217 33% 20%;
+    --secondary: 222 47% 11%;
+    --secondary-foreground: 183 100% 50%;
+    --map-pin-color: 183 100% 50%;
+    --price-tag-bg: 183 100% 50%;
+    --price-tag-fg: 0 0% 0%;
+    --gradient-hero: linear-gradient(135deg, hsl(183 100% 50%), hsl(199 100% 50%));
+    --shadow-card: 0 4px 20px -4px hsl(183 100% 50% / 0.15);
+    --shadow-elevated: 0 8px 30px -8px hsl(183 100% 50% / 0.2);
+    --shadow-gold: 0 4px 20px -4px hsl(183 100% 50% / 0.4);
   }
 
   .dark {
@@ -165,6 +242,13 @@
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Smooth theme transitions */
+    transition: background-color 0.5s ease-in-out, color 0.5s ease-in-out;
+  }
+
+  /* Apply smooth transitions to all themed elements */
+  .transition-theme {
+    @apply transition-colors duration-500 ease-in-out;
   }
 
   /* Safe area utilities */

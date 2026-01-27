@@ -38,7 +38,7 @@ export function ShopCard({ shop, bag, isFollowed = false, compact = false }: Sho
   return (
     <div
       className={cn(
-        "bg-card rounded-2xl overflow-hidden shadow-card transition-all touch-active",
+        "bg-card rounded-2xl overflow-hidden shadow-card transition-all duration-500 ease-in-out touch-active",
         compact ? "w-[260px]" : "w-full"
       )}
     >
@@ -53,16 +53,16 @@ export function ShopCard({ shop, bag, isFollowed = false, compact = false }: Sho
           )}
         />
         
-        {/* Discount Badge */}
+        {/* Discount Badge - Uses theme colors */}
         {bag && discount > 0 && (
-          <div className="absolute top-2 left-2 bg-save text-white text-xs font-bold px-2 py-1 rounded-lg">
+          <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-lg transition-colors duration-500">
             -{discount}%
           </div>
         )}
         
         {/* Followed Badge */}
         {isFollowed && (
-          <div className="absolute top-2 right-2 bg-accent text-accent-foreground p-1.5 rounded-full">
+          <div className="absolute top-2 right-2 bg-accent text-accent-foreground p-1.5 rounded-full transition-colors duration-500">
             <Star className="h-3.5 w-3.5 fill-current" />
           </div>
         )}
@@ -85,17 +85,21 @@ export function ShopCard({ shop, bag, isFollowed = false, compact = false }: Sho
 
         {bag && (
           <div className="mt-2 flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-muted-foreground">
-              <Package className="h-4 w-4" />
-              <span className="text-xs">{bag.quantity_available} left</span>
+            {/* Quantity Badge - Uses theme colors */}
+            <div className="flex items-center gap-1.5">
+              <span className="bg-primary/15 text-primary px-2 py-0.5 rounded-md text-xs font-semibold transition-colors duration-500">
+                <Package className="h-3 w-3 inline mr-1" />
+                {bag.quantity_available} left
+              </span>
             </div>
             
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground line-through">
                 {formatPrice(bag.original_price)}
               </span>
+              {/* Price Badge - Uses theme colors */}
               <span className={cn(
-                "font-bold text-primary",
+                "font-bold bg-primary text-primary-foreground px-2 py-0.5 rounded-md transition-colors duration-500",
                 compact ? "text-sm" : "text-base"
               )}>
                 {formatPrice(bag.discounted_price)}
