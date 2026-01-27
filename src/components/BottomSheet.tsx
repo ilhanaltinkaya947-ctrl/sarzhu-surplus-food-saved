@@ -41,16 +41,16 @@ interface BottomSheetProps {
   selectedShop?: Shop | null;
 }
 
-// Closed state - pushed down, showing only header (140px visible)
-const CLOSED_Y = "calc(100% - 140px)";
-const DRAG_THRESHOLD = 100;
-const VELOCITY_THRESHOLD = 500;
+// Fixed heights - collapsed shows header + chips + button
+const COLLAPSED_HEIGHT = '220px';
+const EXPANDED_HEIGHT = '85dvh';
+const SWIPE_THRESHOLD = 50;
 
-// iOS-style spring physics - snappy and responsive
+// Snappy spring physics
 const springTransition = {
   type: "spring" as const,
-  stiffness: 300,
-  damping: 30,
+  stiffness: 200,
+  damping: 25,
 };
 
 // Service fee constant
@@ -91,17 +91,12 @@ export function BottomSheet({
     setIsOpen(true);
   };
 
-  // Drag end logic - snap to state based on gesture
-  const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    const { offset, velocity } = info;
-
-    // Dragged DOWN or flicked DOWN -> Close
-    if (offset.y > DRAG_THRESHOLD || velocity.y > VELOCITY_THRESHOLD) {
-      closeSheet();
-    }
-    // Dragged UP or flicked UP -> Open
-    else if (offset.y < -DRAG_THRESHOLD || velocity.y < -VELOCITY_THRESHOLD) {
-      openSheet();
+  // Simple swipe detection
+  const handlePanEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (info.offset.y < -SWIPE_THRESHOLD) {
+      openSheet(); // Swipe Up -> Open
+    } else if (info.offset.y > SWIPE_THRESHOLD) {
+      closeSheet(); // Swipe Down -> Close
     }
   };
 
@@ -159,7 +154,7 @@ export function BottomSheet({
         )}
       </AnimatePresence>
 
-      {/* Single Expandable Card Container - Anchored to absolute bottom */}
+      {/* Main Sheet Container - Anchored to bottom */}
       <motion.div
         className="fixed bottom-0 left-0 right-0 z-50"
         initial={false}
@@ -169,122 +164,114 @@ export function BottomSheet({
         }}
         transition={springTransition}
       >
-        {/* Main Sheet - Fixed height, slides via Y translation */}
+        {/* Main Sheet - Height-based animation */}
         <motion.div
           className={cn(
             "flex flex-col bg-white rounded-t-[32px] rounded-b-none",
             "shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)]",
-            "h-[85dvh] overflow-hidden"
+            "overflow-hidden touch-none"
           )}
-          animate={{ y: isOpen ? 0 : CLOSED_Y }}
+          animate={{ height: isOpen ? EXPANDED_HEIGHT : COLLAPSED_HEIGHT }}
           transition={springTransition}
-          drag="y"
-          dragConstraints={{ top: 0 }}
-          dragElastic={{ top: 0, bottom: 0.5 }}
-          onDragEnd={handleDragEnd}
+          onPanEnd={handlePanEnd}
         >
-          {/* Drag Handle Area */}
-          <div
-            className="flex-shrink-0 cursor-grab active:cursor-grabbing"
-            onClick={toggleSheet}
-          >
-            {/* Drag Handle Pill */}
-            <div className="flex items-center justify-center pt-3 pb-4">
+          {/* Section 1: Header - Handle + Chips */}
+          <div className="flex-none pt-4 px-4">
+            {/* Drag Handle */}
+            <div 
+              className="flex items-center justify-center pb-4 cursor-pointer"
+              onClick={toggleSheet}
+            >
               <div className="h-1 w-10 rounded-full bg-gray-300" />
             </div>
-          </div>
 
-          {/* Content Area: Chips + List - flex-1 takes available space */}
-          <div className="flex-1 min-h-0 flex flex-col">
-            {/* Category Chips - Always Visible with proper top spacing */}
-            <div className="flex-shrink-0 px-4 pb-4">
-              <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4">
-                {categories.map((category) => {
-                  const Icon = category.icon;
-                  const isActive = activeCategory === category.id;
+            {/* Category Chips */}
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-4">
+              {categories.map((category) => {
+                const Icon = category.icon;
+                const isActive = activeCategory === category.id;
 
-                  return (
-                    <button
-                      key={category.id}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleCategoryClick(category.id);
-                      }}
-                      className={cn(
-                        "flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-medium transition-all",
-                        isActive
-                          ? "bg-primary text-primary-foreground shadow-md"
-                          : "bg-gray-100 text-gray-700"
-                      )}
-                    >
-                      <Icon className="h-4 w-4" />
-                      {category.label}
-                    </button>
-                  );
-                })}
-              </div>
+                return (
+                  <button
+                    key={category.id}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCategoryClick(category.id);
+                    }}
+                    className={cn(
+                      "flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-medium transition-all",
+                      isActive
+                        ? "bg-primary text-primary-foreground shadow-md"
+                        : "bg-gray-100 text-gray-700"
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {category.label}
+                  </button>
+                );
+              })}
             </div>
-
-            {/* Body: Scrollable Food Grid - Only visible when open */}
-            <motion.div
-              ref={scrollRef}
-              className={cn(
-                "flex-1 min-h-0 px-4",
-                isOpen ? "overflow-y-auto overscroll-contain" : "overflow-hidden"
-              )}
-              animate={{ opacity: isOpen ? 1 : 0 }}
-              transition={{ duration: 0.2 }}
-              style={{ touchAction: isOpen ? "pan-y" : "none" }}
-            >
-              {isOpen && (
-                <div className="pb-4">
-                  {/* Section Header */}
-                  <div className="flex items-center justify-between mb-4 sticky top-0 bg-white py-2 -mx-4 px-4 z-10">
-                    <h3 className="text-lg font-bold text-gray-900">Featured Deals</h3>
-                    <button className="text-sm font-medium text-primary">See all</button>
-                  </div>
-
-                  {/* Marketing Banner */}
-                  <MarketingBanner className="mb-5" />
-
-                  {/* 2-Column Food Cards Grid */}
-                  <div className="grid grid-cols-2 gap-3">
-                    {shops.map((shop) => {
-                      const bag = getBagForShop(shop.id);
-
-                      return (
-                        <FoodCard
-                          key={shop.id}
-                          id={shop.id}
-                          name={shop.name}
-                          imageUrl={shop.image_url}
-                          description={shop.description}
-                          originalPrice={bag?.original_price}
-                          discountedPrice={bag?.discounted_price}
-                          bagsLeft={bag?.quantity_available}
-                          onClick={() => onShopClick?.(shop)}
-                        />
-                      );
-                    })}
-                  </div>
-
-                  {/* Empty State */}
-                  {shops.length === 0 && (
-                    <div className="text-center py-12">
-                      <p className="text-gray-500">No shops available nearby</p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </motion.div>
           </div>
 
-          {/* Footer: Reserve Button - Sticky at bottom with z-20 */}
+          {/* Section 2: Body - Scrollable List (hidden when collapsed) */}
+          <motion.div
+            ref={scrollRef}
+            className={cn(
+              "flex-1 min-h-0 px-4",
+              isOpen ? "overflow-y-auto overscroll-contain" : "h-0 overflow-hidden"
+            )}
+            animate={{ opacity: isOpen ? 1 : 0 }}
+            transition={{ duration: 0.15 }}
+            style={{ touchAction: isOpen ? "pan-y" : "none" }}
+          >
+            {isOpen && (
+              <div className="pb-4">
+                {/* Section Header */}
+                <div className="flex items-center justify-between mb-4 sticky top-0 bg-white py-2 -mx-4 px-4 z-10">
+                  <h3 className="text-lg font-bold text-gray-900">Featured Deals</h3>
+                  <button className="text-sm font-medium text-primary">See all</button>
+                </div>
+
+                {/* Marketing Banner */}
+                <MarketingBanner className="mb-5" />
+
+                {/* 2-Column Food Cards Grid */}
+                <div className="grid grid-cols-2 gap-3">
+                  {shops.map((shop) => {
+                    const bag = getBagForShop(shop.id);
+
+                    return (
+                      <FoodCard
+                        key={shop.id}
+                        id={shop.id}
+                        name={shop.name}
+                        imageUrl={shop.image_url}
+                        description={shop.description}
+                        originalPrice={bag?.original_price}
+                        discountedPrice={bag?.discounted_price}
+                        bagsLeft={bag?.quantity_available}
+                        onClick={() => onShopClick?.(shop)}
+                      />
+                    );
+                  })}
+                </div>
+
+                {/* Empty State */}
+                {shops.length === 0 && (
+                  <div className="text-center py-12">
+                    <p className="text-gray-500">No shops available nearby</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </motion.div>
+
+          {/* Section 3: Footer - Reserve Button (always visible) */}
           <div 
-            className="flex-shrink-0 z-20 px-4 pt-4 bg-white border-t border-gray-100"
+            className="flex-none px-4 pt-4 bg-white border-t border-gray-100"
             style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
           >
-            {/* Pack Leader VIP Badge - Show above button when applicable */}
+            {/* Pack Leader VIP Badge */}
             {hasSelection && isPackLeader && (
               <div className="flex items-center justify-center gap-2 mb-3 py-2 px-4 bg-[#FFB800]/10 border border-[#FFB800]/30 rounded-xl">
                 <Crown className="h-4 w-4 text-[#FFB800]" />
@@ -297,6 +284,7 @@ export function BottomSheet({
 
             <button 
               onClick={handleReserveClick}
+              onPointerDown={(e) => e.stopPropagation()}
               disabled={!hasSelection}
               className={cn(
                 "flex w-full h-14 items-center justify-center gap-2 rounded-xl font-semibold shadow-lg transition-all active:scale-[0.98]",
