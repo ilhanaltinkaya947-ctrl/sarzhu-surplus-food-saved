@@ -201,7 +201,7 @@ export default function MapPage() {
         />
       </div>
 
-      {/* Joe FAB - z-40 (above map, below sheet) */}
+      {/* Joe FAB - z-[55] (above bottom sheet z-50) */}
       <AnimatePresence>
         {!drawerOpen && (
           <motion.button
@@ -211,7 +211,7 @@ export default function MapPage() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleJoeOpen}
-            className="pointer-events-auto fixed bottom-36 right-4 z-40 h-14 w-14 rounded-full bg-[#FFB800] shadow-lg flex items-center justify-center text-2xl"
+            className="pointer-events-auto fixed bottom-[260px] right-4 z-[55] h-14 w-14 rounded-full bg-[#FFB800] shadow-lg flex items-center justify-center text-2xl"
             style={{ 
               boxShadow: "0 4px 20px rgba(255, 184, 0, 0.4)"
             }}
