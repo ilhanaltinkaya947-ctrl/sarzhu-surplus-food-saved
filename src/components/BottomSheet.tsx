@@ -40,8 +40,8 @@ interface BottomSheetProps {
   selectedShop?: Shop | null;
 }
 
-// Height constants
-const COLLAPSED_HEIGHT = 180;
+// Height constants - collapsed is just enough for handle + chips + button
+const COLLAPSED_HEIGHT = 'auto';
 const EXPANDED_HEIGHT_RATIO = 0.70; // 70dvh
 const DRAG_THRESHOLD = 100;
 
@@ -73,8 +73,6 @@ export function BottomSheet({
     }
     return 500;
   };
-
-  const currentHeight = isExpanded ? getExpandedHeight() : COLLAPSED_HEIGHT;
 
   const handleCategoryClick = (categoryId: string) => {
     setActiveCategory(categoryId);
@@ -169,9 +167,10 @@ export function BottomSheet({
           className={cn(
             "flex flex-col bg-white rounded-t-[32px] rounded-b-none",
             "shadow-[0_-5px_20px_-5px_rgba(0,0,0,0.1)]",
-            "overflow-hidden"
+            "overflow-hidden",
+            !isExpanded && "justify-start"
           )}
-          animate={{ height: currentHeight }}
+          animate={{ height: isExpanded ? getExpandedHeight() : 'auto' }}
           transition={springConfig}
           drag="y"
           dragConstraints={{ top: 0, bottom: 0 }}
@@ -271,20 +270,27 @@ export function BottomSheet({
             )}
           </motion.div>
 
-          {/* Footer: Reserve Button - Only visible when shop is selected */}
-          {hasSelection && (
-            <div 
-              className="flex-shrink-0 px-4 pt-3 bg-white border-t border-gray-100"
-              style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
+          {/* Footer: Reserve Button - Always visible */}
+          <div 
+            className="flex-shrink-0 px-4 pt-4 bg-white"
+            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
+          >
+            <button 
+              onClick={handleReserveClick}
+              disabled={!hasSelection}
+              className={cn(
+                "flex w-full h-14 items-center justify-center gap-2 rounded-2xl font-semibold shadow-lg transition-all active:scale-[0.98]",
+                hasSelection 
+                  ? "bg-foreground text-white" 
+                  : "bg-gray-200 text-gray-500"
+              )}
             >
-              <button 
-                onClick={handleReserveClick}
-                className="flex w-full h-14 items-center justify-center gap-2 rounded-2xl bg-foreground text-white font-semibold shadow-lg transition-all active:scale-[0.98]"
-              >
-                Reserve {selectedShop?.name} • {buttonPrice}
-              </button>
-            </div>
-          )}
+              {hasSelection 
+                ? `Reserve ${selectedShop?.name} • ${buttonPrice}`
+                : "Select a shop to reserve"
+              }
+            </button>
+          </div>
         </motion.div>
       </motion.div>
     </>
