@@ -1,8 +1,9 @@
-import { Utensils, Coffee, Cake, Salad, ShoppingBag } from "lucide-react";
+import { Utensils, Coffee, Cake, Salad, ShoppingBag, Crown } from "lucide-react";
 import { motion, PanInfo, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useState, useRef } from "react";
 import { FoodCard, MarketingBanner } from "./FoodCard";
+import { useProfile } from "@/hooks/useProfile";
 
 interface Shop {
   id: string;
@@ -52,6 +53,10 @@ const springConfig = {
   damping: 30,
 };
 
+// Service fee constant
+const SERVICE_FEE = 200; // 200 KZT service fee
+const PACK_LEADER_DISCOUNT = 0.20; // 20% off for Pack Leader
+
 export function BottomSheet({
   onCategoryChange,
   onShopClick,
@@ -65,6 +70,10 @@ export function BottomSheet({
   const [activeCategory, setActiveCategory] = useState("all");
   const [isExpanded, setIsExpanded] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { profile } = useProfile();
+  
+  // Check if user is Pack Leader (20+ points)
+  const isPackLeader = profile && profile.loyalty_points >= 20;
 
   // Calculate expanded height (70% of viewport)
   const getExpandedHeight = () => {
@@ -130,9 +139,17 @@ export function BottomSheet({
     }).format(price);
   };
 
+  // Calculate total with potential Pack Leader discount
+  const calculateTotal = () => {
+    if (!selectedBag) return 0;
+    const basePrice = selectedBag.discounted_price;
+    const fee = isPackLeader ? 0 : SERVICE_FEE;
+    return basePrice + fee;
+  };
+
   // Get the price to display on the button
   const buttonPrice = selectedBag 
-    ? formatPrice(selectedBag.discounted_price) 
+    ? formatPrice(calculateTotal()) 
     : formatPrice(1200);
 
   const hasSelection = selectedBag && selectedShop;
@@ -275,6 +292,17 @@ export function BottomSheet({
             className="flex-shrink-0 px-4 pt-4 bg-white"
             style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
           >
+            {/* Pack Leader VIP Badge - Show above button when applicable */}
+            {hasSelection && isPackLeader && (
+              <div className="flex items-center justify-center gap-2 mb-3 py-2 px-4 bg-[#FFB800]/10 border border-[#FFB800]/30 rounded-xl">
+                <Crown className="h-4 w-4 text-[#FFB800]" />
+                <span className="text-sm font-semibold text-[#FFB800]">Joe's VIP Discount</span>
+                <span className="text-xs text-muted-foreground line-through ml-2">
+                  +{formatPrice(SERVICE_FEE)} fee
+                </span>
+              </div>
+            )}
+
             <button 
               onClick={handleReserveClick}
               disabled={!hasSelection}

@@ -2,12 +2,14 @@ import { User, Settings, Heart, HelpCircle, LogIn, ArrowLeft } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { motion, PanInfo } from "framer-motion";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
+import { TreatTracker } from "@/components/TreatTracker";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  
-  // User is not authenticated yet
-  const user = null;
+  const { user, signOut } = useAuth();
+  const { profile, loading } = useProfile();
 
   const menuItems = [
     { icon: Heart, label: "Saved Shops", count: 0 },
@@ -60,6 +62,16 @@ export default function ProfilePage() {
       </header>
       
       <main className="pt-20 pb-24 px-4">
+        {/* Joe's Treat Tracker - Only show when logged in */}
+        {user && profile && (
+          <div className="mb-6">
+            <TreatTracker 
+              points={profile.loyalty_points} 
+              tier={profile.tier} 
+            />
+          </div>
+        )}
+
         {/* Profile Header */}
         <div className="flex flex-col items-center py-8">
           <div className="h-24 w-24 rounded-full bg-secondary flex items-center justify-center mb-4">
@@ -68,8 +80,17 @@ export default function ProfilePage() {
           
           {user ? (
             <>
-              <h2 className="text-xl font-semibold text-foreground">John Doe</h2>
-              <p className="text-sm text-muted-foreground">john@example.com</p>
+              <h2 className="text-xl font-semibold text-foreground">
+                {profile?.display_name || user.email?.split("@")[0] || "User"}
+              </h2>
+              <p className="text-sm text-muted-foreground">{user.email}</p>
+              <Button 
+                variant="outline" 
+                className="mt-4"
+                onClick={signOut}
+              >
+                Sign Out
+              </Button>
             </>
           ) : (
             <>
@@ -98,8 +119,10 @@ export default function ProfilePage() {
             <p className="text-xs text-muted-foreground">Food Saved</p>
           </div>
           <div className="bg-card rounded-2xl p-4 text-center shadow-card">
-            <p className="text-2xl font-bold text-primary">₸0</p>
-            <p className="text-xs text-muted-foreground">Money Saved</p>
+            <p className="text-2xl font-bold text-[#FFB800]">
+              🦴 {profile?.loyalty_points || 0}
+            </p>
+            <p className="text-xs text-muted-foreground">Treats</p>
           </div>
         </div>
 
