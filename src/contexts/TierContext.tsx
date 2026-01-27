@@ -5,12 +5,13 @@ import { toast } from "sonner";
 // Import mascot images
 import joeMascot from "@/assets/joe-mascot.png";
 import shrekMascot from "@/assets/shrek-mascot.png";
+import zeusMascot from "@/assets/zeus-mascot.png";
 
-// Mascot paths - Zeus will be added when uploaded
+// Mascot paths
 const MASCOTS = {
   joe: joeMascot,
   shrek: shrekMascot,
-  zeus: "/placeholder.svg",  // Will be replaced with actual upload
+  zeus: zeusMascot,
 };
 
 export interface TierInfo {
