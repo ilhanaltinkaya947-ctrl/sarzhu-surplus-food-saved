@@ -1,6 +1,6 @@
 import { Clock } from "lucide-react";
 import { motion } from "framer-motion";
-import QRCode from "react-qr-code";
+import { SwipeToConfirm } from "./SwipeToConfirm";
 
 interface TicketCardProps {
   order: {
@@ -10,9 +10,11 @@ interface TicketCardProps {
     shop_name: string;
     shop_image: string | null;
   };
+  onConfirmPickup: () => void;
+  isProcessing?: boolean;
 }
 
-export function TicketCard({ order }: TicketCardProps) {
+export function TicketCard({ order, onConfirmPickup, isProcessing = false }: TicketCardProps) {
   const shortOrderId = order.id.slice(0, 8).toUpperCase();
   
   const formatPickupTime = () => {
@@ -94,25 +96,13 @@ export function TicketCard({ order }: TicketCardProps) {
         <div className="absolute -right-3 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full bg-background" />
       </div>
 
-      {/* Bottom Section - QR Code or Completion */}
+      {/* Bottom Section - Action */}
       {order.status === "reserved" ? (
-        <div className="p-4 space-y-4">
-          {/* QR Code */}
-          <div className="flex justify-center">
-            <div className="bg-white p-3 rounded-xl shadow-sm border border-border">
-              <QRCode
-                value={order.id}
-                size={140}
-                style={{ height: "auto", maxWidth: "100%", width: "100%" }}
-                viewBox={`0 0 256 256`}
-              />
-            </div>
-          </div>
-          
-          {/* Instructions */}
-          <p className="text-center text-sm text-muted-foreground">
-            Show this code to the staff at pickup
-          </p>
+        <div className="p-4">
+          <SwipeToConfirm 
+            onConfirm={onConfirmPickup} 
+            disabled={isProcessing}
+          />
         </div>
       ) : (
         <div className="p-4 text-center">
