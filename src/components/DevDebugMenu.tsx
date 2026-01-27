@@ -1,13 +1,25 @@
 import { useTier } from "@/contexts/TierContext";
+import { motion } from "framer-motion";
+import { GripVertical } from "lucide-react";
 
 export function DevDebugMenu() {
   const { setCompletedOrders, currentTier, completedOrders } = useTier();
 
   return (
-    <div className="fixed top-4 left-4 z-[100] bg-black/60 backdrop-blur-sm rounded-lg p-2 flex flex-col gap-1.5">
-      <span className="text-[10px] text-white/60 font-mono px-1">
-        Dev: {currentTier.name} ({completedOrders})
-      </span>
+    <motion.div
+      drag
+      dragMomentum={false}
+      dragElastic={0.1}
+      whileDrag={{ scale: 1.05, cursor: "grabbing" }}
+      className="fixed top-4 left-4 z-[100] bg-black/60 backdrop-blur-sm rounded-lg p-2 flex flex-col gap-1.5 cursor-grab active:cursor-grabbing touch-none"
+      style={{ touchAction: "none" }}
+    >
+      <div className="flex items-center gap-1">
+        <GripVertical className="h-3 w-3 text-white/40" />
+        <span className="text-[10px] text-white/60 font-mono">
+          Dev: {currentTier.name} ({completedOrders})
+        </span>
+      </div>
       <div className="flex gap-1">
         <button
           onClick={() => setCompletedOrders(0)}
@@ -40,6 +52,6 @@ export function DevDebugMenu() {
           🐺 Zeus
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 }
