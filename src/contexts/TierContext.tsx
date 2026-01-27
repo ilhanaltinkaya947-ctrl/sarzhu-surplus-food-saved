@@ -1,0 +1,210 @@
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+
+// Import mascot images
+import joeMascot from "@/assets/joe-mascot.png";
+
+// Mascot paths - Shrek and Zeus will be added when uploaded
+const MASCOTS = {
+  joe: joeMascot,
+  shrek: "/placeholder.svg", // Will be replaced with actual upload
+  zeus: "/placeholder.svg",  // Will be replaced with actual upload
+};
+
+export interface TierInfo {
+  name: string;
+  mascot: "joe" | "shrek" | "zeus";
+  mascotImage: string;
+  minOrders: number;
+  maxOrders: number | null;
+  colors: {
+    primary: string;      // HSL values without hsl() wrapper
+    primaryForeground: string;
+    secondary: string;
+    secondaryForeground: string;
+    background: string;
+    foreground: string;
+    muted: string;
+    mutedForeground: string;
+    accent: string;
+    accentForeground: string;
+    card: string;
+    cardForeground: string;
+    border: string;
+  };
+}
+
+const TIERS: TierInfo[] = [
+  {
+    name: "Joe",
+    mascot: "joe",
+    mascotImage: MASCOTS.joe,
+    minOrders: 0,
+    maxOrders: 4,
+    colors: {
+      primary: "43 100% 50%",           // #FFB800 Yorkie Gold
+      primaryForeground: "215 28% 17%", // #1E293B Yorkie Steel
+      secondary: "210 40% 96%",         // Light slate
+      secondaryForeground: "215 28% 17%",
+      background: "0 0% 100%",          // White
+      foreground: "215 28% 17%",        // Yorkie Steel
+      muted: "210 40% 96%",
+      mutedForeground: "215 16% 47%",
+      accent: "43 100% 50%",
+      accentForeground: "215 28% 17%",
+      card: "0 0% 100%",
+      cardForeground: "215 28% 17%",
+      border: "214 32% 91%",
+    },
+  },
+  {
+    name: "Shrek",
+    mascot: "shrek",
+    mascotImage: MASCOTS.shrek,
+    minOrders: 5,
+    maxOrders: 19,
+    colors: {
+      primary: "0 0% 0%",               // Black
+      primaryForeground: "0 0% 100%",   // White
+      secondary: "220 14% 96%",         // Light Grey #F3F4F6
+      secondaryForeground: "0 0% 0%",
+      background: "220 14% 96%",        // Light Grey
+      foreground: "0 0% 0%",            // Black
+      muted: "220 14% 90%",
+      mutedForeground: "220 9% 46%",
+      accent: "0 0% 0%",
+      accentForeground: "0 0% 100%",
+      card: "0 0% 100%",
+      cardForeground: "0 0% 0%",
+      border: "220 13% 91%",
+    },
+  },
+  {
+    name: "Zeus",
+    mascot: "zeus",
+    mascotImage: MASCOTS.zeus,
+    minOrders: 20,
+    maxOrders: null,
+    colors: {
+      primary: "183 100% 50%",          // #00F0FF Electric Cyan
+      primaryForeground: "0 0% 0%",     // Black
+      secondary: "222 47% 11%",         // Dark Navy #0F172A
+      secondaryForeground: "183 100% 50%",
+      background: "222 47% 11%",        // Dark Navy
+      foreground: "0 0% 100%",          // White
+      muted: "217 33% 17%",
+      mutedForeground: "215 20% 65%",
+      accent: "183 100% 50%",
+      accentForeground: "0 0% 0%",
+      card: "222 47% 14%",
+      cardForeground: "0 0% 100%",
+      border: "217 33% 17%",
+    },
+  },
+];
+
+interface TierContextType {
+  currentTier: TierInfo;
+  completedOrders: number;
+  nextTierProgress: number;
+  ordersToNextTier: number;
+  nextTierName: string | null;
+  setCompletedOrders: (orders: number) => void;
+  incrementOrders: () => void;
+  cycleTierForDebug: () => void;
+}
+
+const TierContext = createContext<TierContextType | undefined>(undefined);
+
+export function TierProvider({ children }: { children: ReactNode }) {
+  // Persist completed orders in localStorage
+  const [completedOrders, setCompletedOrdersState] = useState(() => {
+    const stored = localStorage.getItem("gou_completed_orders");
+    return stored ? parseInt(stored, 10) : 0;
+  });
+
+  // Calculate current tier based on completed orders
+  const currentTier = TIERS.find(
+    (tier) =>
+      completedOrders >= tier.minOrders &&
+      (tier.maxOrders === null || completedOrders <= tier.maxOrders)
+  ) || TIERS[0];
+
+  // Calculate progress to next tier
+  const currentTierIndex = TIERS.findIndex((t) => t.name === currentTier.name);
+  const nextTier = currentTierIndex < TIERS.length - 1 ? TIERS[currentTierIndex + 1] : null;
+  
+  const ordersToNextTier = nextTier ? nextTier.minOrders - completedOrders : 0;
+  
+  const nextTierProgress = nextTier
+    ? ((completedOrders - currentTier.minOrders) / (nextTier.minOrders - currentTier.minOrders)) * 100
+    : 100;
+
+  // Apply theme colors to CSS variables
+  useEffect(() => {
+    const root = document.documentElement;
+    const colors = currentTier.colors;
+
+    root.style.setProperty("--primary", colors.primary);
+    root.style.setProperty("--primary-foreground", colors.primaryForeground);
+    root.style.setProperty("--secondary", colors.secondary);
+    root.style.setProperty("--secondary-foreground", colors.secondaryForeground);
+    root.style.setProperty("--background", colors.background);
+    root.style.setProperty("--foreground", colors.foreground);
+    root.style.setProperty("--muted", colors.muted);
+    root.style.setProperty("--muted-foreground", colors.mutedForeground);
+    root.style.setProperty("--accent", colors.accent);
+    root.style.setProperty("--accent-foreground", colors.accentForeground);
+    root.style.setProperty("--card", colors.card);
+    root.style.setProperty("--card-foreground", colors.cardForeground);
+    root.style.setProperty("--border", colors.border);
+
+    // Update body background for Zeus dark mode
+    document.body.style.backgroundColor = `hsl(${colors.background})`;
+  }, [currentTier]);
+
+  // Persist orders to localStorage
+  const setCompletedOrders = useCallback((orders: number) => {
+    setCompletedOrdersState(orders);
+    localStorage.setItem("gou_completed_orders", orders.toString());
+  }, []);
+
+  const incrementOrders = useCallback(() => {
+    setCompletedOrders(completedOrders + 1);
+  }, [completedOrders, setCompletedOrders]);
+
+  // Debug: cycle through tiers
+  const cycleTierForDebug = useCallback(() => {
+    if (completedOrders < 5) {
+      setCompletedOrders(5); // Jump to Shrek
+    } else if (completedOrders < 20) {
+      setCompletedOrders(20); // Jump to Zeus
+    } else {
+      setCompletedOrders(0); // Reset to Joe
+    }
+  }, [completedOrders, setCompletedOrders]);
+
+  return (
+    <TierContext.Provider
+      value={{
+        currentTier,
+        completedOrders,
+        nextTierProgress,
+        ordersToNextTier,
+        nextTierName: nextTier?.name || null,
+        setCompletedOrders,
+        incrementOrders,
+        cycleTierForDebug,
+      }}
+    >
+      {children}
+    </TierContext.Provider>
+  );
+}
+
+export function useTier() {
+  const context = useContext(TierContext);
+  if (context === undefined) {
+    throw new Error("useTier must be used within a TierProvider");
+  }
+  return context;
+}
