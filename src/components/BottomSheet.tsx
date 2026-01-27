@@ -212,68 +212,70 @@ export function BottomSheet({
         onDragEnd={handleDragEnd}
       >
         {/* Full Height Flex Column */}
-        <div className="flex flex-col h-full relative">
-          {/* Mascot "Perch" - anchored to top-right of sheet */}
-          <motion.button
-            onClick={handleMascotClick}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="absolute top-0 right-4 z-50 h-12 w-12 rounded-full bg-primary shadow-lg flex items-center justify-center -mt-6"
-            style={{ 
-              boxShadow: "0 4px 20px hsl(var(--primary) / 0.4)"
-            }}
+        <div className="flex flex-col h-full">
+          {/* Drag Handle - centered at very top */}
+          <div 
+            className="flex items-center justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing"
+            onClick={toggleSheet}
           >
-            {/* Pulse ring animation */}
-            <motion.div
-              className="absolute inset-0 rounded-full bg-primary"
-              animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            />
-            
-            {/* Dynamic mascot image based on tier */}
-            <img 
-              src={currentTier.mascotImage} 
-              alt={currentTier.name} 
-              className="relative z-10 h-10 w-10 rounded-full object-cover"
-            />
-
-            {/* Notification badge */}
-            {showJoeBadge && (
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-destructive border-2 border-background"
-              />
-            )}
-          </motion.button>
-
-          {/* Tier Progress Bar - at the very top */}
-          <div className="flex-none px-4 pt-3">
-            <div className="flex items-center gap-3">
-              <div className="flex-1">
-                <Progress 
-                  value={nextTierProgress} 
-                  className="h-2 bg-secondary"
-                />
-              </div>
-              <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">
-                {nextTierName 
-                  ? `${ordersToNextTier} orders until ${nextTierName}!`
-                  : `${currentTier.name} - Max Tier! 👑`
-                }
-              </span>
-            </div>
+            <div className="h-1 w-10 rounded-full bg-muted-foreground/30" />
           </div>
 
-          {/* Section 1: Header - Handle + Chips */}
-          <div className="flex-none pt-1 px-4">
-            {/* Drag Handle */}
-            <div 
-              className="flex items-center justify-center py-3 cursor-grab active:cursor-grabbing"
-              onClick={toggleSheet}
-            >
-              <div className="h-1 w-10 rounded-full bg-muted-foreground/30" />
+          {/* Dashboard Header Row - Progress on Left, Mascot on Right */}
+          <div className="flex items-center justify-between w-full px-4 pb-3">
+            {/* Left Side: Tier Progress */}
+            <div className="flex-1 mr-4">
+              <p className="text-xs font-medium text-muted-foreground mb-1.5">
+                {nextTierName 
+                  ? `Next: ${nextTierName} (${completedOrders}/${nextTierName === "Shrek" ? 5 : 20})`
+                  : `${currentTier.name} - Max Tier! 👑`
+                }
+              </p>
+              <div className="w-32 h-2 bg-secondary rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-primary transition-all duration-500 rounded-full"
+                  style={{ width: `${nextTierProgress}%` }}
+                />
+              </div>
             </div>
+
+            {/* Right Side: Mascot Button */}
+            <motion.button
+              onClick={handleMascotClick}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="relative h-12 w-12 rounded-full bg-primary shadow-lg flex items-center justify-center flex-shrink-0"
+              style={{ 
+                boxShadow: "0 4px 20px hsl(var(--primary) / 0.4)"
+              }}
+            >
+              {/* Pulse ring animation */}
+              <motion.div
+                className="absolute inset-0 rounded-full bg-primary"
+                animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              />
+              
+              {/* Dynamic mascot image based on tier */}
+              <img 
+                src={currentTier.mascotImage} 
+                alt={currentTier.name} 
+                className="relative z-10 h-10 w-10 rounded-full object-cover"
+              />
+
+              {/* Notification badge */}
+              {showJoeBadge && (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-destructive border-2 border-background"
+                />
+              )}
+            </motion.button>
+          </div>
+
+          {/* Section 1: Header - Chips */}
+          <div className="flex-none px-4">
 
             {/* Category Chips */}
             <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-3">
