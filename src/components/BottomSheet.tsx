@@ -1,10 +1,11 @@
 import { Utensils, Coffee, Cake, Salad, ShoppingBag, Crown } from "lucide-react";
 import { motion, PanInfo, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { FoodCard, MarketingBanner } from "./FoodCard";
 import { useProfile } from "@/hooks/useProfile";
-import joeMascot from "@/assets/joe-mascot.png";
+import { useTier } from "@/contexts/TierContext";
+import { Progress } from "@/components/ui/progress";
 
 interface Shop {
   id: string;
@@ -45,7 +46,7 @@ interface BottomSheetProps {
 }
 
 // Height-based animation - button always visible
-const COLLAPSED_HEIGHT = '230px'; // Handle + Chips + Button
+const COLLAPSED_HEIGHT = '270px'; // Handle + Progress + Chips + Button
 const EXPANDED_HEIGHT = '85dvh';
 const DRAG_THRESHOLD = 40;
 
@@ -76,6 +77,35 @@ export function BottomSheet({
   const [isOpen, setIsOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { profile } = useProfile();
+  const { currentTier, nextTierProgress, ordersToNextTier, nextTierName, cycleTierForDebug, completedOrders } = useTier();
+  
+  // Triple-click detection for debug
+  const clickCountRef = useRef(0);
+  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  const handleMascotClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    clickCountRef.current += 1;
+    
+    if (clickTimeoutRef.current) {
+      clearTimeout(clickTimeoutRef.current);
+    }
+    
+    if (clickCountRef.current >= 3) {
+      // Triple click detected - cycle tier for debug
+      cycleTierForDebug();
+      clickCountRef.current = 0;
+    } else {
+      // Reset after 400ms if not triple-clicked
+      clickTimeoutRef.current = setTimeout(() => {
+        if (clickCountRef.current < 3) {
+          onJoeClick?.(); // Single/double click opens chat
+        }
+        clickCountRef.current = 0;
+      }, 400);
+    }
+  }, [cycleTierForDebug, onJoeClick]);
   
   // Check if user is Pack Leader (20+ points)
   const isPackLeader = profile && profile.loyalty_points >= 20;
@@ -166,7 +196,7 @@ export function BottomSheet({
       <motion.div
         className={cn(
           "fixed bottom-0 left-0 right-0 z-50",
-          "bg-white rounded-t-[32px] rounded-b-none",
+          "bg-card rounded-t-[32px] rounded-b-none",
           "shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.15)]"
         )}
         style={{ touchAction: 'none' }}
@@ -183,17 +213,14 @@ export function BottomSheet({
       >
         {/* Full Height Flex Column */}
         <div className="flex flex-col h-full relative">
-          {/* Joe "Perch" - anchored to top-right of sheet */}
+          {/* Mascot "Perch" - anchored to top-right of sheet */}
           <motion.button
-            onClick={(e) => {
-              e.stopPropagation();
-              onJoeClick?.();
-            }}
+            onClick={handleMascotClick}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="absolute top-0 right-4 z-50 h-12 w-12 rounded-full bg-primary shadow-lg flex items-center justify-center -mt-6"
             style={{ 
-              boxShadow: "0 4px 20px rgba(255, 184, 0, 0.4)"
+              boxShadow: "0 4px 20px hsl(var(--primary) / 0.4)"
             }}
           >
             {/* Pulse ring animation */}
@@ -203,10 +230,10 @@ export function BottomSheet({
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             />
             
-            {/* Joe mascot image */}
+            {/* Dynamic mascot image based on tier */}
             <img 
-              src={joeMascot} 
-              alt="Joe" 
+              src={currentTier.mascotImage} 
+              alt={currentTier.name} 
               className="relative z-10 h-10 w-10 rounded-full object-cover"
             />
 
@@ -220,14 +247,32 @@ export function BottomSheet({
             )}
           </motion.button>
 
+          {/* Tier Progress Bar - at the very top */}
+          <div className="flex-none px-4 pt-3">
+            <div className="flex items-center gap-3">
+              <div className="flex-1">
+                <Progress 
+                  value={nextTierProgress} 
+                  className="h-2 bg-secondary"
+                />
+              </div>
+              <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">
+                {nextTierName 
+                  ? `${ordersToNextTier} orders until ${nextTierName}!`
+                  : `${currentTier.name} - Max Tier! 👑`
+                }
+              </span>
+            </div>
+          </div>
+
           {/* Section 1: Header - Handle + Chips */}
-          <div className="flex-none pt-2 px-4">
+          <div className="flex-none pt-1 px-4">
             {/* Drag Handle */}
             <div 
               className="flex items-center justify-center py-3 cursor-grab active:cursor-grabbing"
               onClick={toggleSheet}
             >
-              <div className="h-1 w-10 rounded-full bg-gray-300" />
+              <div className="h-1 w-10 rounded-full bg-muted-foreground/30" />
             </div>
 
             {/* Category Chips */}
@@ -272,8 +317,8 @@ export function BottomSheet({
             {isOpen && (
               <div className="pb-4">
                 {/* Section Header */}
-                <div className="flex items-center justify-between mb-4 sticky top-0 bg-white py-2 -mx-4 px-4 z-10">
-                  <h3 className="text-lg font-bold text-gray-900">Featured Deals</h3>
+                <div className="flex items-center justify-between mb-4 sticky top-0 bg-card py-2 -mx-4 px-4 z-10">
+                  <h3 className="text-lg font-bold text-card-foreground">Featured Deals</h3>
                   <button className="text-sm font-medium text-primary">See all</button>
                 </div>
 
@@ -313,14 +358,14 @@ export function BottomSheet({
 
           {/* Section 3: Footer - Reserve Button (always visible, mt-auto pins to bottom) */}
           <div 
-            className="flex-none mt-auto px-4 pt-4 bg-white border-t border-gray-50"
+            className="flex-none mt-auto px-4 pt-4 bg-card border-t border-border"
             style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
           >
             {/* Pack Leader VIP Badge */}
             {hasSelection && isPackLeader && (
               <div className="flex items-center justify-center gap-2 mb-3 py-2 px-4 bg-primary/10 border border-primary/30 rounded-xl">
                 <Crown className="h-4 w-4 text-primary" />
-                <span className="text-sm font-semibold text-primary">Joe's VIP Discount</span>
+                <span className="text-sm font-semibold text-primary">{currentTier.name}'s VIP Discount</span>
                 <span className="text-xs text-muted-foreground line-through ml-2">
                   +{formatPrice(SERVICE_FEE)} fee
                 </span>
@@ -335,7 +380,7 @@ export function BottomSheet({
                 "flex w-full h-14 items-center justify-center gap-2 rounded-xl font-semibold shadow-lg transition-all active:scale-[0.98]",
                 hasSelection 
                   ? "bg-primary text-primary-foreground hover:bg-primary/90" 
-                  : "bg-gray-200 text-gray-500"
+                  : "bg-muted text-muted-foreground"
               )}
             >
               {hasSelection 

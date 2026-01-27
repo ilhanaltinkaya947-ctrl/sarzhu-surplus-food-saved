@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import joeMascot from "@/assets/joe-mascot.png";
+import { useTier } from "@/contexts/TierContext";
 
 interface Message {
   id: string;
@@ -25,6 +25,7 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { currentTier } = useTier();
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -144,12 +145,12 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
             <div className="flex items-center justify-between px-4 py-3 bg-primary text-primary-foreground">
               <div className="flex items-center gap-3">
                 <img 
-                  src={joeMascot} 
-                  alt="Joe" 
+                  src={currentTier.mascotImage} 
+                  alt={currentTier.name} 
                   className="h-10 w-10 rounded-full object-cover shadow-inner"
                 />
                 <div>
-                  <h3 className="font-bold text-sm">Joe the Food Rescue Pup</h3>
+                  <h3 className="font-bold text-sm">{currentTier.name} the Food Rescue Pup</h3>
                   <p className="text-xs opacity-80">Powered by AI 🐾</p>
                 </div>
               </div>
@@ -174,8 +175,8 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
                 >
                   {msg.isJoe && (
                     <img 
-                      src={joeMascot} 
-                      alt="Joe" 
+                      src={currentTier.mascotImage} 
+                      alt={currentTier.name} 
                       className="h-8 w-8 rounded-full object-cover mr-2 flex-shrink-0 shadow-sm"
                     />
                   )}
@@ -199,8 +200,8 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
                   className="flex items-center gap-2"
                 >
                   <img 
-                    src={joeMascot} 
-                    alt="Joe" 
+                    src={currentTier.mascotImage} 
+                    alt={currentTier.name} 
                     className="h-8 w-8 rounded-full object-cover shadow-sm"
                   />
                   <div className="bg-primary px-4 py-2.5 rounded-2xl rounded-tl-sm">
