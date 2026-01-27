@@ -5,7 +5,7 @@ import confetti from "canvas-confetti";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AuthModal } from "./AuthModal";
-import { OrderConfirmationModal } from "./OrderConfirmationModal";
+import { PickupSuccessScreen } from "./orders/PickupSuccessScreen";
 import type { User } from "@supabase/supabase-js";
 
 interface Shop {
@@ -341,10 +341,10 @@ export function ShopDrawer({
         onSuccess={handleAuthSuccess}
       />
 
-      {/* Order Confirmation Modal */}
-      <OrderConfirmationModal
+      {/* Pickup Success Screen */}
+      <PickupSuccessScreen
         open={confirmationOpen}
-        onOpenChange={setConfirmationOpen}
+        onClose={() => setConfirmationOpen(false)}
         orderId={confirmedOrderId}
         shopName={shop.name}
       />
