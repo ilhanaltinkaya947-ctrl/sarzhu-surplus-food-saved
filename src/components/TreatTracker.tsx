@@ -40,7 +40,7 @@ export function TreatTracker({ points, tier, className }: TreatTrackerProps) {
       {/* Header with Joe mascot */}
       <div className="flex items-center gap-3 mb-4">
         {/* Joe avatar - Yorkshire Terrier emoji representation */}
-        <div className="h-12 w-12 rounded-full bg-[#FFB800]/20 flex items-center justify-center text-2xl">
+        <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center text-2xl">
           🐕
         </div>
         <div className="flex-1">
@@ -50,9 +50,9 @@ export function TreatTracker({ points, tier, className }: TreatTrackerProps) {
           </p>
         </div>
         {/* Bone icon as points indicator */}
-        <div className="flex items-center gap-1 bg-[#FFB800]/20 px-3 py-1.5 rounded-full">
+        <div className="flex items-center gap-1 bg-primary/20 px-3 py-1.5 rounded-full">
           <span className="text-lg">🦴</span>
-          <span className="font-bold text-[#FFB800]">{points}</span>
+          <span className="font-bold text-primary">{points}</span>
         </div>
       </div>
 
@@ -65,7 +65,7 @@ export function TreatTracker({ points, tier, className }: TreatTrackerProps) {
               key={t.name}
               className={cn(
                 "flex flex-col items-center transition-colors",
-                points >= t.minPoints ? "text-[#FFB800]" : "text-muted-foreground"
+                points >= t.minPoints ? "text-primary" : "text-muted-foreground"
               )}
               style={{ 
                 position: i === 0 ? 'relative' : 'absolute',
@@ -83,14 +83,14 @@ export function TreatTracker({ points, tier, className }: TreatTrackerProps) {
         <div className="relative mt-8">
           <Progress 
             value={progressPercent} 
-            className="h-3 bg-secondary"
+            className="h-3 bg-secondary rounded-full"
           />
           {/* Joe marker on progress */}
           <div 
             className="absolute top-1/2 -translate-y-1/2 transition-all duration-500"
             style={{ left: `calc(${progressPercent}% - 12px)` }}
           >
-            <div className="h-6 w-6 rounded-full bg-[#FFB800] flex items-center justify-center shadow-md text-sm">
+            <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center shadow-md text-sm">
               🐕
             </div>
           </div>
@@ -98,7 +98,7 @@ export function TreatTracker({ points, tier, className }: TreatTrackerProps) {
       </div>
 
       {/* Joe's message */}
-      <div className="bg-[#FFB800]/10 rounded-xl p-3 border border-[#FFB800]/20">
+      <div className="bg-primary/10 rounded-xl p-3 border border-primary/20">
         <p className="text-sm text-foreground font-medium">
           {getJoeMessage()}
         </p>
@@ -112,7 +112,7 @@ export function TreatTracker({ points, tier, className }: TreatTrackerProps) {
             <span>Early Access</span>
           </div>
           {points >= 20 && (
-            <div className="flex items-center gap-1.5 bg-[#FFB800]/20 text-[#FFB800] px-3 py-1.5 rounded-full text-xs font-semibold">
+            <div className="flex items-center gap-1.5 bg-primary/20 text-primary px-3 py-1.5 rounded-full text-xs font-semibold">
               <Crown className="h-3 w-3" />
               <span>20% Off Fees</span>
             </div>

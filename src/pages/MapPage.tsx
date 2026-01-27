@@ -212,14 +212,14 @@ export default function MapPage() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleJoeOpen}
-            className="pointer-events-auto fixed bottom-[260px] right-4 z-[55] h-14 w-14 rounded-full bg-[#FFB800] shadow-lg flex items-center justify-center text-2xl"
+            className="pointer-events-auto fixed bottom-[260px] right-4 z-[55] h-14 w-14 rounded-full bg-primary shadow-lg flex items-center justify-center text-2xl"
             style={{ 
-              boxShadow: "0 4px 20px rgba(255, 184, 0, 0.4)"
+              boxShadow: "var(--shadow-gold, 0 4px 20px rgba(255, 184, 0, 0.4))"
             }}
           >
             {/* Pulse ring animation */}
             <motion.div
-              className="absolute inset-0 rounded-full bg-[#FFB800]"
+              className="absolute inset-0 rounded-full bg-primary"
               animate={{ scale: [1, 1.3, 1], opacity: [0.6, 0, 0.6] }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             />
