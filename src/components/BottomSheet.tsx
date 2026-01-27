@@ -1,8 +1,10 @@
-import { QrCode, Utensils, Coffee, Cake, Salad, ShoppingBag } from "lucide-react";
+import { Utensils, Coffee, Cake, Salad, ShoppingBag } from "lucide-react";
 import { motion, PanInfo, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useState, useRef } from "react";
 import { FoodCard, MarketingBanner } from "./FoodCard";
+import { SwipeToReserve } from "./SwipeToReserve";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Shop {
   id: string;
@@ -32,9 +34,12 @@ const categories = [
 interface BottomSheetProps {
   onCategoryChange?: (category: string) => void;
   onShopClick?: (shop: Shop) => void;
+  onReserve?: (bag: MysteryBag, shop: Shop) => void;
   isHidden?: boolean;
   shops?: Shop[];
   bags?: MysteryBag[];
+  selectedBag?: MysteryBag | null;
+  selectedShop?: Shop | null;
 }
 
 // Height constants
@@ -52,10 +57,14 @@ const springConfig = {
 export function BottomSheet({
   onCategoryChange,
   onShopClick,
+  onReserve,
   isHidden = false,
   shops = [],
   bags = [],
+  selectedBag = null,
+  selectedShop = null,
 }: BottomSheetProps) {
+  const { user } = useAuth();
   const [activeCategory, setActiveCategory] = useState("all");
   const [isExpanded, setIsExpanded] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -111,6 +120,25 @@ export function BottomSheet({
   const getBagForShop = (shopId: string) => {
     return bags.find((bag) => bag.shop_id === shopId);
   };
+
+  const handleReserve = () => {
+    if (selectedBag && selectedShop && onReserve) {
+      onReserve(selectedBag, selectedShop);
+    }
+  };
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("en-KZ", {
+      style: "currency",
+      currency: "KZT",
+      maximumFractionDigits: 0,
+    }).format(price);
+  };
+
+  // Get the price to display on the slider
+  const sliderPrice = selectedBag 
+    ? formatPrice(selectedBag.discounted_price) 
+    : formatPrice(1200);
 
   return (
     <>
@@ -244,15 +272,16 @@ export function BottomSheet({
             )}
           </motion.div>
 
-          {/* Footer: Sticky Scan QR Button with safe area padding */}
+          {/* Footer: Swipe to Reserve with safe area padding */}
           <div 
             className="flex-shrink-0 px-4 pt-2 bg-white"
             style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
           >
-            <button className="flex w-full items-center justify-center gap-3 rounded-2xl bg-primary py-3.5 text-primary-foreground font-semibold shadow-lg transition-transform active:scale-[0.98]">
-              <QrCode className="h-5 w-5" />
-              Scan QR to Reserve
-            </button>
+            <SwipeToReserve
+              onConfirm={handleReserve}
+              price={sliderPrice}
+              disabled={!user || !selectedBag}
+            />
           </div>
         </motion.div>
       </motion.div>

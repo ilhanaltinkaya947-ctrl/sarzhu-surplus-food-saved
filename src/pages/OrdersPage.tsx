@@ -1,11 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { TicketCard } from "@/components/orders/TicketCard";
-import { PickupSuccessScreen } from "@/components/orders/PickupSuccessScreen";
 import { EmptyState } from "@/components/orders/EmptyState";
-import { useToast } from "@/hooks/use-toast";
 
 interface Order {
   id: string;
@@ -18,12 +16,9 @@ interface Order {
 
 export default function OrdersPage() {
   const { user, loading: authLoading } = useAuth();
-  const { toast } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"active" | "past">("active");
-  const [processingOrderId, setProcessingOrderId] = useState<string | null>(null);
-  const [successOrder, setSuccessOrder] = useState<Order | null>(null);
 
   const fetchOrders = useCallback(async () => {
     if (!user) {
@@ -76,41 +71,30 @@ export default function OrdersPage() {
     }
   }, [authLoading, fetchOrders]);
 
-  const handleConfirmPickup = async (order: Order) => {
-    setProcessingOrderId(order.id);
+  // Real-time subscription for order updates
+  useEffect(() => {
+    if (!user) return;
 
-    try {
-      const { error } = await supabase
-        .from("orders")
-        .update({ status: "picked_up" })
-        .eq("id", order.id);
+    const channel = supabase
+      .channel('user-orders')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'orders',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          fetchOrders();
+        }
+      )
+      .subscribe();
 
-      if (error) throw error;
-
-      // Show success screen
-      setSuccessOrder(order);
-      
-      // Update local state
-      setOrders(prev => 
-        prev.map(o => o.id === order.id ? { ...o, status: "picked_up" } : o)
-      );
-    } catch (error) {
-      console.error("Error confirming pickup:", error);
-      toast({
-        title: "Error",
-        description: "Failed to confirm pickup. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setProcessingOrderId(null);
-    }
-  };
-
-  const handleCloseSuccess = () => {
-    setSuccessOrder(null);
-    // Switch to past orders tab
-    setActiveTab("past");
-  };
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, fetchOrders]);
 
   const activeOrders = orders.filter(o => o.status === "reserved" || o.status === "pending");
   const pastOrders = orders.filter(o => o.status === "picked_up" || o.status === "cancelled");
@@ -190,27 +174,11 @@ export default function OrdersPage() {
             }}
           >
             {displayedOrders.map((order) => (
-              <TicketCard
-                key={order.id}
-                order={order}
-                onConfirmPickup={() => handleConfirmPickup(order)}
-                isProcessing={processingOrderId === order.id}
-              />
+              <TicketCard key={order.id} order={order} />
             ))}
           </motion.div>
         )}
       </main>
-
-      {/* Success Screen */}
-      <AnimatePresence>
-        {successOrder && (
-          <PickupSuccessScreen
-            orderId={successOrder.id}
-            shopName={successOrder.shop_name}
-            onClose={handleCloseSuccess}
-          />
-        )}
-      </AnimatePresence>
     </div>
   );
 }

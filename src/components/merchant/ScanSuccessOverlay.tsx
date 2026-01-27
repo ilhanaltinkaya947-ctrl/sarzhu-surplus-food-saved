@@ -2,17 +2,16 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Check, X } from "lucide-react";
 
-interface PickupSuccessScreenProps {
+interface ScanSuccessOverlayProps {
   orderId: string;
-  shopName: string;
   onClose: () => void;
 }
 
-export function PickupSuccessScreen({ orderId, shopName, onClose }: PickupSuccessScreenProps) {
+export function ScanSuccessOverlay({ orderId, onClose }: ScanSuccessOverlayProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
   const shortOrderId = orderId.slice(0, 8).toUpperCase();
 
-  // Update time every second for anti-screenshot proof
+  // Update time every second
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(new Date());
@@ -27,7 +26,11 @@ export function PickupSuccessScreen({ orderId, shopName, onClose }: PickupSucces
     
     // Haptic feedback
     if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
-  }, []);
+    
+    // Auto close after 5 seconds
+    const timeout = setTimeout(onClose, 5000);
+    return () => clearTimeout(timeout);
+  }, [onClose]);
 
   const playSuccessSound = () => {
     try {
@@ -38,10 +41,9 @@ export function PickupSuccessScreen({ orderId, shopName, onClose }: PickupSucces
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
       
-      // "Ding" sound - rising pleasant tone
-      oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
-      oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.15); // E5
-      oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.3); // G5
+      oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime);
+      oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.15);
+      oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.3);
       
       gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
@@ -59,15 +61,6 @@ export function PickupSuccessScreen({ orderId, shopName, onClose }: PickupSucces
       minute: "2-digit",
       second: "2-digit",
       hour12: false,
-    });
-  };
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-      year: "numeric",
     });
   };
 
@@ -93,7 +86,7 @@ export function PickupSuccessScreen({ orderId, shopName, onClose }: PickupSucces
         transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
         className="relative mb-8"
       >
-        {/* Pulsing ring */}
+        {/* Pulsing rings */}
         <motion.div
           animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0, 0.5] }}
           transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
@@ -107,13 +100,7 @@ export function PickupSuccessScreen({ orderId, shopName, onClose }: PickupSucces
         
         {/* Checkmark circle */}
         <div className="relative h-32 w-32 rounded-full bg-white flex items-center justify-center shadow-2xl">
-          <motion.div
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
-            <Check className="h-16 w-16 text-emerald-500 stroke-[3]" />
-          </motion.div>
+          <Check className="h-16 w-16 text-emerald-500 stroke-[3]" />
         </div>
       </motion.div>
 
@@ -127,7 +114,7 @@ export function PickupSuccessScreen({ orderId, shopName, onClose }: PickupSucces
         Order Collected!
       </motion.h1>
 
-      {/* Live Time (Anti-Screenshot) */}
+      {/* Live Time */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -137,30 +124,27 @@ export function PickupSuccessScreen({ orderId, shopName, onClose }: PickupSucces
         <p className="text-5xl font-mono font-bold text-white text-center tabular-nums">
           {formatTime(currentTime)}
         </p>
-        <p className="text-sm text-white/80 text-center mt-1">
-          {formatDate(currentTime)}
-        </p>
       </motion.div>
 
-      {/* Order Details */}
+      {/* Order ID */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.7 }}
         className="text-center"
       >
-        <p className="text-xl font-semibold text-white mb-1">{shopName}</p>
-        <p className="text-white/80">Order #{shortOrderId}</p>
+        <p className="text-white/80">Order</p>
+        <p className="text-xl font-bold text-white">#{shortOrderId}</p>
       </motion.div>
 
-      {/* Thank You Message */}
+      {/* Auto-close hint */}
       <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1 }}
         className="absolute bottom-12 text-white/60 text-sm"
       >
-        Thank you for saving food! 🌱
+        Auto-closing in a few seconds...
       </motion.p>
     </motion.div>
   );

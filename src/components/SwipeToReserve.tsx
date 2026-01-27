@@ -1,13 +1,14 @@
 import { useState, useRef } from "react";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, ShoppingBag } from "lucide-react";
 
-interface SwipeToConfirmProps {
+interface SwipeToReserveProps {
   onConfirm: () => void;
+  price: string;
   disabled?: boolean;
 }
 
-export function SwipeToConfirm({ onConfirm, disabled = false }: SwipeToConfirmProps) {
+export function SwipeToReserve({ onConfirm, price, disabled = false }: SwipeToReserveProps) {
   const [completed, setCompleted] = useState(false);
   const constraintsRef = useRef<HTMLDivElement>(null);
   const x = useMotionValue(0);
@@ -28,22 +29,60 @@ export function SwipeToConfirm({ onConfirm, disabled = false }: SwipeToConfirmPr
       // Haptic feedback
       if (navigator.vibrate) navigator.vibrate([50, 30, 100]);
       
+      // Play success sound
+      playSuccessSound();
+      
       // Trigger callback
       setTimeout(() => {
         onConfirm();
-      }, 200);
+      }, 300);
     } else {
       // Snap back
       animate(x, 0, { type: "spring", stiffness: 500, damping: 30 });
     }
   };
 
-  if (disabled || completed) {
+  const playSuccessSound = () => {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime);
+      oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1);
+      
+      gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+    } catch (e) {
+      // Audio not supported
+    }
+  };
+
+  if (disabled) {
     return (
-      <div className="relative h-14 w-full overflow-hidden rounded-full bg-emerald-100">
+      <div className="relative h-14 w-full overflow-hidden rounded-full bg-gray-200">
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-sm font-semibold text-emerald-600">
-            {completed ? "Processing..." : "Already collected"}
+          <span className="text-sm font-semibold text-gray-500">
+            Select a bag first
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (completed) {
+    return (
+      <div className="relative h-14 w-full overflow-hidden rounded-full bg-emerald-500">
+        <div className="absolute inset-0 flex items-center justify-center gap-2">
+          <ShoppingBag className="h-5 w-5 text-white" />
+          <span className="text-sm font-semibold text-white">
+            Reserving...
           </span>
         </div>
       </div>
@@ -59,7 +98,7 @@ export function SwipeToConfirm({ onConfirm, disabled = false }: SwipeToConfirmPr
       >
         {/* Success background that appears as you slide */}
         <motion.div
-          className="absolute inset-0 bg-emerald-500"
+          className="absolute inset-0 bg-primary"
           style={{ opacity: bgOpacity }}
         />
         
@@ -69,7 +108,7 @@ export function SwipeToConfirm({ onConfirm, disabled = false }: SwipeToConfirmPr
           style={{ opacity: textOpacity }}
         >
           <span className="text-sm font-semibold text-muted-foreground">
-            Slide to collect order
+            Swipe to Reserve • {price}
           </span>
         </motion.div>
 
@@ -80,21 +119,16 @@ export function SwipeToConfirm({ onConfirm, disabled = false }: SwipeToConfirmPr
           dragElastic={0}
           onDragEnd={handleDragEnd}
           style={{ x }}
-          className="absolute left-1 top-1 bottom-1 w-12 cursor-grab rounded-full bg-emerald-500 shadow-lg flex items-center justify-center active:cursor-grabbing"
+          className="absolute left-1 top-1 bottom-1 w-12 cursor-grab rounded-full bg-primary shadow-lg flex items-center justify-center active:cursor-grabbing"
         >
           <motion.div
             animate={{ x: [0, 4, 0] }}
             transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
           >
-            <ChevronRight className="h-6 w-6 text-white" />
+            <ChevronRight className="h-6 w-6 text-primary-foreground" />
           </motion.div>
         </motion.div>
       </div>
-
-      {/* Warning text */}
-      <p className="mt-2 text-center text-xs text-muted-foreground">
-        Only swipe this when you are in front of the staff
-      </p>
     </div>
   );
 }
