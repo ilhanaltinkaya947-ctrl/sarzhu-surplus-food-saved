@@ -19,6 +19,34 @@ interface JoeChatProps {
   onClose: () => void;
 }
 
+// Tier-specific chat configurations
+const CHAT_CONFIG = {
+  Joe: {
+    title: "Joe the Food Rescue Pup",
+    subtitle: "Powered by AI 🐾",
+    greeting: "Woof! 🐶 I'm Joe, your Food Rescue Pup. I sniff out the best surplus food deals in Almaty. What are you craving today?",
+    placeholder: "Ask Joe about deals...",
+    fallback: "Woof! I'm having trouble sniffing right now. Try asking me again! 🐾",
+    errorFallback: "Woof! Something went wrong. Try again! 🐕",
+  },
+  Shrek: {
+    title: "Shrek's Premium Selection",
+    subtitle: "Curated Excellence ✨",
+    greeting: "Greetings. 🐻‍❄️ I am Shrek. I have curated a list of premium surplus opportunities for you today. Shall we find something elegant?",
+    placeholder: "Inquire with Shrek...",
+    fallback: "My apologies. I am momentarily indisposed. Please inquire again shortly.",
+    errorFallback: "A minor setback. Let us try once more.",
+  },
+  Zeus: {
+    title: "ZEUS // SYSTEM OPERATOR",
+    subtitle: "⚡ NETWORK ACTIVE",
+    greeting: "⚡ SYSTEM ONLINE. I am Zeus. Top-tier deals detected in your sector. Initiating high-voltage savings protocol. What is your directive?",
+    placeholder: "Input command...",
+    fallback: "⚠️ SIGNAL DISRUPTION. Retry transmission.",
+    errorFallback: "⚡ ERROR. Re-establishing connection...",
+  },
+};
+
 export function JoeChat({ open, onClose }: JoeChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -26,20 +54,33 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { currentTier } = useTier();
+  const previousTierRef = useRef(currentTier.name);
+
+  // Get current tier's chat config
+  const chatConfig = CHAT_CONFIG[currentTier.name as keyof typeof CHAT_CONFIG] || CHAT_CONFIG.Joe;
 
   // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Joe's greeting when chat opens
+  // Reset chat when tier changes
+  useEffect(() => {
+    if (previousTierRef.current !== currentTier.name) {
+      // Tier changed - clear messages so new mascot can introduce themselves
+      setMessages([]);
+      previousTierRef.current = currentTier.name;
+    }
+  }, [currentTier.name]);
+
+  // Mascot greeting when chat opens or tier changes
   useEffect(() => {
     if (open && messages.length === 0) {
       setIsTyping(true);
       const timer = setTimeout(() => {
         setMessages([{
           id: "greeting",
-          text: "Woof! 🐶 I'm Joe, your Food Rescue Pup. I sniff out the best surplus food deals in Almaty. What are you craving today?",
+          text: chatConfig.greeting,
           isJoe: true,
           timestamp: new Date(),
         }]);
@@ -47,7 +88,7 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [open, messages.length]);
+  }, [open, messages.length, chatConfig.greeting]);
 
   // Focus input when opened
   useEffect(() => {
@@ -83,6 +124,7 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
         body: {
           message: userMessage.text,
           conversationHistory,
+          tierName: currentTier.name, // Pass tier to edge function for personality
         },
       });
 
@@ -90,23 +132,23 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
 
       const joeResponse: Message = {
         id: `joe-${Date.now()}`,
-        text: data.response || "Woof! Something went wrong. Try again! 🐕",
+        text: data.response || chatConfig.errorFallback,
         isJoe: true,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, joeResponse]);
     } catch (error) {
-      console.error("Error calling Joe:", error);
+      console.error("Error calling chat:", error);
       
       // Fallback response
       const fallbackResponse: Message = {
         id: `joe-${Date.now()}`,
-        text: "Woof! I'm having trouble sniffing right now. Try asking me again! 🐾",
+        text: chatConfig.fallback,
         isJoe: true,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, fallbackResponse]);
-      toast.error("Joe is temporarily unavailable");
+      toast.error(`${currentTier.name} is temporarily unavailable`);
     } finally {
       setIsTyping(false);
     }
@@ -142,7 +184,7 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
             style={{ maxHeight: "70dvh" }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 bg-primary text-primary-foreground">
+            <div className="flex items-center justify-between px-4 py-3 bg-primary text-primary-foreground transition-colors duration-500">
               <div className="flex items-center gap-3">
                 <img 
                   src={currentTier.mascotImage} 
@@ -150,8 +192,8 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
                   className="h-10 w-10 rounded-full object-cover shadow-inner"
                 />
                 <div>
-                  <h3 className="font-bold text-sm">{currentTier.name} the Food Rescue Pup</h3>
-                  <p className="text-xs opacity-80">Powered by AI 🐾</p>
+                  <h3 className="font-bold text-sm">{chatConfig.title}</h3>
+                  <p className="text-xs opacity-80">{chatConfig.subtitle}</p>
                 </div>
               </div>
               <Button
@@ -225,9 +267,9 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Ask Joe about deals..."
+                  placeholder={chatConfig.placeholder}
                   disabled={isTyping}
-                  className="flex-1 rounded-full bg-muted border-0 focus-visible:ring-primary"
+                  className="flex-1 rounded-full bg-muted border-0 focus-visible:ring-primary transition-colors duration-500"
                 />
                 <Button
                   onClick={handleSend}
