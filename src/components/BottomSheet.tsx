@@ -271,27 +271,20 @@ export function BottomSheet({
             )}
           </motion.div>
 
-          {/* Footer: Reserve Button with safe area padding */}
-          <div 
-            className="flex-shrink-0 px-4 pt-2 bg-white"
-            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
-          >
-            <button 
-              onClick={handleReserveClick}
-              disabled={!hasSelection}
-              className={cn(
-                "flex w-full items-center justify-center gap-3 rounded-2xl py-3.5 font-semibold shadow-lg transition-all active:scale-[0.98]",
-                hasSelection 
-                  ? "bg-primary text-primary-foreground" 
-                  : "bg-gray-200 text-gray-500 cursor-not-allowed"
-              )}
+          {/* Footer: Reserve Button - Only visible when shop is selected */}
+          {hasSelection && (
+            <div 
+              className="flex-shrink-0 px-4 pt-3 bg-white border-t border-gray-100"
+              style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
             >
-              {hasSelection 
-                ? `Reserve for ${buttonPrice}` 
-                : "Select a bag to reserve"
-              }
-            </button>
-          </div>
+              <button 
+                onClick={handleReserveClick}
+                className="flex w-full h-14 items-center justify-center gap-2 rounded-2xl bg-foreground text-white font-semibold shadow-lg transition-all active:scale-[0.98]"
+              >
+                Reserve {selectedShop?.name} • {buttonPrice}
+              </button>
+            </div>
+          )}
         </motion.div>
       </motion.div>
     </>
