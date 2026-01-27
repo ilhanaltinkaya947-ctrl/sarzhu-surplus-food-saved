@@ -4,11 +4,12 @@ import { toast } from "sonner";
 
 // Import mascot images
 import joeMascot from "@/assets/joe-mascot.png";
+import shrekMascot from "@/assets/shrek-mascot.png";
 
-// Mascot paths - Shrek and Zeus will be added when uploaded
+// Mascot paths - Zeus will be added when uploaded
 const MASCOTS = {
   joe: joeMascot,
-  shrek: "/placeholder.svg", // Will be replaced with actual upload
+  shrek: shrekMascot,
   zeus: "/placeholder.svg",  // Will be replaced with actual upload
 };
 
