@@ -202,15 +202,14 @@ export default function OrdersPage() {
       </main>
 
       {/* Success Screen */}
-      <AnimatePresence>
-        {successOrder && (
-          <PickupSuccessScreen
-            orderId={successOrder.id}
-            shopName={successOrder.shop_name}
-            onClose={handleCloseSuccess}
-          />
-        )}
-      </AnimatePresence>
+      {successOrder && (
+        <PickupSuccessScreen
+          open={!!successOrder}
+          orderId={successOrder.id}
+          shopName={successOrder.shop_name}
+          onClose={handleCloseSuccess}
+        />
+      )}
     </div>
   );
 }

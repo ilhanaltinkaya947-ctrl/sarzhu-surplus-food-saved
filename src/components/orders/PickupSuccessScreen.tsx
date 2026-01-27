@@ -1,33 +1,47 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Check, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Check, MapPin } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface PickupSuccessScreenProps {
   orderId: string;
   shopName: string;
+  pickupTime?: string;
+  open: boolean;
   onClose: () => void;
 }
 
-export function PickupSuccessScreen({ orderId, shopName, onClose }: PickupSuccessScreenProps) {
+export function PickupSuccessScreen({ 
+  orderId, 
+  shopName, 
+  pickupTime = "21:00",
+  open,
+  onClose 
+}: PickupSuccessScreenProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
-  const shortOrderId = orderId.slice(0, 8).toUpperCase();
+  const navigate = useNavigate();
+  const shortOrderId = `#GOU-${orderId.slice(0, 4).toUpperCase()}`;
 
   // Update time every second for anti-screenshot proof
   useEffect(() => {
+    if (!open) return;
+    
     const interval = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [open]);
 
-  // Play success sound
+  // Play success sound and haptics on open
   useEffect(() => {
+    if (!open) return;
+    
     playSuccessSound();
     
     // Haptic feedback
     if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
-  }, []);
+  }, [open]);
 
   const playSuccessSound = () => {
     try {
@@ -54,12 +68,10 @@ export function PickupSuccessScreen({ orderId, shopName, onClose }: PickupSucces
   };
 
   const formatTime = (date: Date) => {
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false,
-    });
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const seconds = date.getSeconds().toString().padStart(2, '0');
+    return { hours, minutes, seconds };
   };
 
   const formatDate = (date: Date) => {
@@ -67,101 +79,161 @@ export function PickupSuccessScreen({ orderId, shopName, onClose }: PickupSucces
       weekday: "long",
       month: "long",
       day: "numeric",
-      year: "numeric",
     });
   };
 
+  const handleDone = () => {
+    onClose();
+    navigate("/");
+  };
+
+  const handleViewOrders = () => {
+    onClose();
+    navigate("/orders");
+  };
+
+  const time = formatTime(currentTime);
+
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-emerald-500 flex flex-col items-center justify-center px-6"
-    >
-      {/* Close Button */}
-      <button
-        onClick={onClose}
-        className="absolute top-6 right-6 p-2 rounded-full bg-white/20 backdrop-blur-sm"
-      >
-        <X className="h-6 w-6 text-white" />
-      </button>
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[100] bg-white flex flex-col"
+        >
+          {/* Main Content - Centered */}
+          <div className="flex-1 flex flex-col items-center justify-center px-6">
+            {/* Animated Checkmark */}
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
+              className="relative mb-8"
+            >
+              {/* Pulsing rings */}
+              <motion.div
+                animate={{ scale: [1, 1.4, 1], opacity: [0.4, 0, 0.4] }}
+                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                className="absolute inset-0 rounded-full bg-emerald-500"
+              />
+              <motion.div
+                animate={{ scale: [1, 1.25, 1], opacity: [0.3, 0, 0.3] }}
+                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.3 }}
+                className="absolute inset-0 rounded-full bg-emerald-500"
+              />
+              
+              {/* Checkmark circle */}
+              <motion.div 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.3 }}
+                className="relative h-28 w-28 rounded-full bg-emerald-500 flex items-center justify-center shadow-xl shadow-emerald-500/30"
+              >
+                <motion.div
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  animate={{ pathLength: 1, opacity: 1 }}
+                  transition={{ duration: 0.4, delay: 0.5 }}
+                >
+                  <Check className="h-14 w-14 text-white stroke-[3]" />
+                </motion.div>
+              </motion.div>
+            </motion.div>
 
-      {/* Animated Checkmark */}
-      <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
-        className="relative mb-8"
-      >
-        {/* Pulsing ring */}
-        <motion.div
-          animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0, 0.5] }}
-          transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-          className="absolute inset-0 rounded-full bg-white"
-        />
-        <motion.div
-          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0, 0.3] }}
-          transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.3 }}
-          className="absolute inset-0 rounded-full bg-white"
-        />
-        
-        {/* Checkmark circle */}
-        <div className="relative h-32 w-32 rounded-full bg-white flex items-center justify-center shadow-2xl">
+            {/* Success Title */}
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="text-2xl font-bold text-foreground mb-2"
+            >
+              Rescue Successful! 🎉
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.55 }}
+              className="text-muted-foreground mb-8"
+            >
+              You just saved delicious food from going to waste
+            </motion.p>
+
+            {/* Live Clock (Security Feature) */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="bg-muted/50 rounded-3xl px-8 py-6 mb-8 border border-border"
+            >
+              <div className="flex items-baseline justify-center gap-1 font-mono">
+                <span className="text-5xl font-bold text-foreground tabular-nums">
+                  {time.hours}
+                </span>
+                <span className="text-5xl font-bold text-muted-foreground">:</span>
+                <span className="text-5xl font-bold text-foreground tabular-nums">
+                  {time.minutes}
+                </span>
+                <span className="text-5xl font-bold text-muted-foreground">:</span>
+                <motion.span 
+                  key={time.seconds}
+                  initial={{ opacity: 0.5, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-5xl font-bold text-emerald-500 tabular-nums"
+                >
+                  {time.seconds}
+                </motion.span>
+              </div>
+              <p className="text-sm text-muted-foreground text-center mt-2">
+                {formatDate(currentTime)}
+              </p>
+            </motion.div>
+
+            {/* Order Details Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+              className="w-full max-w-sm bg-card rounded-2xl border border-border p-5 shadow-sm"
+            >
+              <div className="text-center mb-4">
+                <h2 className="text-xl font-bold text-foreground">{shopName}</h2>
+                <p className="text-sm text-muted-foreground">{shortOrderId}</p>
+              </div>
+              
+              <div className="flex items-center justify-center gap-2 py-3 px-4 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800">
+                <MapPin className="h-4 w-4 text-amber-600" />
+                <span className="text-sm font-medium text-amber-700 dark:text-amber-500">
+                  Pickup by {pickupTime}
+                </span>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Footer Buttons */}
           <motion.div
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+            className="px-6 pb-safe"
+            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)' }}
           >
-            <Check className="h-16 w-16 text-emerald-500 stroke-[3]" />
+            <button
+              onClick={handleViewOrders}
+              className="w-full h-14 rounded-2xl bg-foreground text-background font-semibold shadow-lg mb-3 active:scale-[0.98] transition-transform"
+            >
+              View My Orders
+            </button>
+            <button
+              onClick={handleDone}
+              className="w-full h-12 rounded-2xl text-muted-foreground font-medium active:scale-[0.98] transition-transform"
+            >
+              Back to Map
+            </button>
           </motion.div>
-        </div>
-      </motion.div>
-
-      {/* Success Title */}
-      <motion.h1
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="text-3xl font-bold text-white mb-2"
-      >
-        Order Collected!
-      </motion.h1>
-
-      {/* Live Time (Anti-Screenshot) */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-        className="bg-white/20 backdrop-blur-sm rounded-2xl px-6 py-4 mb-8"
-      >
-        <p className="text-5xl font-mono font-bold text-white text-center tabular-nums">
-          {formatTime(currentTime)}
-        </p>
-        <p className="text-sm text-white/80 text-center mt-1">
-          {formatDate(currentTime)}
-        </p>
-      </motion.div>
-
-      {/* Order Details */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7 }}
-        className="text-center"
-      >
-        <p className="text-xl font-semibold text-white mb-1">{shopName}</p>
-        <p className="text-white/80">Order #{shortOrderId}</p>
-      </motion.div>
-
-      {/* Thank You Message */}
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1 }}
-        className="absolute bottom-12 text-white/60 text-sm"
-      >
-        Thank you for saving food! 🌱
-      </motion.p>
-    </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
