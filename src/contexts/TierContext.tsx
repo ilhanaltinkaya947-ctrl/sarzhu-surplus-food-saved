@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from "react";
+import confetti from "canvas-confetti";
+import { toast } from "sonner";
 
 // Import mascot images
 import joeMascot from "@/assets/joe-mascot.png";
@@ -102,6 +104,67 @@ const TIERS: TierInfo[] = [
   },
 ];
 
+// Confetti configurations for each tier
+const TIER_CONFETTI = {
+  shrek: {
+    colors: ["#000000", "#FFFFFF", "#333333", "#666666"],
+    emoji: "🐕",
+    message: "You've unlocked Shrek tier! 🎉",
+  },
+  zeus: {
+    colors: ["#00F0FF", "#0099FF", "#FFFFFF", "#00CCFF"],
+    emoji: "⚡",
+    message: "LEGENDARY! You've unlocked Zeus tier! ⚡👑",
+  },
+};
+
+const fireTierConfetti = (tierName: "shrek" | "zeus") => {
+  const config = TIER_CONFETTI[tierName];
+  
+  // First burst - center explosion
+  confetti({
+    particleCount: 100,
+    spread: 70,
+    origin: { y: 0.6 },
+    colors: config.colors,
+  });
+
+  // Second burst - left side
+  setTimeout(() => {
+    confetti({
+      particleCount: 50,
+      angle: 60,
+      spread: 55,
+      origin: { x: 0 },
+      colors: config.colors,
+    });
+  }, 150);
+
+  // Third burst - right side
+  setTimeout(() => {
+    confetti({
+      particleCount: 50,
+      angle: 120,
+      spread: 55,
+      origin: { x: 1 },
+      colors: config.colors,
+    });
+  }, 300);
+
+  // Zeus gets extra dramatic confetti
+  if (tierName === "zeus") {
+    setTimeout(() => {
+      confetti({
+        particleCount: 150,
+        spread: 100,
+        origin: { y: 0.5 },
+        colors: config.colors,
+        scalar: 1.2,
+      });
+    }, 500);
+  }
+};
+
 interface TierContextType {
   currentTier: TierInfo;
   completedOrders: number;
@@ -121,6 +184,10 @@ export function TierProvider({ children }: { children: ReactNode }) {
     const stored = localStorage.getItem("gou_completed_orders");
     return stored ? parseInt(stored, 10) : 0;
   });
+  
+  // Track previous tier for celebration detection
+  const previousTierRef = useRef<string | null>(null);
+  const isInitialMount = useRef(true);
 
   // Calculate current tier based on completed orders
   const currentTier = TIERS.find(
@@ -138,6 +205,36 @@ export function TierProvider({ children }: { children: ReactNode }) {
   const nextTierProgress = nextTier
     ? ((completedOrders - currentTier.minOrders) / (nextTier.minOrders - currentTier.minOrders)) * 100
     : 100;
+
+  // Detect tier changes and celebrate!
+  useEffect(() => {
+    if (isInitialMount.current) {
+      previousTierRef.current = currentTier.name;
+      isInitialMount.current = false;
+      return;
+    }
+
+    if (previousTierRef.current && previousTierRef.current !== currentTier.name) {
+      // Tier changed! Check if it's an upgrade
+      const prevIndex = TIERS.findIndex(t => t.name === previousTierRef.current);
+      const currIndex = TIERS.findIndex(t => t.name === currentTier.name);
+      
+      if (currIndex > prevIndex) {
+        // It's a tier upgrade! Celebrate!
+        if (currentTier.mascot === "shrek" || currentTier.mascot === "zeus") {
+          fireTierConfetti(currentTier.mascot);
+          
+          const config = TIER_CONFETTI[currentTier.mascot];
+          toast.success(config.message, {
+            duration: 5000,
+            icon: config.emoji,
+          });
+        }
+      }
+    }
+    
+    previousTierRef.current = currentTier.name;
+  }, [currentTier]);
 
   // Apply theme colors to CSS variables
   useEffect(() => {
