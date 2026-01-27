@@ -1,8 +1,11 @@
-import { User, Settings, Heart, HelpCircle, LogIn } from "lucide-react";
-import { Header } from "@/components/Header";
+import { User, Settings, Heart, HelpCircle, LogIn, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { motion, PanInfo } from "framer-motion";
 
 export default function ProfilePage() {
+  const navigate = useNavigate();
+  
   // User is not authenticated yet
   const user = null;
 
@@ -12,9 +15,49 @@ export default function ProfilePage() {
     { icon: HelpCircle, label: "Help & Support" },
   ];
 
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
+  const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const { offset, velocity } = info;
+    
+    // If dragged right far enough OR flicked right fast
+    if (offset.x > 100 || velocity.x > 500) {
+      handleGoBack();
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-background">
-      <Header title="Profile" />
+    <motion.div
+      className="min-h-screen bg-background"
+      initial={{ x: "100%" }}
+      animate={{ x: 0 }}
+      exit={{ x: "100%" }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      drag="x"
+      dragConstraints={{ left: 0, right: 0 }}
+      dragElastic={{ left: 0, right: 0.3 }}
+      onDragEnd={handleDragEnd}
+    >
+      {/* Header */}
+      <header className="fixed top-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
+        <div className="flex items-center justify-between px-4 py-3 pt-safe">
+          {/* Back Button */}
+          <button
+            onClick={handleGoBack}
+            className="h-10 w-10 rounded-full flex items-center justify-center hover:bg-secondary transition-colors"
+          >
+            <ArrowLeft className="h-5 w-5 text-foreground" />
+          </button>
+          
+          {/* Title */}
+          <h1 className="text-lg font-semibold text-foreground">Profile</h1>
+          
+          {/* Spacer for alignment */}
+          <div className="h-10 w-10" />
+        </div>
+      </header>
       
       <main className="pt-20 pb-24 px-4">
         {/* Profile Header */}
@@ -62,7 +105,7 @@ export default function ProfilePage() {
 
         {/* Menu */}
         <div className="bg-card rounded-2xl shadow-card overflow-hidden">
-          {menuItems.map((item, index) => (
+          {menuItems.map((item) => (
             <button
               key={item.label}
               className="w-full flex items-center justify-between p-4 touch-active border-b border-border last:border-0"
@@ -83,6 +126,6 @@ export default function ProfilePage() {
           Made with 💚 to reduce food waste
         </p>
       </main>
-    </div>
+    </motion.div>
   );
 }
