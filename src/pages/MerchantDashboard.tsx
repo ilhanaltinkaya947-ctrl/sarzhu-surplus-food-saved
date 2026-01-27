@@ -6,8 +6,7 @@ import {
   DollarSign,
   ShoppingBag,
   AlertCircle,
-  CheckCircle2,
-  Camera
+  CheckCircle2
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,8 +14,6 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { QRScannerModal } from "@/components/merchant/QRScannerModal";
-import { ScanSuccessOverlay } from "@/components/merchant/ScanSuccessOverlay";
 
 interface ShopData {
   id: string;
@@ -46,8 +43,6 @@ export default function MerchantDashboard() {
   const [ordersToPickup, setOrdersToPickup] = useState(0);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
-  const [showScanner, setShowScanner] = useState(false);
-  const [scannedOrderId, setScannedOrderId] = useState<string | null>(null);
 
   // Fetch shop data
   const fetchShopData = useCallback(async () => {
@@ -149,6 +144,14 @@ export default function MerchantDashboard() {
           // Refresh data on any order change
           fetchShopData();
           
+          // Show notification for picked up orders
+          if (payload.eventType === 'UPDATE' && (payload.new as any).status === 'picked_up') {
+            toast({
+              title: "Order Collected! ✓",
+              description: `Order #${(payload.new as any).id.slice(0, 8).toUpperCase()} has been picked up`,
+            });
+          }
+          
           // Show notification for new orders
           if (payload.eventType === 'INSERT') {
             toast({
@@ -196,68 +199,6 @@ export default function MerchantDashboard() {
     }
   };
 
-  // Handle QR scan
-  const handleScan = async (orderId: string) => {
-    setShowScanner(false);
-    
-    try {
-      // Verify order exists and belongs to this shop
-      const { data: orderData, error: orderError } = await supabase
-        .from("orders")
-        .select("*, mystery_bags!inner(shop_id)")
-        .eq("id", orderId)
-        .maybeSingle();
-
-      if (orderError || !orderData) {
-        toast({
-          title: "Order Not Found",
-          description: "This QR code is not valid",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if ((orderData as any).mystery_bags?.shop_id !== shop?.id) {
-        toast({
-          title: "Wrong Shop",
-          description: "This order is for a different shop",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (orderData.status === "picked_up") {
-        toast({
-          title: "Already Collected",
-          description: "This order has already been picked up",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Update order status
-      const { error: updateError } = await supabase
-        .from("orders")
-        .update({ status: "picked_up" })
-        .eq("id", orderId);
-
-      if (updateError) throw updateError;
-
-      // Show success screen
-      setScannedOrderId(orderId);
-      
-      // Refresh data
-      fetchShopData();
-    } catch (error) {
-      console.error("Error processing scan:", error);
-      toast({
-        title: "Error",
-        description: "Failed to process order",
-        variant: "destructive",
-      });
-    }
-  };
-
   // Manual pickup confirmation
   const handleManualPickup = async (orderId: string) => {
     try {
@@ -268,7 +209,11 @@ export default function MerchantDashboard() {
 
       if (error) throw error;
 
-      setScannedOrderId(orderId);
+      toast({
+        title: "Success",
+        description: "Order marked as picked up",
+      });
+
       fetchShopData();
     } catch (error) {
       console.error("Error:", error);
@@ -364,15 +309,6 @@ export default function MerchantDashboard() {
       </header>
 
       <main className="px-6 py-6 space-y-6">
-        {/* Scan QR Button */}
-        <button
-          onClick={() => setShowScanner(true)}
-          className="w-full flex items-center justify-center gap-3 rounded-2xl bg-primary py-4 font-semibold text-primary-foreground shadow-lg transition-all active:scale-[0.98]"
-        >
-          <Camera className="h-6 w-6" />
-          Scan Customer QR
-        </button>
-
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-4">
           {/* Orders to Pickup */}
@@ -440,6 +376,9 @@ export default function MerchantDashboard() {
           {activeOrders.length === 0 ? (
             <div className="rounded-2xl border-2 border-dashed border-border p-8 text-center">
               <p className="text-muted-foreground">No active reservations</p>
+              <p className="text-xs text-muted-foreground mt-2">
+                When customers swipe to pickup, orders will turn green automatically
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -518,23 +457,6 @@ export default function MerchantDashboard() {
           </div>
         )}
       </main>
-
-      {/* QR Scanner Modal */}
-      <QRScannerModal
-        open={showScanner}
-        onClose={() => setShowScanner(false)}
-        onScan={handleScan}
-      />
-
-      {/* Success Overlay */}
-      <AnimatePresence>
-        {scannedOrderId && (
-          <ScanSuccessOverlay
-            orderId={scannedOrderId}
-            onClose={() => setScannedOrderId(null)}
-          />
-        )}
-      </AnimatePresence>
     </div>
   );
 }

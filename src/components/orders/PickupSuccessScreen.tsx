@@ -2,16 +2,17 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Check, X } from "lucide-react";
 
-interface ScanSuccessOverlayProps {
+interface PickupSuccessScreenProps {
   orderId: string;
+  shopName: string;
   onClose: () => void;
 }
 
-export function ScanSuccessOverlay({ orderId, onClose }: ScanSuccessOverlayProps) {
+export function PickupSuccessScreen({ orderId, shopName, onClose }: PickupSuccessScreenProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
   const shortOrderId = orderId.slice(0, 8).toUpperCase();
 
-  // Update time every second
+  // Update time every second for anti-screenshot proof
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(new Date());
@@ -26,11 +27,7 @@ export function ScanSuccessOverlay({ orderId, onClose }: ScanSuccessOverlayProps
     
     // Haptic feedback
     if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
-    
-    // Auto close after 5 seconds
-    const timeout = setTimeout(onClose, 5000);
-    return () => clearTimeout(timeout);
-  }, [onClose]);
+  }, []);
 
   const playSuccessSound = () => {
     try {
@@ -41,9 +38,10 @@ export function ScanSuccessOverlay({ orderId, onClose }: ScanSuccessOverlayProps
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
       
-      oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime);
-      oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.15);
-      oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.3);
+      // "Ding" sound - rising pleasant tone
+      oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+      oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.15); // E5
+      oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.3); // G5
       
       gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
@@ -61,6 +59,15 @@ export function ScanSuccessOverlay({ orderId, onClose }: ScanSuccessOverlayProps
       minute: "2-digit",
       second: "2-digit",
       hour12: false,
+    });
+  };
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric",
     });
   };
 
@@ -86,7 +93,7 @@ export function ScanSuccessOverlay({ orderId, onClose }: ScanSuccessOverlayProps
         transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
         className="relative mb-8"
       >
-        {/* Pulsing rings */}
+        {/* Pulsing ring */}
         <motion.div
           animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0, 0.5] }}
           transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
@@ -100,7 +107,13 @@ export function ScanSuccessOverlay({ orderId, onClose }: ScanSuccessOverlayProps
         
         {/* Checkmark circle */}
         <div className="relative h-32 w-32 rounded-full bg-white flex items-center justify-center shadow-2xl">
-          <Check className="h-16 w-16 text-emerald-500 stroke-[3]" />
+          <motion.div
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <Check className="h-16 w-16 text-emerald-500 stroke-[3]" />
+          </motion.div>
         </div>
       </motion.div>
 
@@ -114,7 +127,7 @@ export function ScanSuccessOverlay({ orderId, onClose }: ScanSuccessOverlayProps
         Order Collected!
       </motion.h1>
 
-      {/* Live Time */}
+      {/* Live Time (Anti-Screenshot) */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -124,27 +137,30 @@ export function ScanSuccessOverlay({ orderId, onClose }: ScanSuccessOverlayProps
         <p className="text-5xl font-mono font-bold text-white text-center tabular-nums">
           {formatTime(currentTime)}
         </p>
+        <p className="text-sm text-white/80 text-center mt-1">
+          {formatDate(currentTime)}
+        </p>
       </motion.div>
 
-      {/* Order ID */}
+      {/* Order Details */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.7 }}
         className="text-center"
       >
-        <p className="text-white/80">Order</p>
-        <p className="text-xl font-bold text-white">#{shortOrderId}</p>
+        <p className="text-xl font-semibold text-white mb-1">{shopName}</p>
+        <p className="text-white/80">Order #{shortOrderId}</p>
       </motion.div>
 
-      {/* Auto-close hint */}
+      {/* Thank You Message */}
       <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1 }}
         className="absolute bottom-12 text-white/60 text-sm"
       >
-        Auto-closing in a few seconds...
+        Thank you for saving food! 🌱
       </motion.p>
     </motion.div>
   );

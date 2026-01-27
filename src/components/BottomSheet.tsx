@@ -3,8 +3,6 @@ import { motion, PanInfo, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useState, useRef } from "react";
 import { FoodCard, MarketingBanner } from "./FoodCard";
-import { SwipeToReserve } from "./SwipeToReserve";
-import { useAuth } from "@/hooks/useAuth";
 
 interface Shop {
   id: string;
@@ -64,7 +62,6 @@ export function BottomSheet({
   selectedBag = null,
   selectedShop = null,
 }: BottomSheetProps) {
-  const { user } = useAuth();
   const [activeCategory, setActiveCategory] = useState("all");
   const [isExpanded, setIsExpanded] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -121,7 +118,7 @@ export function BottomSheet({
     return bags.find((bag) => bag.shop_id === shopId);
   };
 
-  const handleReserve = () => {
+  const handleReserveClick = () => {
     if (selectedBag && selectedShop && onReserve) {
       onReserve(selectedBag, selectedShop);
     }
@@ -135,10 +132,12 @@ export function BottomSheet({
     }).format(price);
   };
 
-  // Get the price to display on the slider
-  const sliderPrice = selectedBag 
+  // Get the price to display on the button
+  const buttonPrice = selectedBag 
     ? formatPrice(selectedBag.discounted_price) 
     : formatPrice(1200);
+
+  const hasSelection = selectedBag && selectedShop;
 
   return (
     <>
@@ -272,16 +271,26 @@ export function BottomSheet({
             )}
           </motion.div>
 
-          {/* Footer: Swipe to Reserve with safe area padding */}
+          {/* Footer: Reserve Button with safe area padding */}
           <div 
             className="flex-shrink-0 px-4 pt-2 bg-white"
             style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
           >
-            <SwipeToReserve
-              onConfirm={handleReserve}
-              price={sliderPrice}
-              disabled={!user || !selectedBag}
-            />
+            <button 
+              onClick={handleReserveClick}
+              disabled={!hasSelection}
+              className={cn(
+                "flex w-full items-center justify-center gap-3 rounded-2xl py-3.5 font-semibold shadow-lg transition-all active:scale-[0.98]",
+                hasSelection 
+                  ? "bg-primary text-primary-foreground" 
+                  : "bg-gray-200 text-gray-500 cursor-not-allowed"
+              )}
+            >
+              {hasSelection 
+                ? `Reserve for ${buttonPrice}` 
+                : "Select a bag to reserve"
+              }
+            </button>
           </div>
         </motion.div>
       </motion.div>
