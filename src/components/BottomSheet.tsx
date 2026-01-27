@@ -41,18 +41,13 @@ interface BottomSheetProps {
   selectedShop?: Shop | null;
 }
 
-// Collapsed state shows ~130px (handle + chips + button), rest slides off-screen
-const COLLAPSED_Y = "calc(100% - 130px)";
-const OPEN_Y = 0;
-const VELOCITY_THRESHOLD = 300;
-const OFFSET_THRESHOLD = 40;
+// Simple flick threshold
+const FLICK_THRESHOLD = 50;
 
-// Luxury spring physics - heavy damping, no jitter
-const springConfig = {
-  type: "spring" as const,
-  stiffness: 250,  // Strong snap
-  damping: 40,     // High braking = smooth stop, no bounce
-  mass: 0.8,       // Lightweight, responsive
+// Apple-style ease-out transition (predictable, no bounce)
+const easeTransition = {
+  duration: 0.4,
+  ease: [0.32, 0.72, 0, 1] as [number, number, number, number],
 };
 
 // Service fee constant
@@ -70,7 +65,7 @@ export function BottomSheet({
   selectedShop = null,
 }: BottomSheetProps) {
   const [activeCategory, setActiveCategory] = useState("all");
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { profile } = useProfile();
   
@@ -82,38 +77,30 @@ export function BottomSheet({
     onCategoryChange?.(categoryId);
   };
 
-  const collapseSheet = () => {
-    setIsExpanded(false);
+  const closeSheet = () => {
+    setIsOpen(false);
     if (scrollRef.current) {
       scrollRef.current.scrollTop = 0;
     }
   };
 
-  const expandSheet = () => {
-    setIsExpanded(true);
+  const openSheet = () => {
+    setIsOpen(true);
   };
 
-  // Handle drag end on the entire sheet
-  const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    const { offset, velocity } = info;
-
-    // Dragged UP or flicked UP -> Open
-    if (offset.y < -OFFSET_THRESHOLD || velocity.y < -VELOCITY_THRESHOLD) {
-      expandSheet();
-    }
-    // Dragged DOWN or flicked DOWN -> Close
-    else if (offset.y > OFFSET_THRESHOLD || velocity.y > VELOCITY_THRESHOLD) {
-      collapseSheet();
+  // Simple flick detection on handle area
+  const handlePanEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (info.offset.y < -FLICK_THRESHOLD) {
+      openSheet();
+    } else if (info.offset.y > FLICK_THRESHOLD) {
+      closeSheet();
     }
   };
 
-  const toggleExpanded = () => {
-    if (isExpanded) {
-      collapseSheet();
-    } else {
-      expandSheet();
-    }
+  const toggleSheet = () => {
+    setIsOpen(!isOpen);
   };
+
 
   const getBagForShop = (shopId: string) => {
     return bags.find((bag) => bag.shop_id === shopId);
@@ -152,14 +139,14 @@ export function BottomSheet({
     <>
       {/* Blur Overlay - z-40 */}
       <AnimatePresence>
-        {isExpanded && !isHidden && (
+        {isOpen && !isHidden && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={springConfig}
-            className="fixed inset-0 z-40 backdrop-blur-[2px] bg-black/20"
-            onClick={collapseSheet}
+            transition={easeTransition}
+            className="fixed inset-0 z-40 bg-black/20"
+            onClick={closeSheet}
           />
         )}
       </AnimatePresence>
@@ -172,33 +159,33 @@ export function BottomSheet({
           y: isHidden ? "100%" : 0,
           opacity: isHidden ? 0 : 1,
         }}
-        transition={springConfig}
+        transition={easeTransition}
       >
-        {/* Main Sheet - Fixed tall height, slides via Y translation (GPU accelerated) */}
+        {/* Main Sheet - Height-based animation, always anchored to bottom */}
         <motion.div
           className={cn(
             "flex flex-col bg-white rounded-t-[32px] rounded-b-none",
-            "shadow-[0_-5px_20px_-5px_rgba(0,0,0,0.1)]",
-            "h-[85dvh] overflow-hidden"
+            "shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)]",
+            "overflow-hidden"
           )}
-          animate={{ y: isExpanded ? OPEN_Y : COLLAPSED_Y }}
-          transition={springConfig}
-          drag="y"
-          dragConstraints={{ top: 0, bottom: 0 }}
-          dragElastic={0.05}
-          dragMomentum={false}
-          onDragEnd={handleDragEnd}
+          animate={{ height: isOpen ? '85dvh' : 'auto' }}
+          transition={easeTransition}
         >
-          {/* Drag Handle Area */}
-          <div
-            className="flex-shrink-0 cursor-grab active:cursor-grabbing"
-            onClick={toggleExpanded}
+          {/* Drag Handle Area - Simple tap/swipe */}
+          <motion.div
+            className="flex-shrink-0 cursor-pointer"
+            onClick={toggleSheet}
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={0}
+            onDragEnd={handlePanEnd}
+            style={{ y: 0 }}
           >
             {/* Drag Handle Pill */}
             <div className="flex items-center justify-center pt-3 pb-4">
               <div className="h-1 w-10 rounded-full bg-gray-300" />
             </div>
-          </div>
+          </motion.div>
 
           {/* Content Area: Chips + List - flex-1 takes available space */}
           <div className="flex-1 min-h-0 flex flex-col">
@@ -231,18 +218,18 @@ export function BottomSheet({
               </div>
             </div>
 
-            {/* Body: Scrollable Food Grid - Only visible when expanded */}
+            {/* Body: Scrollable Food Grid - Only visible when open */}
             <motion.div
               ref={scrollRef}
               className={cn(
                 "flex-1 min-h-0 px-4",
-                isExpanded ? "overflow-y-auto overscroll-contain" : "overflow-hidden"
+                isOpen ? "overflow-y-auto overscroll-contain" : "overflow-hidden"
               )}
-              animate={{ opacity: isExpanded ? 1 : 0 }}
+              animate={{ opacity: isOpen ? 1 : 0 }}
               transition={{ duration: 0.2 }}
-              style={{ touchAction: isExpanded ? "pan-y" : "none" }}
+              style={{ touchAction: isOpen ? "pan-y" : "none" }}
             >
-              {isExpanded && (
+              {isOpen && (
                 <div className="pb-4">
                   {/* Section Header */}
                   <div className="flex items-center justify-between mb-4 sticky top-0 bg-white py-2 -mx-4 px-4 z-10">
