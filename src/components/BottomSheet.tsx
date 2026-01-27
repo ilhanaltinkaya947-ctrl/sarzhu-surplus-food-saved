@@ -41,16 +41,17 @@ interface BottomSheetProps {
   selectedShop?: Shop | null;
 }
 
-// Fixed heights - collapsed shows header + chips + button
-const COLLAPSED_HEIGHT = '220px';
-const EXPANDED_HEIGHT = '85dvh';
-const SWIPE_THRESHOLD = 50;
+// Y-based sliding - sheet is always 85dvh tall, slides down to collapse
+const COLLAPSED_Y = "calc(100% - 220px)"; // Shows 220px (header + chips + button)
+const EXPANDED_Y = 0;
+const DRAG_THRESHOLD = 80;
+const VELOCITY_THRESHOLD = 400;
 
-// Snappy spring physics
+// Responsive spring physics
 const springTransition = {
   type: "spring" as const,
-  stiffness: 200,
-  damping: 25,
+  stiffness: 300,
+  damping: 30,
 };
 
 // Service fee constant
@@ -91,12 +92,17 @@ export function BottomSheet({
     setIsOpen(true);
   };
 
-  // Simple swipe detection
-  const handlePanEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    if (info.offset.y < -SWIPE_THRESHOLD) {
-      openSheet(); // Swipe Up -> Open
-    } else if (info.offset.y > SWIPE_THRESHOLD) {
-      closeSheet(); // Swipe Down -> Close
+  // Snap to state based on drag gesture
+  const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const { offset, velocity } = info;
+
+    // Dragged UP significantly or flicked UP -> Open
+    if (offset.y < -DRAG_THRESHOLD || velocity.y < -VELOCITY_THRESHOLD) {
+      openSheet();
+    }
+    // Dragged DOWN significantly or flicked DOWN -> Close
+    else if (offset.y > DRAG_THRESHOLD || velocity.y > VELOCITY_THRESHOLD) {
+      closeSheet();
     }
   };
 
@@ -164,22 +170,25 @@ export function BottomSheet({
         }}
         transition={springTransition}
       >
-        {/* Main Sheet - Height-based animation */}
+        {/* Main Sheet - Fixed 85dvh height, slides via Y translation */}
         <motion.div
           className={cn(
             "flex flex-col bg-white rounded-t-[32px] rounded-b-none",
             "shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)]",
-            "overflow-hidden touch-none"
+            "h-[85dvh] overflow-hidden"
           )}
-          animate={{ height: isOpen ? EXPANDED_HEIGHT : COLLAPSED_HEIGHT }}
+          animate={{ y: isOpen ? EXPANDED_Y : COLLAPSED_Y }}
           transition={springTransition}
-          onPanEnd={handlePanEnd}
+          drag="y"
+          dragConstraints={{ top: -500, bottom: 0 }}
+          dragElastic={0.2}
+          onDragEnd={handleDragEnd}
         >
           {/* Section 1: Header - Handle + Chips */}
           <div className="flex-none pt-4 px-4">
             {/* Drag Handle */}
             <div 
-              className="flex items-center justify-center pb-4 cursor-pointer"
+              className="flex items-center justify-center pb-4 cursor-grab active:cursor-grabbing"
               onClick={toggleSheet}
             >
               <div className="h-1 w-10 rounded-full bg-gray-300" />
