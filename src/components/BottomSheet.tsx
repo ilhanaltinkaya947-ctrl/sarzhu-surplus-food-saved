@@ -194,18 +194,21 @@ export function BottomSheet({
           dragElastic={{ top: 0.1, bottom: 0.1 }}
           onDragEnd={handleDragEnd}
         >
-          {/* Header: Drag Handle + Title */}
+          {/* Header: Drag Handle */}
           <div
             className="flex-shrink-0 cursor-grab active:cursor-grabbing"
             onClick={toggleExpanded}
           >
-            {/* Drag Handle Pill */}
-            <div className="flex items-center justify-center pt-3 pb-2">
+            {/* Drag Handle Pill - centered with padding */}
+            <div className="flex items-center justify-center pt-3 pb-4">
               <div className="h-1 w-10 rounded-full bg-gray-300" />
             </div>
+          </div>
 
-            {/* Category Chips - Always Visible */}
-            <div className="px-4 pb-3">
+          {/* Content Area: Chips + List - flex-1 takes available space */}
+          <div className="flex-1 min-h-0 flex flex-col">
+            {/* Category Chips - Always Visible with proper top spacing */}
+            <div className="flex-shrink-0 px-4 pb-4">
               <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4">
                 {categories.map((category) => {
                   const Icon = category.icon;
@@ -232,64 +235,64 @@ export function BottomSheet({
                 })}
               </div>
             </div>
+
+            {/* Body: Scrollable Food Grid - Only visible when expanded */}
+            <motion.div
+              ref={scrollRef}
+              className={cn(
+                "flex-1 min-h-0 px-4",
+                isExpanded ? "overflow-y-auto overscroll-contain" : "overflow-hidden"
+              )}
+              animate={{ opacity: isExpanded ? 1 : 0 }}
+              transition={{ duration: 0.2 }}
+              style={{ touchAction: isExpanded ? "pan-y" : "none" }}
+            >
+              {isExpanded && (
+                <div className="pb-4">
+                  {/* Section Header */}
+                  <div className="flex items-center justify-between mb-4 sticky top-0 bg-white py-2 -mx-4 px-4 z-10">
+                    <h3 className="text-lg font-bold text-gray-900">Featured Deals</h3>
+                    <button className="text-sm font-medium text-primary">See all</button>
+                  </div>
+
+                  {/* Marketing Banner */}
+                  <MarketingBanner className="mb-5" />
+
+                  {/* 2-Column Food Cards Grid */}
+                  <div className="grid grid-cols-2 gap-3">
+                    {shops.map((shop) => {
+                      const bag = getBagForShop(shop.id);
+
+                      return (
+                        <FoodCard
+                          key={shop.id}
+                          id={shop.id}
+                          name={shop.name}
+                          imageUrl={shop.image_url}
+                          description={shop.description}
+                          originalPrice={bag?.original_price}
+                          discountedPrice={bag?.discounted_price}
+                          bagsLeft={bag?.quantity_available}
+                          onClick={() => onShopClick?.(shop)}
+                        />
+                      );
+                    })}
+                  </div>
+
+                  {/* Empty State */}
+                  {shops.length === 0 && (
+                    <div className="text-center py-12">
+                      <p className="text-gray-500">No shops available nearby</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </motion.div>
           </div>
 
-          {/* Body: Scrollable Food Grid - Only visible when expanded */}
-          <motion.div
-            ref={scrollRef}
-            className={cn(
-              "flex-1 min-h-0 px-4",
-              isExpanded ? "overflow-y-auto overscroll-contain" : "overflow-hidden"
-            )}
-            animate={{ opacity: isExpanded ? 1 : 0 }}
-            transition={{ duration: 0.2 }}
-            style={{ touchAction: isExpanded ? "pan-y" : "none" }}
-          >
-            {isExpanded && (
-              <div className="pb-4">
-                {/* Section Header */}
-                <div className="flex items-center justify-between mb-4 sticky top-0 bg-white py-2 -mx-4 px-4 z-10">
-                  <h3 className="text-lg font-bold text-gray-900">Featured Deals</h3>
-                  <button className="text-sm font-medium text-primary">See all</button>
-                </div>
-
-                {/* Marketing Banner */}
-                <MarketingBanner className="mb-5" />
-
-                {/* 2-Column Food Cards Grid */}
-                <div className="grid grid-cols-2 gap-3">
-                  {shops.map((shop) => {
-                    const bag = getBagForShop(shop.id);
-
-                    return (
-                      <FoodCard
-                        key={shop.id}
-                        id={shop.id}
-                        name={shop.name}
-                        imageUrl={shop.image_url}
-                        description={shop.description}
-                        originalPrice={bag?.original_price}
-                        discountedPrice={bag?.discounted_price}
-                        bagsLeft={bag?.quantity_available}
-                        onClick={() => onShopClick?.(shop)}
-                      />
-                    );
-                  })}
-                </div>
-
-                {/* Empty State */}
-                {shops.length === 0 && (
-                  <div className="text-center py-12">
-                    <p className="text-gray-500">No shops available nearby</p>
-                  </div>
-                )}
-              </div>
-            )}
-          </motion.div>
-
-          {/* Footer: Reserve Button - Always visible */}
+          {/* Footer: Reserve Button - Sticky at bottom with z-20 */}
           <div 
-            className="flex-shrink-0 px-4 pt-4 bg-white"
+            className="flex-shrink-0 z-20 px-4 pt-4 bg-white border-t border-gray-100"
             style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
           >
             {/* Pack Leader VIP Badge - Show above button when applicable */}
@@ -307,7 +310,7 @@ export function BottomSheet({
               onClick={handleReserveClick}
               disabled={!hasSelection}
               className={cn(
-                "flex w-full h-14 items-center justify-center gap-2 rounded-2xl font-semibold shadow-lg transition-all active:scale-[0.98]",
+                "flex w-full h-14 items-center justify-center gap-2 rounded-xl font-semibold shadow-lg transition-all active:scale-[0.98]",
                 hasSelection 
                   ? "bg-foreground text-white" 
                   : "bg-gray-200 text-gray-500"
