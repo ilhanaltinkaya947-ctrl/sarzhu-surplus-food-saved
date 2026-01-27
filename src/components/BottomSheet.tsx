@@ -46,11 +46,12 @@ const COLLAPSED_HEIGHT = 'auto';
 const EXPANDED_HEIGHT_RATIO = 0.70; // 70dvh
 const DRAG_THRESHOLD = 100;
 
-// Spring physics for native feel
+// Softer spring physics for buttery feel
 const springConfig = {
   type: "spring" as const,
-  stiffness: 250,
-  damping: 30,
+  stiffness: 120,
+  damping: 20,
+  mass: 1,
 };
 
 // Service fee constant
@@ -191,7 +192,7 @@ export function BottomSheet({
           transition={springConfig}
           drag="y"
           dragConstraints={{ top: 0, bottom: 0 }}
-          dragElastic={{ top: 0.1, bottom: 0.1 }}
+          dragElastic={0.2}
           onDragEnd={handleDragEnd}
         >
           {/* Header: Drag Handle */}
