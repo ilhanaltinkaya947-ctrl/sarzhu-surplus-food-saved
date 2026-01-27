@@ -322,3 +322,38 @@
     opacity: 0.9;
   }
 }
+
+/* ========================================
+   GLOBAL MAP PIN THEMES
+   ======================================== */
+
+/* === TIER 1: JOE (Friendly Gold) === */
+[data-theme='joe'] .map-marker-container {
+  border: 3px solid #FFB800 !important;
+  background: white !important;
+}
+[data-theme='joe'] .map-marker-arrow {
+  border-top-color: #FFB800 !important;
+}
+
+/* === TIER 2: SHREK (Noir Luxury) === */
+[data-theme='shrek'] .map-marker-container {
+  border: 3px solid #000000 !important;
+  background: white !important;
+}
+[data-theme='shrek'] .map-marker-container img {
+  filter: grayscale(100%);
+}
+[data-theme='shrek'] .map-marker-arrow {
+  border-top-color: #000000 !important;
+}
+
+/* === TIER 3: ZEUS (Cyberpunk Glow) === */
+[data-theme='zeus'] .map-marker-container {
+  border: 2px solid #00F0FF !important;
+  background: #000 !important;
+  box-shadow: 0 0 15px #00F0FF, inset 0 0 5px rgba(0, 240, 255, 0.3) !important;
+}
+[data-theme='zeus'] .map-marker-arrow {
+  border-top-color: #00F0FF !important;
+}

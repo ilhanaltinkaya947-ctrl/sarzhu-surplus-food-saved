@@ -169,8 +169,8 @@ const createPinIcon = (
         transform-origin: bottom center;
         transition: transform 0.25s ease;
       ">
-        <!-- Main pin circle with logo -->
-        <div class="pin-main" style="
+        <!-- Main pin circle with logo - map-marker-container class for tier theming -->
+        <div class="pin-main map-marker-container" style="
           position: relative;
           width: 52px;
           height: 52px;
@@ -200,8 +200,8 @@ const createPinIcon = (
           ${heartBadge}
         </div>
         
-        <!-- Bottom pointer -->
-        <div style="
+        <!-- Bottom pointer - map-marker-arrow class for tier theming -->
+        <div class="map-marker-arrow" style="
           position: absolute;
           bottom: 0;
           left: 50%;
