@@ -8,6 +8,7 @@ import { JoeChat } from "@/components/JoeChat";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import joeMascot from "@/assets/joe-mascot.png";
 interface Shop {
   id: string;
   name: string;
@@ -223,8 +224,12 @@ export default function MapPage() {
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             />
             
-            {/* Dog icon */}
-            <span className="relative z-10">🐕</span>
+            {/* Joe mascot image */}
+            <img 
+              src={joeMascot} 
+              alt="Joe" 
+              className="relative z-10 h-12 w-12 rounded-full object-cover"
+            />
 
             {/* Notification badge */}
             {showJoeBadge && (

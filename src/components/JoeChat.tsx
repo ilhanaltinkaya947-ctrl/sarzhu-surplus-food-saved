@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import joeMascot from "@/assets/joe-mascot.png";
 
 interface Message {
   id: string;
@@ -142,9 +143,11 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 bg-[#FFB800] text-black">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center text-xl shadow-inner">
-                  🐕
-                </div>
+                <img 
+                  src={joeMascot} 
+                  alt="Joe" 
+                  className="h-10 w-10 rounded-full object-cover shadow-inner"
+                />
                 <div>
                   <h3 className="font-bold text-sm">Joe the Food Rescue Pup</h3>
                   <p className="text-xs opacity-80">Powered by AI 🐾</p>
@@ -170,9 +173,11 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
                   className={`flex ${msg.isJoe ? "justify-start" : "justify-end"}`}
                 >
                   {msg.isJoe && (
-                    <div className="h-8 w-8 rounded-full bg-[#FFB800] flex items-center justify-center text-sm mr-2 flex-shrink-0 shadow-sm">
-                      🐕
-                    </div>
+                    <img 
+                      src={joeMascot} 
+                      alt="Joe" 
+                      className="h-8 w-8 rounded-full object-cover mr-2 flex-shrink-0 shadow-sm"
+                    />
                   )}
                   <div
                     className={`max-w-[80%] px-4 py-2.5 rounded-2xl text-sm ${
@@ -193,9 +198,11 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
                   animate={{ opacity: 1 }}
                   className="flex items-center gap-2"
                 >
-                  <div className="h-8 w-8 rounded-full bg-[#FFB800] flex items-center justify-center text-sm shadow-sm">
-                    🐕
-                  </div>
+                  <img 
+                    src={joeMascot} 
+                    alt="Joe" 
+                    className="h-8 w-8 rounded-full object-cover shadow-sm"
+                  />
                   <div className="bg-[#FFB800] px-4 py-2.5 rounded-2xl rounded-tl-sm">
                     <div className="flex gap-1">
                       <span className="w-2 h-2 bg-black/40 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
