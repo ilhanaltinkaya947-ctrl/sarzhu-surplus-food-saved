@@ -5,12 +5,14 @@ import { motion, PanInfo } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { TreatTracker } from "@/components/TreatTracker";
-import { TierProgress } from "@/components/TierProgress";
+import { LoyaltyStatusCard } from "@/components/LoyaltyStatusCard";
+import { useTier } from "@/contexts/TierContext";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { profile, loading } = useProfile();
+  const { completedOrders } = useTier();
 
   const menuItems = [
     { icon: Heart, label: "Saved Shops", count: 0 },
@@ -63,9 +65,9 @@ export default function ProfilePage() {
       </header>
       
       <main className="pt-20 pb-24 px-4">
-        {/* Tier Progress Section */}
+        {/* Loyalty Status Card - Replaces TierProgress */}
         <div className="mb-6">
-          <TierProgress />
+          <LoyaltyStatusCard />
         </div>
 
         {/* Joe's Treat Tracker - Only show when logged in */}
@@ -117,11 +119,11 @@ export default function ProfilePage() {
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4 mb-8">
           <div className="bg-card rounded-2xl p-4 text-center shadow-card">
-            <p className="text-2xl font-bold text-primary">0</p>
+            <p className="text-2xl font-bold text-primary">{completedOrders}</p>
             <p className="text-xs text-muted-foreground">Orders</p>
           </div>
           <div className="bg-card rounded-2xl p-4 text-center shadow-card">
-            <p className="text-2xl font-bold text-primary">0 kg</p>
+            <p className="text-2xl font-bold text-primary">{(completedOrders * 0.8).toFixed(1)} kg</p>
             <p className="text-xs text-muted-foreground">Food Saved</p>
           </div>
           <div className="bg-card rounded-2xl p-4 text-center shadow-card">

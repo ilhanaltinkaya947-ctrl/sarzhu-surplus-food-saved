@@ -1,12 +1,17 @@
 import { useState } from "react";
-import { Clock, MapPin, Heart, X, Loader2, Package, Sparkles } from "lucide-react";
+import { Clock, MapPin, Heart, X, Loader2, Package, Sparkles, Zap } from "lucide-react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import confetti from "canvas-confetti";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AuthModal } from "./AuthModal";
 import { PickupSuccessScreen } from "./orders/PickupSuccessScreen";
+import { useTier } from "@/contexts/TierContext";
 import type { User } from "@supabase/supabase-js";
+
+// Service fee constants
+const SERVICE_FEE = 200;
+const ZEUS_DISCOUNT = 0.20; // 20% off for Zeus tier
 
 interface Shop {
   id: string;
@@ -58,6 +63,17 @@ export function ShopDrawer({
   const [reserving, setReserving] = useState(false);
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [confirmedOrderId, setConfirmedOrderId] = useState<string>("");
+  const { currentTier } = useTier();
+
+  // Check if user is in Zeus tier for discount
+  const isZeus = currentTier.name === "Zeus";
+  const discountedServiceFee = isZeus ? Math.round(SERVICE_FEE * (1 - ZEUS_DISCOUNT)) : SERVICE_FEE;
+
+  // Calculate total with service fee
+  const calculateTotal = () => {
+    if (!bag) return 0;
+    return bag.discounted_price + discountedServiceFee;
+  };
 
   if (!shop) return null;
 
@@ -313,6 +329,58 @@ export function ShopDrawer({
                   </div>
                 </div>
               )}
+
+              {/* Price Breakdown Section */}
+              {bag && (
+                <div className="rounded-2xl bg-[hsl(var(--muted))] border border-[hsl(var(--border))] p-4 space-y-3 transition-colors duration-500">
+                  <h4 className="font-semibold text-[hsl(var(--sheet-foreground))] text-sm transition-colors duration-500">Price Breakdown</h4>
+                  
+                  {/* Mystery Bag Line */}
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[hsl(var(--sheet-muted))] transition-colors duration-500">Mystery Bag</span>
+                    <span className="text-[hsl(var(--sheet-foreground))] font-medium transition-colors duration-500">
+                      {formatPrice(bag.discounted_price)}
+                    </span>
+                  </div>
+
+                  {/* Service Fee Line */}
+                  <div className="flex justify-between text-sm items-center">
+                    <span className="text-[hsl(var(--sheet-muted))] transition-colors duration-500">Service Fee</span>
+                    <div className="flex items-center gap-2">
+                      {isZeus ? (
+                        <>
+                          <span className="text-[hsl(var(--sheet-muted))] line-through text-xs transition-colors duration-500">
+                            {formatPrice(SERVICE_FEE)}
+                          </span>
+                          <span className="text-primary font-bold transition-colors duration-500">
+                            {formatPrice(discountedServiceFee)}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-[hsl(var(--sheet-foreground))] font-medium transition-colors duration-500">
+                          {formatPrice(SERVICE_FEE)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Zeus Perk Badge */}
+                  {isZeus && (
+                    <div className="flex items-center justify-center gap-2 py-2 px-3 bg-primary/15 border border-primary/30 rounded-xl">
+                      <Zap className="h-4 w-4 text-primary" />
+                      <span className="text-xs font-semibold text-primary">Zeus Perk applied ⚡</span>
+                    </div>
+                  )}
+
+                  {/* Total */}
+                  <div className="flex justify-between pt-3 border-t border-[hsl(var(--border))]">
+                    <span className="font-semibold text-[hsl(var(--sheet-foreground))] transition-colors duration-500">Total</span>
+                    <span className="font-bold text-lg text-primary transition-colors duration-500">
+                      {formatPrice(calculateTotal())}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Fixed Footer */}
@@ -327,7 +395,7 @@ export function ShopDrawer({
                   ? "Sold Out" 
                   : reserving 
                     ? "Reserving..." 
-                    : `Reserve for ${bag ? formatPrice(bag.discounted_price) : ''}`}
+                    : `Reserve for ${formatPrice(calculateTotal())}`}
               </button>
             </div>
           </motion.div>
