@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { useState, useRef } from "react";
 import { FoodCard, MarketingBanner } from "./FoodCard";
 import { useProfile } from "@/hooks/useProfile";
+import joeMascot from "@/assets/joe-mascot.png";
 
 interface Shop {
   id: string;
@@ -39,6 +40,8 @@ interface BottomSheetProps {
   bags?: MysteryBag[];
   selectedBag?: MysteryBag | null;
   selectedShop?: Shop | null;
+  onJoeClick?: () => void;
+  showJoeBadge?: boolean;
 }
 
 // Height-based animation - button always visible
@@ -66,6 +69,8 @@ export function BottomSheet({
   bags = [],
   selectedBag = null,
   selectedShop = null,
+  onJoeClick,
+  showJoeBadge = false,
 }: BottomSheetProps) {
   const [activeCategory, setActiveCategory] = useState("all");
   const [isOpen, setIsOpen] = useState(false);
@@ -177,7 +182,44 @@ export function BottomSheet({
         onDragEnd={handleDragEnd}
       >
         {/* Full Height Flex Column */}
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full relative">
+          {/* Joe "Perch" - anchored to top-right of sheet */}
+          <motion.button
+            onClick={(e) => {
+              e.stopPropagation();
+              onJoeClick?.();
+            }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="absolute top-0 right-4 z-50 h-12 w-12 rounded-full bg-primary shadow-lg flex items-center justify-center -mt-6"
+            style={{ 
+              boxShadow: "0 4px 20px rgba(255, 184, 0, 0.4)"
+            }}
+          >
+            {/* Pulse ring animation */}
+            <motion.div
+              className="absolute inset-0 rounded-full bg-primary"
+              animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            />
+            
+            {/* Joe mascot image */}
+            <img 
+              src={joeMascot} 
+              alt="Joe" 
+              className="relative z-10 h-10 w-10 rounded-full object-cover"
+            />
+
+            {/* Notification badge */}
+            {showJoeBadge && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-destructive border-2 border-background"
+              />
+            )}
+          </motion.button>
+
           {/* Section 1: Header - Handle + Chips */}
           <div className="flex-none pt-2 px-4">
             {/* Drag Handle */}
