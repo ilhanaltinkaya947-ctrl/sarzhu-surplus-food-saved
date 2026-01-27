@@ -41,13 +41,16 @@ interface BottomSheetProps {
   selectedShop?: Shop | null;
 }
 
-// Simple flick threshold
-const FLICK_THRESHOLD = 50;
+// Closed state - pushed down, showing only header (140px visible)
+const CLOSED_Y = "calc(100% - 140px)";
+const DRAG_THRESHOLD = 100;
+const VELOCITY_THRESHOLD = 500;
 
-// Apple-style ease-out transition (predictable, no bounce)
-const easeTransition = {
-  duration: 0.4,
-  ease: [0.32, 0.72, 0, 1] as [number, number, number, number],
+// iOS-style spring physics - snappy and responsive
+const springTransition = {
+  type: "spring" as const,
+  stiffness: 300,
+  damping: 30,
 };
 
 // Service fee constant
@@ -88,12 +91,17 @@ export function BottomSheet({
     setIsOpen(true);
   };
 
-  // Simple flick detection on handle area
-  const handlePanEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    if (info.offset.y < -FLICK_THRESHOLD) {
-      openSheet();
-    } else if (info.offset.y > FLICK_THRESHOLD) {
+  // Drag end logic - snap to state based on gesture
+  const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const { offset, velocity } = info;
+
+    // Dragged DOWN or flicked DOWN -> Close
+    if (offset.y > DRAG_THRESHOLD || velocity.y > VELOCITY_THRESHOLD) {
       closeSheet();
+    }
+    // Dragged UP or flicked UP -> Open
+    else if (offset.y < -DRAG_THRESHOLD || velocity.y < -VELOCITY_THRESHOLD) {
+      openSheet();
     }
   };
 
@@ -144,7 +152,7 @@ export function BottomSheet({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={easeTransition}
+            transition={springTransition}
             className="fixed inset-0 z-40 bg-black/20"
             onClick={closeSheet}
           />
@@ -159,33 +167,32 @@ export function BottomSheet({
           y: isHidden ? "100%" : 0,
           opacity: isHidden ? 0 : 1,
         }}
-        transition={easeTransition}
+        transition={springTransition}
       >
-        {/* Main Sheet - Height-based animation, always anchored to bottom */}
+        {/* Main Sheet - Fixed height, slides via Y translation */}
         <motion.div
           className={cn(
             "flex flex-col bg-white rounded-t-[32px] rounded-b-none",
             "shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)]",
-            "overflow-hidden"
+            "h-[85dvh] overflow-hidden"
           )}
-          animate={{ height: isOpen ? '85dvh' : 'auto' }}
-          transition={easeTransition}
+          animate={{ y: isOpen ? 0 : CLOSED_Y }}
+          transition={springTransition}
+          drag="y"
+          dragConstraints={{ top: 0 }}
+          dragElastic={{ top: 0, bottom: 0.5 }}
+          onDragEnd={handleDragEnd}
         >
-          {/* Drag Handle Area - Simple tap/swipe */}
-          <motion.div
-            className="flex-shrink-0 cursor-pointer"
+          {/* Drag Handle Area */}
+          <div
+            className="flex-shrink-0 cursor-grab active:cursor-grabbing"
             onClick={toggleSheet}
-            drag="y"
-            dragConstraints={{ top: 0, bottom: 0 }}
-            dragElastic={0}
-            onDragEnd={handlePanEnd}
-            style={{ y: 0 }}
           >
             {/* Drag Handle Pill */}
             <div className="flex items-center justify-center pt-3 pb-4">
               <div className="h-1 w-10 rounded-full bg-gray-300" />
             </div>
-          </motion.div>
+          </div>
 
           {/* Content Area: Chips + List - flex-1 takes available space */}
           <div className="flex-1 min-h-0 flex flex-col">
