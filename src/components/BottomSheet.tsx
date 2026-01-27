@@ -202,10 +202,10 @@ export function BottomSheet({
                       handleCategoryClick(category.id);
                     }}
                     className={cn(
-                      "flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-medium transition-all",
+                      "flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-medium transition-all border",
                       isActive
-                        ? "bg-primary text-primary-foreground shadow-md"
-                        : "bg-gray-100 text-gray-700"
+                        ? "bg-primary text-primary-foreground border-transparent shadow-md"
+                        : "bg-secondary text-muted-foreground border-transparent"
                     )}
                   >
                     <Icon className="h-4 w-4" />
@@ -276,9 +276,9 @@ export function BottomSheet({
           >
             {/* Pack Leader VIP Badge */}
             {hasSelection && isPackLeader && (
-              <div className="flex items-center justify-center gap-2 mb-3 py-2 px-4 bg-[#FFB800]/10 border border-[#FFB800]/30 rounded-xl">
-                <Crown className="h-4 w-4 text-[#FFB800]" />
-                <span className="text-sm font-semibold text-[#FFB800]">Joe's VIP Discount</span>
+              <div className="flex items-center justify-center gap-2 mb-3 py-2 px-4 bg-primary/10 border border-primary/30 rounded-xl">
+                <Crown className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold text-primary">Joe's VIP Discount</span>
                 <span className="text-xs text-muted-foreground line-through ml-2">
                   +{formatPrice(SERVICE_FEE)} fee
                 </span>
@@ -292,7 +292,7 @@ export function BottomSheet({
               className={cn(
                 "flex w-full h-14 items-center justify-center gap-2 rounded-xl font-semibold shadow-lg transition-all active:scale-[0.98]",
                 hasSelection 
-                  ? "bg-foreground text-white" 
+                  ? "bg-primary text-primary-foreground hover:bg-primary/90" 
                   : "bg-gray-200 text-gray-500"
               )}
             >

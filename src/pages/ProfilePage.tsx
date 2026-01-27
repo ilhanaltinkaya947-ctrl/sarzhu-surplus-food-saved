@@ -50,7 +50,7 @@ export default function ProfilePage() {
             onClick={handleGoBack}
             className="h-10 w-10 rounded-full flex items-center justify-center hover:bg-secondary transition-colors"
           >
-            <ArrowLeft className="h-5 w-5 text-foreground" />
+            <ArrowLeft className="h-5 w-5 text-foreground" strokeWidth={2.5} />
           </button>
           
           {/* Title */}
@@ -119,7 +119,7 @@ export default function ProfilePage() {
             <p className="text-xs text-muted-foreground">Food Saved</p>
           </div>
           <div className="bg-card rounded-2xl p-4 text-center shadow-card">
-            <p className="text-2xl font-bold text-[#FFB800]">
+            <p className="text-2xl font-bold text-primary">
               🦴 {profile?.loyalty_points || 0}
             </p>
             <p className="text-xs text-muted-foreground">Treats</p>
@@ -146,7 +146,7 @@ export default function ProfilePage() {
 
         {/* Footer */}
         <p className="text-center text-xs text-muted-foreground mt-8">
-          Made with 💚 to reduce food waste
+          Made with 🐾 to reduce food waste
         </p>
       </main>
     </motion.div>

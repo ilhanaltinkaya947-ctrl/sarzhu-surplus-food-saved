@@ -141,7 +141,7 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
             style={{ maxHeight: "70dvh" }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 bg-[#FFB800] text-black">
+            <div className="flex items-center justify-between px-4 py-3 bg-primary text-primary-foreground">
               <div className="flex items-center gap-3">
                 <img 
                   src={joeMascot} 
@@ -157,7 +157,7 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
                 variant="ghost"
                 size="icon"
                 onClick={onClose}
-                className="h-8 w-8 rounded-full hover:bg-black/10"
+                className="h-8 w-8 rounded-full hover:bg-primary-foreground/10 text-primary-foreground"
               >
                 <X className="h-5 w-5" />
               </Button>
@@ -182,7 +182,7 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
                   <div
                     className={`max-w-[80%] px-4 py-2.5 rounded-2xl text-sm ${
                       msg.isJoe
-                        ? "bg-[#FFB800] text-black rounded-tl-sm"
+                        ? "bg-primary text-primary-foreground rounded-tl-sm"
                         : "bg-secondary text-secondary-foreground rounded-tr-sm"
                     }`}
                   >
@@ -203,11 +203,11 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
                     alt="Joe" 
                     className="h-8 w-8 rounded-full object-cover shadow-sm"
                   />
-                  <div className="bg-[#FFB800] px-4 py-2.5 rounded-2xl rounded-tl-sm">
+                  <div className="bg-primary px-4 py-2.5 rounded-2xl rounded-tl-sm">
                     <div className="flex gap-1">
-                      <span className="w-2 h-2 bg-black/40 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                      <span className="w-2 h-2 bg-black/40 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                      <span className="w-2 h-2 bg-black/40 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                      <span className="w-2 h-2 bg-primary-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                      <span className="w-2 h-2 bg-primary-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                      <span className="w-2 h-2 bg-primary-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                     </div>
                   </div>
                 </motion.div>
@@ -226,12 +226,12 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
                   onKeyDown={handleKeyDown}
                   placeholder="Ask Joe about deals..."
                   disabled={isTyping}
-                  className="flex-1 rounded-full bg-muted border-0 focus-visible:ring-[#FFB800]"
+                  className="flex-1 rounded-full bg-muted border-0 focus-visible:ring-primary"
                 />
                 <Button
                   onClick={handleSend}
                   disabled={!inputValue.trim() || isTyping}
-                  className="h-10 w-10 rounded-full bg-[#FFB800] hover:bg-[#E5A600] text-black p-0"
+                  className="h-10 w-10 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground p-0"
                 >
                   {isTyping ? (
                     <Loader2 className="h-4 w-4 animate-spin" />

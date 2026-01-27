@@ -5,80 +5,83 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Sarzhu Design System - Earthy, Sustainable, Warm */
+/* Gou Design System - Joe the Yorkshire Terrier Brand */
 
 @layer base {
   :root {
-    /* Warm cream background */
+    /* Surface colors */
     --background: 0 0% 100%;
-    --foreground: 265 4% 12.9%;
+    --foreground: 215 28% 17%;
 
     /* Card surfaces */
     --card: 0 0% 100%;
-    --card-foreground: 265 4% 12.9%;
+    --card-foreground: 215 28% 17%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 265 4% 12.9%;
+    --popover-foreground: 215 28% 17%;
 
-    /* Primary - Earthy Green */
-    --primary: 266 4% 20.8%;
-    --primary-foreground: 248 0.3% 98.4%;
+    /* Primary - Yorkie Gold */
+    --primary: 43 100% 50%;
+    --primary-foreground: 215 28% 17%;
 
-    /* Secondary - Warm Beige */
-    --secondary: 248 0.7% 96.8%;
-    --secondary-foreground: 266 4% 20.8%;
+    /* Secondary - Slate */
+    --secondary: 210 40% 98%;
+    --secondary-foreground: 215 28% 17%;
 
     /* Muted */
-    --muted: 248 0.7% 96.8%;
-    --muted-foreground: 257 4.6% 55.4%;
+    --muted: 210 40% 98%;
+    --muted-foreground: 215 16% 47%;
 
-    /* Accent - Gold for favorites */
-    --accent: 248 0.7% 96.8%;
-    --accent-foreground: 266 4% 20.8%;
+    /* Accent - Gold for highlights */
+    --accent: 43 100% 50%;
+    --accent-foreground: 215 28% 17%;
 
     /* Destructive */
-    --destructive: 27 24.5% 57.7%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
     /* Borders */
-    --border: 256 1.3% 92.9%;
-    --input: 256 1.3% 92.9%;
-    --ring: 257 4% 70.4%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 43 100% 50%;
 
-    --radius: 0.375rem;
+    --radius: 0.5rem;
 
-    /* Custom Sarzhu tokens */
-    --pin-default: 142 50% 40%;
-    --pin-followed: 45 90% 50%;
+    /* Custom Gou tokens */
+    --pin-default: 43 100% 50%;
+    --pin-followed: 0 84% 60%;
     --save-badge: 0 75% 55%;
+    --yorkie-gold: 43 100% 50%;
+    --yorkie-steel: 215 28% 17%;
 
     /* Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(142 40% 35%), hsl(142 50% 25%));
-    --gradient-gold: linear-gradient(135deg, hsl(45 90% 50%), hsl(35 85% 45%));
+    --gradient-hero: linear-gradient(135deg, hsl(43 100% 50%), hsl(35 100% 45%));
+    --gradient-gold: linear-gradient(135deg, hsl(43 100% 55%), hsl(43 100% 45%));
 
     /* Shadows */
-    --shadow-card: 0 4px 20px -4px hsl(30 10% 15% / 0.08);
-    --shadow-elevated: 0 8px 30px -8px hsl(30 10% 15% / 0.12);
-    --shadow-pin: 0 2px 8px -2px hsl(30 10% 15% / 0.2);
+    --shadow-card: 0 4px 20px -4px hsl(215 28% 17% / 0.08);
+    --shadow-elevated: 0 8px 30px -8px hsl(215 28% 17% / 0.12);
+    --shadow-pin: 0 2px 8px -2px hsl(215 28% 17% / 0.2);
+    --shadow-gold: 0 4px 20px -4px hsl(43 100% 50% / 0.4);
 
     /* Safe areas for mobile */
     --safe-top: env(safe-area-inset-top);
     --safe-bottom: env(safe-area-inset-bottom);
 
-    --sidebar-background: 45 25% 99%;
-    --sidebar-foreground: 265 4% 12.9%;
-    --sidebar-primary: 266 4% 20.8%;
-    --sidebar-primary-foreground: 248 0.3% 98.4%;
-    --sidebar-accent: 248 0.7% 96.8%;
-    --sidebar-accent-foreground: 266 4% 20.8%;
-    --sidebar-border: 256 1.3% 92.9%;
-    --sidebar-ring: 257 4% 70.4%;
-    --chart-1: 41 22.2% 64.6%;
-    --chart-2: 185 11.8% 60%;
-    --chart-3: 227 7% 39.8%;
-    --chart-4: 84 18.9% 82.8%;
-    --chart-5: 70 18.8% 76.9%;
-    --sidebar: 248 0.3% 98.4%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 215 28% 17%;
+    --sidebar-primary: 43 100% 50%;
+    --sidebar-primary-foreground: 215 28% 17%;
+    --sidebar-accent: 210 40% 98%;
+    --sidebar-accent-foreground: 215 28% 17%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-ring: 43 100% 50%;
+    --chart-1: 43 100% 50%;
+    --chart-2: 43 80% 60%;
+    --chart-3: 215 28% 17%;
+    --chart-4: 215 16% 47%;
+    --chart-5: 210 40% 80%;
+    --sidebar: 0 0% 100%;
     --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
     --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -95,52 +98,52 @@
   }
 
   .dark {
-    --background: 0 0% 15%;
-    --foreground: 248 0.3% 98.4%;
+    --background: 215 28% 10%;
+    --foreground: 210 40% 98%;
 
-    --card: 266 4% 20.8%;
-    --card-foreground: 248 0.3% 98.4%;
+    --card: 215 28% 15%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 266 4% 20.8%;
-    --popover-foreground: 248 0.3% 98.4%;
+    --popover: 215 28% 15%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 256 1.3% 92.9%;
-    --primary-foreground: 266 4% 20.8%;
+    --primary: 43 100% 50%;
+    --primary-foreground: 215 28% 17%;
 
-    --secondary: 260 4.1% 27.9%;
-    --secondary-foreground: 248 0.3% 98.4%;
+    --secondary: 215 28% 20%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 260 4.1% 27.9%;
-    --muted-foreground: 257 4% 70.4%;
+    --muted: 215 28% 20%;
+    --muted-foreground: 215 16% 60%;
 
-    --accent: 260 4.1% 27.9%;
-    --accent-foreground: 248 0.3% 98.4%;
+    --accent: 43 100% 50%;
+    --accent-foreground: 215 28% 17%;
 
-    --destructive: 22 19.1% 70.4%;
-    --destructive-foreground: 248 0.3% 98.4%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 0 0% 100% / 10%;
-    --input: 0 0% 100% / 15%;
-    --ring: 264 2.7% 55.1%;
+    --border: 215 28% 25%;
+    --input: 215 28% 25%;
+    --ring: 43 100% 50%;
 
-    --pin-default: 142 50% 50%;
-    --pin-followed: 45 85% 55%;
+    --pin-default: 43 100% 55%;
+    --pin-followed: 0 70% 55%;
     --save-badge: 0 70% 50%;
 
-    --sidebar-background: 30 12% 10%;
-    --sidebar-foreground: 248 0.3% 98.4%;
-    --sidebar-primary: 264 24.3% 48.8%;
-    --sidebar-primary-foreground: 248 0.3% 98.4%;
-    --sidebar-accent: 260 4.1% 27.9%;
-    --sidebar-accent-foreground: 248 0.3% 98.4%;
-    --sidebar-border: 0 0% 100% / 10%;
-    --sidebar-ring: 264 2.7% 55.1%;
-    --chart-1: 264 24.3% 48.8%;
-    --chart-2: 162 17% 69.6%;
-    --chart-3: 70 18.8% 76.9%;
-    --chart-4: 304 26.5% 62.7%;
-    --chart-5: 16 24.6% 64.5%;
-    --sidebar: 266 4% 20.8%;
+    --sidebar-background: 215 28% 12%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 43 100% 50%;
+    --sidebar-primary-foreground: 215 28% 17%;
+    --sidebar-accent: 215 28% 20%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 215 28% 25%;
+    --sidebar-ring: 43 100% 50%;
+    --chart-1: 43 100% 55%;
+    --chart-2: 43 80% 65%;
+    --chart-3: 210 40% 80%;
+    --chart-4: 215 16% 60%;
+    --chart-5: 215 28% 40%;
+    --sidebar: 215 28% 15%;
     --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
     --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
     --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);

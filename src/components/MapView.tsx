@@ -63,9 +63,9 @@ const categoryStyles = {
 };
 
 const createPinIcon = (isFollowed: boolean, imageUrl: string | null, shopName: string, shopDescription: string | null, isActive: boolean = false) => {
-  // Colors - keep white border for default/favorite, emerald for selected
+  // Colors - Yorkie Gold for selected, white for default
   const defaultBorderColor = "#FFFFFF";
-  const activeBorderColor = "#10B981"; // Emerald-500
+  const activeBorderColor = "#FFB800"; // Yorkie Gold
   const hasValidImage = imageUrl && imageUrl.trim() !== '';
   const category = detectCategory(shopName, shopDescription);
   const catStyle = categoryStyles[category];
@@ -74,9 +74,9 @@ const createPinIcon = (isFollowed: boolean, imageUrl: string | null, shopName: s
   const scale = isActive ? 'scale(1.3)' : 'scale(1)';
   const borderColor = isActive ? activeBorderColor : defaultBorderColor;
   const borderWidth = isActive ? '4px' : '3px';
-  const pointerColor = isActive ? activeBorderColor : "#3D8B5F";
+  const pointerColor = isActive ? activeBorderColor : "#1E293B"; // Yorkie Steel for pointer
   const shadowStyle = isActive 
-    ? '0 4px 20px -2px rgba(16, 185, 129, 0.5), 0 0 0 4px rgba(16, 185, 129, 0.2)' 
+    ? '0 4px 20px -2px rgba(255, 184, 0, 0.5), 0 0 0 4px rgba(255, 184, 0, 0.2)' 
     : '0 4px 12px -2px rgba(0,0,0,0.3)';
   const animationClass = isActive ? 'pin-active-pulse' : '';
   
@@ -366,16 +366,16 @@ export function MapView({ shops, bags, followedShopIds = [], selectedShopId, onS
         .leaflet-tooltip {
           display: none !important;
         }
-        /* Active pin pulsing shadow animation */
+        /* Active pin pulsing shadow animation - Yorkie Gold */
         .pin-active-pulse .pin-main {
           animation: active-pulse 1.5s ease-in-out infinite;
         }
         @keyframes active-pulse {
           0%, 100% {
-            box-shadow: 0 4px 20px -2px rgba(16, 185, 129, 0.5), 0 0 0 4px rgba(16, 185, 129, 0.2);
+            box-shadow: 0 4px 20px -2px rgba(255, 184, 0, 0.5), 0 0 0 4px rgba(255, 184, 0, 0.2);
           }
           50% {
-            box-shadow: 0 4px 25px -2px rgba(16, 185, 129, 0.7), 0 0 0 8px rgba(16, 185, 129, 0.1);
+            box-shadow: 0 4px 25px -2px rgba(255, 184, 0, 0.7), 0 0 0 8px rgba(255, 184, 0, 0.1);
           }
         }
       `}</style>
