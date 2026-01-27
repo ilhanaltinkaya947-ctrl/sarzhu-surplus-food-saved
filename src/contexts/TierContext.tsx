@@ -174,6 +174,9 @@ interface TierContextType {
   setCompletedOrders: (orders: number) => void;
   incrementOrders: () => void;
   cycleTierForDebug: () => void;
+  unlockModalOpen: boolean;
+  unlockedTier: TierInfo | null;
+  closeUnlockModal: () => void;
 }
 
 const TierContext = createContext<TierContextType | undefined>(undefined);
@@ -188,6 +191,10 @@ export function TierProvider({ children }: { children: ReactNode }) {
   // Track previous tier for celebration detection
   const previousTierRef = useRef<string | null>(null);
   const isInitialMount = useRef(true);
+  
+  // Modal state for tier unlock celebration
+  const [unlockModalOpen, setUnlockModalOpen] = useState(false);
+  const [unlockedTier, setUnlockedTier] = useState<TierInfo | null>(null);
 
   // Calculate current tier based on completed orders
   const currentTier = TIERS.find(
@@ -224,11 +231,9 @@ export function TierProvider({ children }: { children: ReactNode }) {
         if (currentTier.mascot === "shrek" || currentTier.mascot === "zeus") {
           fireTierConfetti(currentTier.mascot);
           
-          const config = TIER_CONFETTI[currentTier.mascot];
-          toast.success(config.message, {
-            duration: 5000,
-            icon: config.emoji,
-          });
+          // Show unlock modal
+          setUnlockedTier(currentTier);
+          setUnlockModalOpen(true);
         }
       }
     }
@@ -280,6 +285,11 @@ export function TierProvider({ children }: { children: ReactNode }) {
     }
   }, [completedOrders, setCompletedOrders]);
 
+  const closeUnlockModal = useCallback(() => {
+    setUnlockModalOpen(false);
+    setUnlockedTier(null);
+  }, []);
+
   return (
     <TierContext.Provider
       value={{
@@ -291,6 +301,9 @@ export function TierProvider({ children }: { children: ReactNode }) {
         setCompletedOrders,
         incrementOrders,
         cycleTierForDebug,
+        unlockModalOpen,
+        unlockedTier,
+        closeUnlockModal,
       }}
     >
       {children}

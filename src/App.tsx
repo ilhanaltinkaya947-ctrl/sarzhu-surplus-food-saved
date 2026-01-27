@@ -9,9 +9,27 @@ import OrdersPage from "./pages/OrdersPage";
 import ProfilePage from "./pages/ProfilePage";
 import MerchantDashboard from "./pages/MerchantDashboard";
 import NotFound from "./pages/NotFound";
-import { TierProvider } from "./contexts/TierContext";
+import { TierProvider, useTier } from "./contexts/TierContext";
+import { TierUnlockModal } from "./components/TierUnlockModal";
 
 const queryClient = new QueryClient();
+
+// Wrapper component to access tier context
+function TierUnlockModalWrapper() {
+  const { unlockModalOpen, unlockedTier, closeUnlockModal } = useTier();
+  
+  if (!unlockedTier) return null;
+  
+  return (
+    <TierUnlockModal
+      open={unlockModalOpen}
+      onClose={closeUnlockModal}
+      tierName={unlockedTier.name}
+      mascotImage={unlockedTier.mascotImage}
+      perks={[]}
+    />
+  );
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -19,6 +37,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <TierUnlockModalWrapper />
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<MapPage />} />
