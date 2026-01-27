@@ -253,11 +253,15 @@ export function TierProvider({ children }: { children: ReactNode }) {
     previousTierRef.current = currentTier.name;
   }, [currentTier]);
 
-  // Apply theme colors to CSS variables
+  // Apply theme via data-theme attribute and CSS variables
   useEffect(() => {
     const root = document.documentElement;
     const colors = currentTier.colors;
 
+    // Set data-theme attribute for CSS tier-specific styles
+    document.body.setAttribute('data-theme', currentTier.name.toLowerCase());
+
+    // Also set inline CSS variables as fallback
     root.style.setProperty("--primary", colors.primary);
     root.style.setProperty("--primary-foreground", colors.primaryForeground);
     root.style.setProperty("--secondary", colors.secondary);
@@ -272,7 +276,7 @@ export function TierProvider({ children }: { children: ReactNode }) {
     root.style.setProperty("--card-foreground", colors.cardForeground);
     root.style.setProperty("--border", colors.border);
 
-    // Update body background for Zeus dark mode
+    // Update body background for smooth transitions
     document.body.style.backgroundColor = `hsl(${colors.background})`;
   }, [currentTier]);
 
