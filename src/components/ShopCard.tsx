@@ -38,7 +38,9 @@ export function ShopCard({ shop, bag, isFollowed = false, compact = false }: Sho
   return (
     <div
       className={cn(
-        "bg-card rounded-2xl overflow-hidden shadow-card transition-all duration-500 ease-in-out touch-active",
+        "rounded-2xl overflow-hidden transition-all duration-500 ease-in-out touch-active",
+        "bg-[hsl(var(--sheet-bg))] border border-[hsl(var(--info-box-border))]",
+        "shadow-[var(--shadow-card)]",
         compact ? "w-[260px]" : "w-full"
       )}
     >
