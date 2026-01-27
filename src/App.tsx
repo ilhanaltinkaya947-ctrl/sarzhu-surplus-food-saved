@@ -11,6 +11,7 @@ import MerchantDashboard from "./pages/MerchantDashboard";
 import NotFound from "./pages/NotFound";
 import { TierProvider, useTier } from "./contexts/TierContext";
 import { TierUnlockModal } from "./components/TierUnlockModal";
+import { DevDebugMenu } from "./components/DevDebugMenu";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <TierUnlockModalWrapper />
+        <DevDebugMenu />
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<MapPage />} />
