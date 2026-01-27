@@ -231,6 +231,16 @@ export function TierProvider({ children }: { children: ReactNode }) {
         if (currentTier.mascot === "shrek" || currentTier.mascot === "zeus") {
           fireTierConfetti(currentTier.mascot);
           
+          // Haptic feedback for mobile devices
+          if (navigator.vibrate) {
+            // Zeus gets a stronger vibration pattern
+            if (currentTier.mascot === "zeus") {
+              navigator.vibrate([100, 50, 100, 50, 200]); // Dramatic pattern
+            } else {
+              navigator.vibrate([50, 30, 100]); // Quick celebratory pattern
+            }
+          }
+          
           // Show unlock modal
           setUnlockedTier(currentTier);
           setUnlockModalOpen(true);
