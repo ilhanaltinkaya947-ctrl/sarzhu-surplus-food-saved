@@ -47,12 +47,12 @@ const OPEN_Y = 0;
 const VELOCITY_THRESHOLD = 300;
 const OFFSET_THRESHOLD = 40;
 
-// Soft & heavy spring physics for premium 60fps feel
+// Luxury spring physics - heavy damping, no jitter
 const springConfig = {
   type: "spring" as const,
-  stiffness: 80,  // Very soft (default ~300)
-  damping: 20,    // Gentle braking
-  mass: 1.2,      // Adds "weight"
+  stiffness: 250,  // Strong snap
+  damping: 40,     // High braking = smooth stop, no bounce
+  mass: 0.8,       // Lightweight, responsive
 };
 
 // Service fee constant
@@ -186,6 +186,7 @@ export function BottomSheet({
           drag="y"
           dragConstraints={{ top: 0, bottom: 0 }}
           dragElastic={0.05}
+          dragMomentum={false}
           onDragEnd={handleDragEnd}
         >
           {/* Drag Handle Area */}
