@@ -5,6 +5,7 @@ import { motion, PanInfo } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { TreatTracker } from "@/components/TreatTracker";
+import { TierProgress } from "@/components/TierProgress";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -62,6 +63,11 @@ export default function ProfilePage() {
       </header>
       
       <main className="pt-20 pb-24 px-4">
+        {/* Tier Progress Section */}
+        <div className="mb-6">
+          <TierProgress />
+        </div>
+
         {/* Joe's Treat Tracker - Only show when logged in */}
         {user && profile && (
           <div className="mb-6">
