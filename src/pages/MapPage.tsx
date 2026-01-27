@@ -1,12 +1,13 @@
 import { useEffect, useState, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { MapView } from "@/components/MapView";
 import { FloatingSearchBar } from "@/components/FloatingSearchBar";
 import { BottomSheet } from "@/components/BottomSheet";
 import { ShopDrawer } from "@/components/ShopDrawer";
+import { JoeChat } from "@/components/JoeChat";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-
 interface Shop {
   id: string;
   name: string;
@@ -32,6 +33,8 @@ export default function MapPage() {
   const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [followedShopIds, setFollowedShopIds] = useState<string[]>([]);
+  const [joeChatOpen, setJoeChatOpen] = useState(false);
+  const [showJoeBadge, setShowJoeBadge] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
@@ -133,6 +136,11 @@ export default function MapPage() {
     if (bagsData) setBags(bagsData);
   }, []);
 
+  const handleJoeOpen = () => {
+    setJoeChatOpen(true);
+    setShowJoeBadge(false);
+  };
+
   // Handle drawer close to deselect shop
   const handleDrawerChange = (open: boolean) => {
     setDrawerOpen(open);
@@ -191,6 +199,48 @@ export default function MapPage() {
           user={user}
           onReservationComplete={handleReservationComplete}
         />
+      </div>
+
+      {/* Joe FAB - z-40 (above map, below sheet) */}
+      <AnimatePresence>
+        {!drawerOpen && (
+          <motion.button
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleJoeOpen}
+            className="pointer-events-auto fixed bottom-36 right-4 z-40 h-14 w-14 rounded-full bg-[#FFB800] shadow-lg flex items-center justify-center text-2xl"
+            style={{ 
+              boxShadow: "0 4px 20px rgba(255, 184, 0, 0.4)"
+            }}
+          >
+            {/* Pulse ring animation */}
+            <motion.div
+              className="absolute inset-0 rounded-full bg-[#FFB800]"
+              animate={{ scale: [1, 1.3, 1], opacity: [0.6, 0, 0.6] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            />
+            
+            {/* Dog icon */}
+            <span className="relative z-10">🐕</span>
+
+            {/* Notification badge */}
+            {showJoeBadge && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive border-2 border-background"
+              />
+            )}
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+      {/* Joe Chat Modal */}
+      <div className="pointer-events-auto">
+        <JoeChat open={joeChatOpen} onClose={() => setJoeChatOpen(false)} />
       </div>
     </div>
   );
