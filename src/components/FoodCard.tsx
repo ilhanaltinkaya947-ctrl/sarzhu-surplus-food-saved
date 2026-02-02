@@ -56,7 +56,7 @@ export function FoodCard({
     <button
       onClick={onClick}
       className={cn(
-        "w-full text-left rounded-2xl bg-white overflow-hidden shadow-sm border border-gray-100 transition-all active:scale-[0.98] touch-active",
+        "w-full text-left rounded-2xl bg-card overflow-hidden shadow-sm border border-border transition-all active:scale-[0.98] touch-active",
         className
       )}
     >
@@ -72,18 +72,28 @@ export function FoodCard({
           }}
         />
         
-        {/* Discount Badge - Yellow "Yandex" style */}
+        {/* Discount Badge - High contrast themed */}
         {discount > 0 && (
-          <div className="absolute top-3 left-3 flex items-center gap-1 rounded-lg bg-amber-400 px-2 py-1 shadow-md">
-            <Percent className="h-3.5 w-3.5 text-amber-900" />
-            <span className="text-xs font-bold text-amber-900">-{discount}%</span>
+          <div className={cn(
+            "absolute top-3 left-3 z-10",
+            "flex items-center gap-1 rounded-lg px-2 py-1",
+            "bg-primary text-primary-foreground",
+            "shadow-xl ring-2 ring-background"
+          )}>
+            <Percent className="h-3.5 w-3.5" />
+            <span className="text-xs font-bold">-{discount}%</span>
           </div>
         )}
         
-        {/* Bags Left Badge */}
+        {/* Bags Left Badge - High contrast themed */}
         {bagsLeft !== undefined && bagsLeft > 0 && bagsLeft <= 3 && (
-          <div className="absolute top-3 right-3 rounded-lg bg-red-500 px-2 py-1 shadow-md">
-            <span className="text-xs font-bold text-white">{bagsLeft} left!</span>
+          <div className={cn(
+            "absolute top-3 right-3 z-10",
+            "rounded-lg px-2 py-1",
+            "bg-destructive text-destructive-foreground",
+            "shadow-xl ring-2 ring-background"
+          )}>
+            <span className="text-xs font-bold">{bagsLeft} left!</span>
           </div>
         )}
       </div>
@@ -91,20 +101,20 @@ export function FoodCard({
       {/* Content */}
       <div className="p-3">
         {/* Title */}
-        <h3 className="font-semibold text-gray-900 text-base line-clamp-1 mb-1">
+        <h3 className="font-semibold text-card-foreground text-base line-clamp-1 mb-1">
           {name}
         </h3>
         
         {/* Subtitle Row */}
         <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-muted-foreground">
             {category} • Pickup
           </span>
           
           {/* Rating */}
           <div className="flex items-center gap-1">
             <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-            <span className="text-sm font-medium text-gray-700">
+            <span className="text-sm font-medium text-card-foreground">
               {rating.toFixed(1)}
             </span>
           </div>
@@ -117,7 +127,7 @@ export function FoodCard({
               {formatPrice(discountedPrice)}
             </span>
             {originalPrice && (
-              <span className="text-sm text-gray-400 line-through">
+              <span className="text-sm text-muted-foreground line-through">
                 {formatPrice(originalPrice)}
               </span>
             )}
