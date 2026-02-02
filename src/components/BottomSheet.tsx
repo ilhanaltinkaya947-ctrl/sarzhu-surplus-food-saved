@@ -281,13 +281,18 @@ export function BottomSheet({
               />
 
               {!isChatUnlocked && (
-                <div 
-                  className="absolute -bottom-1.5 -right-1.5 h-7 w-7 rounded-full bg-white flex items-center justify-center z-20"
-                  style={{ 
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.3), 0 0 0 2px white"
-                  }}
+                <div
+                  className={cn(
+                    "absolute -top-1.5 -left-1.5 z-20",
+                    "h-8 w-8 rounded-full",
+                    "bg-background/95 backdrop-blur",
+                    "border border-border ring-2 ring-background",
+                    "shadow-xl",
+                    "flex items-center justify-center",
+                    "pointer-events-none"
+                  )}
                 >
-                  <Lock className="h-3.5 w-3.5 text-gray-700" strokeWidth={2.5} />
+                  <Lock className="h-4 w-4 text-foreground" strokeWidth={2.5} />
                 </div>
               )}
 
