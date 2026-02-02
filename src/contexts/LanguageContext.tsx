@@ -176,6 +176,15 @@ export const translations: Record<Language, Record<string, string>> = {
     "general.retry": "Try again",
     "general.off": "OFF",
     "general.max": "MAX",
+    
+    // Joe Chat
+    "joe.title": "Joe the Food Rescue Pup",
+    "joe.subtitle": "Powered by AI 🐾",
+    "joe.greeting": "Woof! 🐶 I'm Joe, your Food Rescue Pup. I sniff out the best surplus food deals in Almaty. What are you craving today?",
+    "joe.placeholder": "Ask Joe about deals...",
+    "joe.fallback": "Woof! I'm having trouble sniffing right now. Try asking me again! 🐾",
+    "joe.errorFallback": "Woof! Something went wrong. Try again! 🐕",
+    "joe.unavailable": "Joe is temporarily unavailable",
   },
   kz: {
     // Onboarding
@@ -340,6 +349,15 @@ export const translations: Record<Language, Record<string, string>> = {
     "general.retry": "Қайталау",
     "general.off": "ЖЕҢІЛДІК",
     "general.max": "МАКС",
+    
+    // Joe Chat
+    "joe.title": "Джо - Тамақ құтқарушы күшік",
+    "joe.subtitle": "AI негізінде 🐾",
+    "joe.greeting": "Гав! 🐶 Мен Джо, сіздің тамақ құтқарушы күшігіңіз. Мен Алматыдағы ең жақсы артық тамақ ұсыныстарын іздеймін. Бүгін не жегіңіз келеді?",
+    "joe.placeholder": "Джодан ұсыныстар туралы сұраңыз...",
+    "joe.fallback": "Гав! Қазір іздеуде қиындық туындады. Қайта сұрап көріңіз! 🐾",
+    "joe.errorFallback": "Гав! Бірдеңе дұрыс болмады. Қайталаңыз! 🐕",
+    "joe.unavailable": "Джо уақытша қол жетімді емес",
   },
   ru: {
     // Onboarding
@@ -504,6 +522,15 @@ export const translations: Record<Language, Record<string, string>> = {
     "general.retry": "Попробовать снова",
     "general.off": "СКИДКА",
     "general.max": "МАКС",
+    
+    // Joe Chat
+    "joe.title": "Джо — пёс-спасатель еды",
+    "joe.subtitle": "На базе AI 🐾",
+    "joe.greeting": "Гав! 🐶 Я Джо, ваш пёс-спасатель еды. Я вынюхиваю лучшие предложения излишков еды в Алматы. Что хотите попробовать сегодня?",
+    "joe.placeholder": "Спросите Джо о предложениях...",
+    "joe.fallback": "Гав! Сейчас у меня проблемы с поиском. Попробуйте спросить ещё раз! 🐾",
+    "joe.errorFallback": "Гав! Что-то пошло не так. Попробуйте снова! 🐕",
+    "joe.unavailable": "Джо временно недоступен",
   },
 };
 

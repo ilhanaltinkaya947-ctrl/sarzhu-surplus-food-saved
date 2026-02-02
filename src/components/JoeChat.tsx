@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useTier } from "@/contexts/TierContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Message {
   id: string;
@@ -19,16 +20,6 @@ interface JoeChatProps {
   onClose: () => void;
 }
 
-// Consistent Joe personality across all tiers
-const CHAT_CONFIG = {
-  title: "Joe the Food Rescue Pup",
-  subtitle: "Powered by AI 🐾",
-  greeting: "Woof! 🐶 I'm Joe, your Food Rescue Pup. I sniff out the best surplus food deals in Almaty. What are you craving today?",
-  placeholder: "Ask Joe about deals...",
-  fallback: "Woof! I'm having trouble sniffing right now. Try asking me again! 🐾",
-  errorFallback: "Woof! Something went wrong. Try again! 🐕",
-};
-
 export function JoeChat({ open, onClose }: JoeChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -36,6 +27,7 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { currentTier } = useTier();
+  const { t, language } = useLanguage();
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -49,7 +41,7 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
       const timer = setTimeout(() => {
         setMessages([{
           id: "greeting",
-          text: CHAT_CONFIG.greeting,
+          text: t("joe.greeting"),
           isJoe: true,
           timestamp: new Date(),
         }]);
@@ -57,7 +49,7 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [open, messages.length]);
+  }, [open, messages.length, t]);
 
   // Focus input when opened
   useEffect(() => {
@@ -93,7 +85,8 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
         body: {
           message: userMessage.text,
           conversationHistory,
-          tierName: currentTier.displayName, // Pass tier for context
+          tierName: currentTier.displayName,
+          language, // Pass language for localized responses
         },
       });
 
@@ -101,7 +94,7 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
 
       const joeResponse: Message = {
         id: `joe-${Date.now()}`,
-        text: data.response || CHAT_CONFIG.errorFallback,
+        text: data.response || t("joe.errorFallback"),
         isJoe: true,
         timestamp: new Date(),
       };
@@ -112,12 +105,12 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
       // Fallback response
       const fallbackResponse: Message = {
         id: `joe-${Date.now()}`,
-        text: CHAT_CONFIG.fallback,
+        text: t("joe.fallback"),
         isJoe: true,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, fallbackResponse]);
-      toast.error("Joe is temporarily unavailable");
+      toast.error(t("joe.unavailable"));
     } finally {
       setIsTyping(false);
     }
@@ -161,8 +154,8 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
                   className="h-10 w-10 rounded-full object-cover shadow-inner"
                 />
                 <div>
-                  <h3 className="font-bold text-sm">{CHAT_CONFIG.title}</h3>
-                  <p className="text-xs opacity-80">{CHAT_CONFIG.subtitle}</p>
+                  <h3 className="font-bold text-sm">{t("joe.title")}</h3>
+                  <p className="text-xs opacity-80">{t("joe.subtitle")}</p>
                 </div>
               </div>
               <Button
@@ -236,7 +229,7 @@ export function JoeChat({ open, onClose }: JoeChatProps) {
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder={CHAT_CONFIG.placeholder}
+                  placeholder={t("joe.placeholder")}
                   disabled={isTyping}
                   className="flex-1 rounded-full bg-muted border-0 focus-visible:ring-primary"
                 />
