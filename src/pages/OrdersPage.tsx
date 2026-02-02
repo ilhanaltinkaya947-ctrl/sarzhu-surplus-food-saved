@@ -6,6 +6,7 @@ import { TicketCard } from "@/components/orders/TicketCard";
 import { PickupSuccessScreen } from "@/components/orders/PickupSuccessScreen";
 import { EmptyState } from "@/components/orders/EmptyState";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Order {
   id: string;
@@ -19,6 +20,7 @@ interface Order {
 export default function OrdersPage() {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"active" | "past">("active");
@@ -87,18 +89,16 @@ export default function OrdersPage() {
 
       if (error) throw error;
 
-      // Show success screen
       setSuccessOrder(order);
       
-      // Update local state
       setOrders(prev => 
         prev.map(o => o.id === order.id ? { ...o, status: "picked_up" } : o)
       );
     } catch (error) {
       console.error("Error confirming pickup:", error);
       toast({
-        title: "Error",
-        description: "Failed to confirm pickup. Please try again.",
+        title: t("general.error"),
+        description: t("general.retry"),
         variant: "destructive",
       });
     } finally {
@@ -108,7 +108,6 @@ export default function OrdersPage() {
 
   const handleCloseSuccess = () => {
     setSuccessOrder(null);
-    // Switch to past orders tab
     setActiveTab("past");
   };
 
@@ -127,13 +126,11 @@ export default function OrdersPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm">
         <div className="px-4 py-6 pt-safe">
-          <h1 className="text-3xl font-bold text-foreground">My Bags</h1>
+          <h1 className="text-3xl font-bold text-foreground">{t("orders.title")}</h1>
         </div>
 
-        {/* Segmented Control Tabs */}
         {user && orders.length > 0 && (
           <div className="px-4 pb-4">
             <div className="flex rounded-xl bg-secondary p-1">
@@ -145,7 +142,7 @@ export default function OrdersPage() {
                     : "text-muted-foreground"
                 }`}
               >
-                Active ({activeOrders.length})
+                {t("orders.active")} ({activeOrders.length})
               </button>
               <button
                 onClick={() => setActiveTab("past")}
@@ -155,7 +152,7 @@ export default function OrdersPage() {
                     : "text-muted-foreground"
                 }`}
               >
-                Past ({pastOrders.length})
+                {t("orders.past")} ({pastOrders.length})
               </button>
             </div>
           </div>
@@ -169,8 +166,8 @@ export default function OrdersPage() {
           <div className="flex flex-col items-center justify-center py-16">
             <p className="text-muted-foreground">
               {activeTab === "active" 
-                ? "No active reservations" 
-                : "No past orders yet"
+                ? t("orders.noActive")
+                : t("orders.noPast")
               }
             </p>
           </div>
@@ -201,7 +198,6 @@ export default function OrdersPage() {
         )}
       </main>
 
-      {/* Success Screen */}
       {successOrder && (
         <PickupSuccessScreen
           open={!!successOrder}

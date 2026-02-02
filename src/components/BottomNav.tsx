@@ -1,15 +1,17 @@
 import { Map, ShoppingBag, User } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-
-const navItems = [
-  { path: "/", icon: Map, label: "Map" },
-  { path: "/orders", icon: ShoppingBag, label: "Orders" },
-  { path: "/profile", icon: User, label: "Profile" },
-];
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function BottomNav() {
   const location = useLocation();
+  const { t } = useLanguage();
+
+  const navItems = [
+    { path: "/", icon: Map, labelKey: "nav.map" },
+    { path: "/orders", icon: ShoppingBag, labelKey: "nav.orders" },
+    { path: "/profile", icon: User, labelKey: "nav.profile" },
+  ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-lg border-t border-border pb-safe">
@@ -39,7 +41,7 @@ export function BottomNav() {
                 "text-xs mt-1 font-medium",
                 isActive && "font-semibold"
               )}>
-                {item.label}
+                {t(item.labelKey)}
               </span>
             </Link>
           );

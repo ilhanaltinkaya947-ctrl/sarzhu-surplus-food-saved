@@ -5,7 +5,7 @@ import { useState, useRef, useCallback } from "react";
 import { FoodCard, MarketingBanner } from "./FoodCard";
 import { useProfile } from "@/hooks/useProfile";
 import { useTier } from "@/contexts/TierContext";
-import { Progress } from "@/components/ui/progress";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 
 interface Shop {
@@ -25,14 +25,6 @@ interface MysteryBag {
   discounted_price: number;
 }
 
-const categories = [
-  { id: "all", label: "All", icon: Utensils },
-  { id: "bakery", label: "Bakery", icon: Cake },
-  { id: "coffee", label: "Coffee", icon: Coffee },
-  { id: "healthy", label: "Healthy", icon: Salad },
-  { id: "grocery", label: "Grocery", icon: ShoppingBag },
-];
-
 interface BottomSheetProps {
   onCategoryChange?: (category: string) => void;
   onShopClick?: (shop: Shop) => void;
@@ -47,20 +39,18 @@ interface BottomSheetProps {
 }
 
 // Height-based animation - button always visible
-const COLLAPSED_HEIGHT = '270px'; // Handle + Progress + Chips + Button
+const COLLAPSED_HEIGHT = '270px';
 const EXPANDED_HEIGHT = '85dvh';
 const DRAG_THRESHOLD = 40;
 
-// Snappy iOS-style spring physics
 const springTransition = {
   type: "spring" as const,
   stiffness: 300,
   damping: 30,
 };
 
-// Service fee constant
-const SERVICE_FEE = 200; // 200 KZT service fee
-const PACK_LEADER_DISCOUNT = 0.20; // 20% off for Pack Leader
+const SERVICE_FEE = 200;
+const PACK_LEADER_DISCOUNT = 0.20;
 
 export function BottomSheet({
   onCategoryChange,
@@ -79,13 +69,20 @@ export function BottomSheet({
   const scrollRef = useRef<HTMLDivElement>(null);
   const { profile } = useProfile();
   const { currentTier, nextTierProgress, ordersToNextTier, nextTierName, cycleTierForDebug, completedOrders } = useTier();
+  const { t } = useLanguage();
   
-  // Triple-click detection for debug
   const clickCountRef = useRef(0);
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Check if chatbot is unlocked (Smart Picker tier or higher = 5+ orders)
   const isChatUnlocked = completedOrders >= 5;
+
+  const categories = [
+    { id: "all", labelKey: "category.all", icon: Utensils },
+    { id: "bakery", labelKey: "category.bakery", icon: Cake },
+    { id: "coffee", labelKey: "category.coffee", icon: Coffee },
+    { id: "healthy", labelKey: "category.healthy", icon: Salad },
+    { id: "grocery", labelKey: "category.grocery", icon: ShoppingBag },
+  ];
   
   const handleMascotClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -97,28 +94,24 @@ export function BottomSheet({
     }
     
     if (clickCountRef.current >= 3) {
-      // Triple click detected - cycle tier for debug
       cycleTierForDebug();
       clickCountRef.current = 0;
     } else {
-      // Reset after 400ms if not triple-clicked
       clickTimeoutRef.current = setTimeout(() => {
         if (clickCountRef.current < 3) {
-          // Check if chat is unlocked
           if (isChatUnlocked) {
             onJoeClick?.();
           } else {
-            toast("🔒 AI Chat unlocks at Smart Picker tier!", {
-              description: `Complete ${5 - completedOrders} more orders to unlock`,
+            toast(t("bottomSheet.aiLocked"), {
+              description: t("bottomSheet.ordersToUnlock").replace("{count}", String(5 - completedOrders)),
             });
           }
         }
         clickCountRef.current = 0;
       }, 400);
     }
-  }, [cycleTierForDebug, onJoeClick, isChatUnlocked, completedOrders]);
+  }, [cycleTierForDebug, onJoeClick, isChatUnlocked, completedOrders, t]);
   
-  // Check if user is Pack Leader (20+ points)
   const isPackLeader = profile && profile.loyalty_points >= 20;
 
   const handleCategoryClick = (categoryId: string) => {
@@ -137,13 +130,10 @@ export function BottomSheet({
     setIsOpen(true);
   };
 
-  // Snap to state based on drag gesture
   const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    // Drag Up -> Open
     if (info.offset.y < -DRAG_THRESHOLD) {
       openSheet();
     }
-    // Drag Down -> Close
     else if (info.offset.y > DRAG_THRESHOLD) {
       closeSheet();
     }
@@ -152,7 +142,6 @@ export function BottomSheet({
   const toggleSheet = () => {
     setIsOpen(!isOpen);
   };
-
 
   const getBagForShop = (shopId: string) => {
     return bags.find((bag) => bag.shop_id === shopId);
@@ -172,7 +161,6 @@ export function BottomSheet({
     }).format(price);
   };
 
-  // Calculate total with potential Pack Leader discount
   const calculateTotal = () => {
     if (!selectedBag) return 0;
     const basePrice = selectedBag.discounted_price;
@@ -180,16 +168,20 @@ export function BottomSheet({
     return basePrice + fee;
   };
 
-  // Get the price to display on the button
   const buttonPrice = selectedBag 
     ? formatPrice(calculateTotal()) 
     : formatPrice(1200);
 
   const hasSelection = selectedBag && selectedShop;
 
+  const getNextTierTarget = () => {
+    if (currentTier.name === "FoodSaver") return 5;
+    if (currentTier.name === "SmartPicker") return 20;
+    return 20;
+  };
+
   return (
     <>
-      {/* Blur Overlay - z-40 */}
       <AnimatePresence>
         {isOpen && !isHidden && (
           <motion.div
@@ -203,7 +195,6 @@ export function BottomSheet({
         )}
       </AnimatePresence>
 
-      {/* Main Sheet - Height animates, drag for gesture detection only */}
       <motion.div
         className={cn(
           "fixed bottom-0 left-0 right-0 z-50",
@@ -222,9 +213,7 @@ export function BottomSheet({
         dragElastic={0.05}
         onDragEnd={handleDragEnd}
       >
-        {/* Full Height Flex Column */}
         <div className="flex flex-col h-full">
-          {/* Drag Handle - centered at very top */}
           <div 
             className="flex items-center justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing"
             onClick={toggleSheet}
@@ -232,14 +221,12 @@ export function BottomSheet({
             <div className="h-1 w-10 rounded-full bg-muted-foreground/30" />
           </div>
 
-          {/* Dashboard Header Row - Progress on Left, Mascot on Right */}
           <div className="flex items-center justify-between w-full px-4 pb-3">
-            {/* Left Side: Tier Progress */}
             <div className="flex-1 mr-4">
               <p className="text-xs font-medium text-muted-foreground mb-1.5">
                 {nextTierName 
-                  ? `Next: ${nextTierName} (${completedOrders}/${nextTierName === "Shrek" ? 5 : 20})`
-                  : `${currentTier.name} - Max Tier! 👑`
+                  ? `${t("bottomSheet.nextTier")}: ${nextTierName} (${completedOrders}/${getNextTierTarget()})`
+                  : `${currentTier.name} - ${t("bottomSheet.maxTier")}`
                 }
               </p>
               <div className="w-32 h-2 bg-secondary rounded-full overflow-hidden">
@@ -250,7 +237,6 @@ export function BottomSheet({
               </div>
             </div>
 
-            {/* Right Side: Mascot Button */}
             <motion.button
               onClick={handleMascotClick}
               whileHover={{ scale: 1.05 }}
@@ -260,14 +246,12 @@ export function BottomSheet({
                 boxShadow: "0 4px 20px hsl(var(--primary) / 0.4)"
               }}
             >
-              {/* Pulse ring animation */}
               <motion.div
                 className="absolute inset-0 rounded-full bg-primary"
                 animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
                 transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
               />
               
-              {/* Dynamic mascot image based on tier */}
               <img 
                 src={currentTier.mascotImage} 
                 alt={currentTier.name} 
@@ -277,14 +261,12 @@ export function BottomSheet({
                 )}
               />
 
-              {/* Lock icon when chat is locked */}
               {!isChatUnlocked && (
                 <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-muted border-2 border-background flex items-center justify-center">
                   <Lock className="h-2.5 w-2.5 text-muted-foreground" />
                 </div>
               )}
 
-              {/* Notification badge - only show when unlocked */}
               {showJoeBadge && isChatUnlocked && (
                 <motion.div
                   initial={{ scale: 0 }}
@@ -295,10 +277,7 @@ export function BottomSheet({
             </motion.button>
           </div>
 
-          {/* Section 1: Header - Chips */}
           <div className="flex-none px-4">
-
-            {/* Category Chips */}
             <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-3">
               {categories.map((category) => {
                 const Icon = category.icon;
@@ -319,14 +298,13 @@ export function BottomSheet({
                     )}
                   >
                     <Icon className="h-4 w-4" />
-                    {category.label}
+                    {t(category.labelKey)}
                   </button>
                 );
               })}
             </div>
           </div>
 
-          {/* Section 2: Body - Scrollable List */}
           <motion.div
             ref={scrollRef}
             className={cn(
@@ -339,16 +317,15 @@ export function BottomSheet({
           >
             {isOpen && (
               <div className="pb-4">
-                {/* Section Header */}
                 <div className="flex items-center justify-between mb-4 sticky top-0 bg-[hsl(var(--sheet-bg,var(--card)))] py-2 -mx-4 px-4 z-10 transition-colors duration-500">
-                  <h3 className="text-lg font-bold text-[hsl(var(--sheet-foreground,var(--card-foreground)))]">Featured Deals</h3>
-                  <button className="text-sm font-medium text-primary">See all</button>
+                  <h3 className="text-lg font-bold text-[hsl(var(--sheet-foreground,var(--card-foreground)))]">
+                    {t("bottomSheet.featuredDeals")}
+                  </h3>
+                  <button className="text-sm font-medium text-primary">{t("bottomSheet.seeAll")}</button>
                 </div>
 
-                {/* Marketing Banner */}
                 <MarketingBanner className="mb-5" />
 
-                {/* 2-Column Food Cards Grid */}
                 <div className="grid grid-cols-2 gap-3">
                   {shops.map((shop) => {
                     const bag = getBagForShop(shop.id);
@@ -369,28 +346,25 @@ export function BottomSheet({
                   })}
                 </div>
 
-                {/* Empty State */}
                 {shops.length === 0 && (
                   <div className="text-center py-12">
-                    <p className="text-gray-500">No shops available nearby</p>
+                    <p className="text-gray-500">{t("bottomSheet.noShops")}</p>
                   </div>
                 )}
               </div>
             )}
           </motion.div>
 
-          {/* Section 3: Footer - Reserve Button (always visible, mt-auto pins to bottom) */}
           <div 
             className="flex-none mt-auto px-4 pt-4 bg-[hsl(var(--sheet-bg,var(--card)))] border-t border-border transition-colors duration-500"
             style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
           >
-            {/* Pack Leader VIP Badge */}
             {hasSelection && isPackLeader && (
               <div className="flex items-center justify-center gap-2 mb-3 py-2 px-4 bg-primary/10 border border-primary/30 rounded-xl">
                 <Crown className="h-4 w-4 text-primary" />
-                <span className="text-sm font-semibold text-primary">{currentTier.name}'s VIP Discount</span>
+                <span className="text-sm font-semibold text-primary">{currentTier.name} VIP</span>
                 <span className="text-xs text-muted-foreground line-through ml-2">
-                  +{formatPrice(SERVICE_FEE)} fee
+                  +{formatPrice(SERVICE_FEE)}
                 </span>
               </div>
             )}
@@ -407,8 +381,8 @@ export function BottomSheet({
               )}
             >
               {hasSelection 
-                ? `Reserve ${selectedShop?.name} • ${buttonPrice}`
-                : "Select a shop to reserve"
+                ? `${t("bottomSheet.reserve")} ${selectedShop?.name} • ${buttonPrice}`
+                : t("bottomSheet.selectShop")
               }
             </button>
           </div>

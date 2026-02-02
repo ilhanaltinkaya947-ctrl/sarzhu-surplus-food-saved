@@ -176,7 +176,7 @@ export default function ProfilePage() {
 
         {/* Footer */}
         <p className="text-center text-xs text-muted-foreground mt-8">
-          Made with 🐾 to reduce food waste
+          {t("profile.footer")}
         </p>
       </main>
 

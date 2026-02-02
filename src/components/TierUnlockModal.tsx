@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Crown, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface TierUnlockModalProps {
   open: boolean;
@@ -10,46 +11,48 @@ interface TierUnlockModalProps {
   perks: string[];
 }
 
-const TIER_CONFIG = {
-  SmartPicker: {
-    title: "Level Up!",
-    subtitle: "You've unlocked Smart Picker",
-    emoji: "🎯",
-    gradient: "from-amber-600 to-yellow-500",
-    accentColor: "text-yellow-300",
-    buttonClass: "bg-white text-amber-700 hover:bg-yellow-50",
-  },
-  Legend: {
-    title: "LEGENDARY STATUS!",
-    subtitle: "You've become a Legend",
-    emoji: "👑",
-    gradient: "from-amber-700 via-yellow-600 to-amber-500",
-    accentColor: "text-yellow-200",
-    buttonClass: "bg-white text-amber-700 hover:bg-yellow-50",
-  },
-};
-
-const TIER_PERKS = {
-  SmartPicker: [
-    "🤖 AI Assistant Unlocked!",
-    "🎯 AI-powered recommendations",
-    "📱 Personalized deal alerts",
-    "⭐ Early notifications for popular items",
-  ],
-  Legend: [
-    "👑 VIP status with all perks",
-    "💰 20% off all service fees",
-    "🚀 First access to limited bags",
-    "🎁 Monthly surprise rewards",
-  ],
-};
-
 export function TierUnlockModal({ 
   open, 
   onClose, 
   tierName, 
   mascotImage,
 }: TierUnlockModalProps) {
+  const { t } = useLanguage();
+
+  const TIER_CONFIG = {
+    SmartPicker: {
+      title: t("tierUnlock.levelUp"),
+      subtitle: t("tierUnlock.smartPickerUnlocked"),
+      emoji: "🎯",
+      gradient: "from-amber-600 to-yellow-500",
+      accentColor: "text-yellow-300",
+      buttonClass: "bg-white text-amber-700 hover:bg-yellow-50",
+    },
+    Legend: {
+      title: t("tierUnlock.legendary"),
+      subtitle: t("tierUnlock.legendUnlocked"),
+      emoji: "👑",
+      gradient: "from-amber-700 via-yellow-600 to-amber-500",
+      accentColor: "text-yellow-200",
+      buttonClass: "bg-white text-amber-700 hover:bg-yellow-50",
+    },
+  };
+
+  const TIER_PERKS = {
+    SmartPicker: [
+      t("tierUnlock.aiAssistant"),
+      t("tierUnlock.aiRecommendations"),
+      t("tierUnlock.dealAlerts"),
+      t("tierUnlock.earlyNotifications"),
+    ],
+    Legend: [
+      t("tierUnlock.vipStatus"),
+      t("tierUnlock.discountFees"),
+      t("tierUnlock.limitedBags"),
+      t("tierUnlock.monthlyRewards"),
+    ],
+  };
+
   const config = TIER_CONFIG[tierName as keyof typeof TIER_CONFIG];
   const perks = TIER_PERKS[tierName as keyof typeof TIER_PERKS] || [];
 
@@ -64,7 +67,6 @@ export function TierUnlockModal({
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-[100] flex items-center justify-center p-4"
         >
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -72,7 +74,6 @@ export function TierUnlockModal({
             className={`absolute inset-0 bg-gradient-to-b ${config.gradient}`}
           />
 
-          {/* Animated particles background */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             {[...Array(20)].map((_, i) => (
               <motion.div
@@ -97,7 +98,6 @@ export function TierUnlockModal({
             ))}
           </div>
 
-          {/* Close button */}
           <button
             onClick={onClose}
             className="absolute top-6 right-6 z-10 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
@@ -105,7 +105,6 @@ export function TierUnlockModal({
             <X className="h-6 w-6 text-white" />
           </button>
 
-          {/* Content */}
           <motion.div
             initial={{ scale: 0.8, y: 50 }}
             animate={{ scale: 1, y: 0 }}
@@ -113,7 +112,6 @@ export function TierUnlockModal({
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
             className="relative z-10 flex flex-col items-center text-center max-w-sm w-full"
           >
-            {/* Crown/Sparkles icon */}
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
@@ -127,17 +125,14 @@ export function TierUnlockModal({
               )}
             </motion.div>
 
-            {/* Mascot Image */}
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
               className="relative mb-6"
             >
-              {/* Glow ring */}
               <div className="absolute inset-0 rounded-full bg-yellow-300 blur-xl opacity-50" />
               
-              {/* Mascot container */}
               <div className="relative h-32 w-32 rounded-full border-4 border-white/30 overflow-hidden shadow-2xl">
                 <img 
                   src={mascotImage} 
@@ -146,7 +141,6 @@ export function TierUnlockModal({
                 />
               </div>
 
-              {/* Floating emoji */}
               <motion.span
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -157,7 +151,6 @@ export function TierUnlockModal({
               </motion.span>
             </motion.div>
 
-            {/* Title */}
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -167,7 +160,6 @@ export function TierUnlockModal({
               {config.title}
             </motion.h2>
 
-            {/* Subtitle */}
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -177,7 +169,6 @@ export function TierUnlockModal({
               {config.subtitle}
             </motion.p>
 
-            {/* Perks list */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -185,7 +176,7 @@ export function TierUnlockModal({
               className="w-full bg-white/10 rounded-2xl p-4 mb-8 backdrop-blur-sm"
             >
               <p className="text-sm font-semibold text-white/70 mb-3 uppercase tracking-wide">
-                Your New Perks
+                {t("tierUnlock.yourPerks")}
               </p>
               <ul className="space-y-2">
                 {perks.map((perk, index) => (
@@ -202,7 +193,6 @@ export function TierUnlockModal({
               </ul>
             </motion.div>
 
-            {/* CTA Button */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -213,7 +203,7 @@ export function TierUnlockModal({
                 onClick={onClose}
                 className={`w-full h-14 text-lg font-bold rounded-xl ${config.buttonClass}`}
               >
-                Let's Go! 🚀
+                {t("tierUnlock.letsGo")}
               </Button>
             </motion.div>
           </motion.div>
