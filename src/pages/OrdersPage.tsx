@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { TicketCard } from "@/components/orders/TicketCard";
@@ -7,6 +7,8 @@ import { PickupSuccessScreen } from "@/components/orders/PickupSuccessScreen";
 import { EmptyState } from "@/components/orders/EmptyState";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useNavigate } from "react-router-dom";
+import { ChevronLeft } from "lucide-react";
 
 interface Order {
   id: string;
@@ -21,11 +23,20 @@ export default function OrdersPage() {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"active" | "past">("active");
   const [processingOrderId, setProcessingOrderId] = useState<string | null>(null);
   const [successOrder, setSuccessOrder] = useState<Order | null>(null);
+
+  const handleBack = () => navigate("/");
+
+  const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (info.offset.x > 100 || info.velocity.x > 500) {
+      handleBack();
+    }
+  };
 
   const fetchOrders = useCallback(async () => {
     if (!user) {
@@ -125,10 +136,26 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <motion.div 
+      className="min-h-screen bg-background"
+      initial={{ x: "100%" }}
+      animate={{ x: 0 }}
+      exit={{ x: "100%" }}
+      transition={{ type: "spring", damping: 25, stiffness: 300 }}
+      drag="x"
+      dragConstraints={{ left: 0, right: 0 }}
+      dragElastic={{ left: 0, right: 0.3 }}
+      onDragEnd={handleDragEnd}
+    >
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm">
-        <div className="px-4 py-6 pt-safe">
-          <h1 className="text-3xl font-bold text-foreground">{t("orders.title")}</h1>
+        <div className="px-4 py-4 pt-safe flex items-center gap-3">
+          <button
+            onClick={handleBack}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-foreground transition-all active:scale-95"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </button>
+          <h1 className="text-2xl font-bold text-foreground">{t("orders.title")}</h1>
         </div>
 
         {user && orders.length > 0 && (
@@ -206,6 +233,6 @@ export default function OrdersPage() {
           onClose={handleCloseSuccess}
         />
       )}
-    </div>
+    </motion.div>
   );
 }
