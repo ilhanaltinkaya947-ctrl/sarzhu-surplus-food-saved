@@ -2,8 +2,15 @@ import { useTier } from "@/contexts/TierContext";
 import { motion } from "framer-motion";
 import { GripVertical } from "lucide-react";
 
+const ONBOARDING_KEY = "hasSeenOnboarding";
+
 export function DevDebugMenu() {
   const { setCompletedOrders, currentTier, completedOrders } = useTier();
+
+  const handleReplayIntro = () => {
+    localStorage.removeItem(ONBOARDING_KEY);
+    window.location.reload();
+  };
 
   return (
     <motion.div
@@ -52,6 +59,13 @@ export function DevDebugMenu() {
           👑 Legend
         </button>
       </div>
+      {/* Replay Intro Button */}
+      <button
+        onClick={handleReplayIntro}
+        className="px-2 py-1 text-xs rounded bg-red-500 text-white hover:bg-red-600 transition-all font-semibold"
+      >
+        🔄 Replay Intro
+      </button>
     </motion.div>
   );
 }
