@@ -1,21 +1,21 @@
 import { useTier } from "@/contexts/TierContext";
 import { Progress } from "@/components/ui/progress";
-import { Crown, Lock, Star, Zap, Gift, Percent } from "lucide-react";
+import { Crown, Lock, Star, Sparkles, Gift, Percent } from "lucide-react";
 
 // Tier icons mapping
 const TIER_ICONS = {
-  Joe: Star,
-  Shrek: Zap,
-  Zeus: Crown,
+  FoodSaver: Star,
+  SmartPicker: Sparkles,
+  Legend: Crown,
 };
 
 // Next tier benefits
 const TIER_BENEFITS = {
-  Shrek: {
-    icon: Zap,
-    perks: ["Priority access to deals", "Exclusive member discounts"],
+  SmartPicker: {
+    icon: Sparkles,
+    perks: ["AI-powered recommendations", "Personalized deal alerts"],
   },
-  Zeus: {
+  Legend: {
     icon: Crown,
     perks: ["20% Lifetime Discount on fees", "First access to limited bags", "Monthly rewards"],
   },
@@ -31,23 +31,25 @@ export function LoyaltyStatusCard() {
   } = useTier();
 
   const TierIcon = TIER_ICONS[currentTier.name as keyof typeof TIER_ICONS] || Star;
-  const isMaxTier = currentTier.name === "Zeus";
+  const isMaxTier = currentTier.name === "Legend";
 
   // Get the next locked tier info
   const getLockedTierInfo = () => {
-    if (currentTier.name === "Joe") {
+    if (currentTier.name === "FoodSaver") {
       return {
-        name: "Zeus",
+        name: "Legend",
+        displayName: "Legend",
         ordersRequired: 20,
         ordersRemaining: 20 - completedOrders,
-        benefits: TIER_BENEFITS.Zeus,
+        benefits: TIER_BENEFITS.Legend,
       };
-    } else if (currentTier.name === "Shrek") {
+    } else if (currentTier.name === "SmartPicker") {
       return {
-        name: "Zeus",
+        name: "Legend",
+        displayName: "Legend",
         ordersRequired: 20,
         ordersRemaining: 20 - completedOrders,
-        benefits: TIER_BENEFITS.Zeus,
+        benefits: TIER_BENEFITS.Legend,
       };
     }
     return null;
@@ -65,7 +67,7 @@ export function LoyaltyStatusCard() {
             <div className="h-14 w-14 rounded-full overflow-hidden border-3 border-primary shadow-lg">
               <img 
                 src={currentTier.mascotImage} 
-                alt={`${currentTier.name} mascot`}
+                alt="Joe mascot"
                 className="h-full w-full object-cover"
               />
             </div>
@@ -85,7 +87,7 @@ export function LoyaltyStatusCard() {
               )}
             </div>
             <p className="text-sm text-muted-foreground">
-              {currentTier.name} Tier • {completedOrders} order{completedOrders !== 1 ? 's' : ''} completed
+              {currentTier.displayName} • {completedOrders} order{completedOrders !== 1 ? 's' : ''} completed
             </p>
           </div>
         </div>
@@ -97,7 +99,7 @@ export function LoyaltyStatusCard() {
           <div className="flex items-center justify-between text-sm mb-2">
             <span className="text-muted-foreground">Progress to {nextTierName}</span>
             <span className="font-semibold text-primary">
-              {completedOrders}/{currentTier.name === "Joe" ? 5 : 20}
+              {completedOrders}/{currentTier.name === "FoodSaver" ? 5 : 20}
             </span>
           </div>
           <Progress value={nextTierProgress} className="h-2.5" />
@@ -107,8 +109,8 @@ export function LoyaltyStatusCard() {
         </div>
       )}
 
-      {/* Locked Zeus Preview - Show when not Zeus */}
-      {lockedTier && currentTier.name !== "Zeus" && (
+      {/* Locked Legend Preview - Show when not Legend */}
+      {lockedTier && currentTier.name !== "Legend" && (
         <div className="p-5 border-t border-border">
           <div className="flex items-start gap-3">
             {/* Locked Icon */}
@@ -124,7 +126,7 @@ export function LoyaltyStatusCard() {
             {/* Locked Tier Info */}
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <h4 className="font-semibold text-foreground text-sm">{lockedTier.name} Tier</h4>
+                <h4 className="font-semibold text-foreground text-sm">{lockedTier.displayName}</h4>
                 <span className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full font-medium">
                   LOCKED
                 </span>
@@ -152,7 +154,7 @@ export function LoyaltyStatusCard() {
         </div>
       )}
 
-      {/* Max Tier Perks - Show when Zeus */}
+      {/* Max Tier Perks - Show when Legend */}
       {isMaxTier && (
         <div className="p-5 bg-primary/10">
           <div className="flex items-center gap-2 mb-3">
@@ -165,7 +167,7 @@ export function LoyaltyStatusCard() {
               <span>20% off fees</span>
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground bg-card rounded-lg p-2">
-              <Zap className="h-3.5 w-3.5 text-primary" />
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
               <span>First access</span>
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground bg-card rounded-lg p-2">
