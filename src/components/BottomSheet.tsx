@@ -1,4 +1,4 @@
-import { Utensils, Coffee, Cake, Salad, ShoppingBag, Crown } from "lucide-react";
+import { Utensils, Coffee, Cake, Salad, ShoppingBag, Crown, Lock } from "lucide-react";
 import { motion, PanInfo, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useState, useRef, useCallback } from "react";
@@ -6,6 +6,7 @@ import { FoodCard, MarketingBanner } from "./FoodCard";
 import { useProfile } from "@/hooks/useProfile";
 import { useTier } from "@/contexts/TierContext";
 import { Progress } from "@/components/ui/progress";
+import { toast } from "sonner";
 
 interface Shop {
   id: string;
@@ -83,6 +84,9 @@ export function BottomSheet({
   const clickCountRef = useRef(0);
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
+  // Check if chatbot is unlocked (Smart Picker tier or higher = 5+ orders)
+  const isChatUnlocked = completedOrders >= 5;
+  
   const handleMascotClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     
@@ -100,12 +104,19 @@ export function BottomSheet({
       // Reset after 400ms if not triple-clicked
       clickTimeoutRef.current = setTimeout(() => {
         if (clickCountRef.current < 3) {
-          onJoeClick?.(); // Single/double click opens chat
+          // Check if chat is unlocked
+          if (isChatUnlocked) {
+            onJoeClick?.();
+          } else {
+            toast("🔒 AI Chat unlocks at Smart Picker tier!", {
+              description: `Complete ${5 - completedOrders} more orders to unlock`,
+            });
+          }
         }
         clickCountRef.current = 0;
       }, 400);
     }
-  }, [cycleTierForDebug, onJoeClick]);
+  }, [cycleTierForDebug, onJoeClick, isChatUnlocked, completedOrders]);
   
   // Check if user is Pack Leader (20+ points)
   const isPackLeader = profile && profile.loyalty_points >= 20;
@@ -260,11 +271,21 @@ export function BottomSheet({
               <img 
                 src={currentTier.mascotImage} 
                 alt={currentTier.name} 
-                className="relative z-10 h-10 w-10 rounded-full object-cover"
+                className={cn(
+                  "relative z-10 h-10 w-10 rounded-full object-cover",
+                  !isChatUnlocked && "opacity-60 grayscale"
+                )}
               />
 
-              {/* Notification badge */}
-              {showJoeBadge && (
+              {/* Lock icon when chat is locked */}
+              {!isChatUnlocked && (
+                <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-muted border-2 border-background flex items-center justify-center">
+                  <Lock className="h-2.5 w-2.5 text-muted-foreground" />
+                </div>
+              )}
+
+              {/* Notification badge - only show when unlocked */}
+              {showJoeBadge && isChatUnlocked && (
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
