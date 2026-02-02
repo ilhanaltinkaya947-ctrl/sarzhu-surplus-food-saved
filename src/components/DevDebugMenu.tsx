@@ -1,16 +1,13 @@
 import { useTier } from "@/contexts/TierContext";
 import { motion } from "framer-motion";
 import { GripVertical } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
 
 const ONBOARDING_KEY = "hasSeenOnboarding";
 
 export function DevDebugMenu() {
   const { setCompletedOrders, currentTier, completedOrders } = useTier();
-  const navigate = useNavigate();
-  const location = useLocation();
 
-  const isMerchantPage = location.pathname.includes("/merchant");
+  const isMerchantPage = window.location.pathname.includes("/merchant");
 
   const handleReplayIntro = () => {
     localStorage.removeItem(ONBOARDING_KEY);
@@ -19,9 +16,9 @@ export function DevDebugMenu() {
 
   const handleMerchantToggle = () => {
     if (isMerchantPage) {
-      navigate("/");
+      window.location.href = "/";
     } else {
-      navigate("/merchant/dashboard");
+      window.location.href = "/merchant/dashboard";
     }
   };
 
