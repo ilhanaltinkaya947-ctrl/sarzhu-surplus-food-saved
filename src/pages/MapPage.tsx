@@ -6,16 +6,8 @@ import { ShopDrawer } from "@/components/ShopDrawer";
 import { JoeChat } from "@/components/JoeChat";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useMarketplace, Shop } from "@/contexts/MarketplaceContext";
 import { toast } from "sonner";
-
-interface Shop {
-  id: string;
-  name: string;
-  lat: number;
-  long: number;
-  image_url: string | null;
-  description: string | null;
-}
 
 interface MysteryBag {
   id: string;
@@ -34,7 +26,7 @@ const categoryKeywords: Record<string, string[]> = {
 
 export default function MapPage() {
   const { user } = useAuth();
-  const [shops, setShops] = useState<Shop[]>([]);
+  const { shops, loading: shopsLoading } = useMarketplace();
   const [bags, setBags] = useState<MysteryBag[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
@@ -46,11 +38,14 @@ export default function MapPage() {
 
   // Filter shops based on active category
   const filteredShops = useMemo(() => {
-    if (activeCategory === "all") return shops;
+    // Only show open shops
+    const openShops = shops.filter(shop => shop.isOpen);
+    
+    if (activeCategory === "all") return openShops;
     
     const keywords = categoryKeywords[activeCategory] || [];
-    return shops.filter(shop => {
-      const searchText = `${shop.name} ${shop.description || ""}`.toLowerCase();
+    return openShops.filter(shop => {
+      const searchText = `${shop.name} ${shop.description || ""} ${shop.category || ""}`.toLowerCase();
       return keywords.some(keyword => searchText.includes(keyword.toLowerCase()));
     });
   }, [shops, activeCategory]);
@@ -58,12 +53,10 @@ export default function MapPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [shopsRes, bagsRes] = await Promise.all([
-          supabase.from("shops").select("*"),
+        const [bagsRes] = await Promise.all([
           supabase.from("mystery_bags").select("*"),
         ]);
 
-        if (shopsRes.data) setShops(shopsRes.data);
         if (bagsRes.data) setBags(bagsRes.data);
 
         // Try to fetch user follows if logged in
@@ -87,6 +80,9 @@ export default function MapPage() {
 
     fetchData();
   }, []);
+
+  // Combined loading state
+  const isLoading = loading || shopsLoading;
 
   const handleShopClick = (shop: Shop) => {
     setSelectedShop(shop);
@@ -172,7 +168,7 @@ export default function MapPage() {
   return (
     <div className="relative h-[100dvh] w-screen overflow-hidden pointer-events-none">
       {/* Fullscreen Map - Background Layer z-0 */}
-      {loading ? (
+      {isLoading ? (
         <div className="flex h-full w-full items-center justify-center bg-muted pointer-events-auto">
           <div className="flex flex-col items-center gap-3">
             <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
