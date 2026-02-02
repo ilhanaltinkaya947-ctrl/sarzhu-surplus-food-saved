@@ -121,6 +121,8 @@ export const translations: Record<Language, Record<string, string>> = {
     "auth.signInLink": "Sign in",
     "auth.successLogin": "Welcome back! 👋",
     "auth.successSignup": "Account created! You can now reserve bags.",
+    "auth.welcomeNewUser": "Welcome to the Pack! 🎉",
+    "auth.accountCreated": "Your account has been created successfully",
     
     // Loyalty Card
     "loyalty.status": "Loyalty Status",
@@ -297,6 +299,8 @@ export const translations: Record<Language, Record<string, string>> = {
     "auth.signInLink": "Кіру",
     "auth.successLogin": "Қайта келдіңіз! 👋",
     "auth.successSignup": "Аккаунт жасалды! Енді сөмкелерді брондай аласыз.",
+    "auth.welcomeNewUser": "Топқа қош келдіңіз! 🎉",
+    "auth.accountCreated": "Аккаунтыңыз сәтті жасалды",
     
     // Loyalty Card
     "loyalty.status": "Адалдық мәртебесі",
@@ -473,6 +477,8 @@ export const translations: Record<Language, Record<string, string>> = {
     "auth.signInLink": "Войти",
     "auth.successLogin": "С возвращением! 👋",
     "auth.successSignup": "Аккаунт создан! Теперь можно бронировать.",
+    "auth.welcomeNewUser": "Добро пожаловать в команду! 🎉",
+    "auth.accountCreated": "Ваш аккаунт успешно создан",
     
     // Loyalty Card
     "loyalty.status": "Статус лояльности",
