@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,8 +13,12 @@ import NotFound from "./pages/NotFound";
 import { TierProvider, useTier } from "./contexts/TierContext";
 import { TierUnlockModal } from "./components/TierUnlockModal";
 import { DevDebugMenu } from "./components/DevDebugMenu";
+import { OnboardingFlow } from "./components/OnboardingFlow";
+import { AnimatePresence } from "framer-motion";
 
 const queryClient = new QueryClient();
+
+const ONBOARDING_KEY = "hasSeenOnboarding";
 
 // Wrapper component to access tier context
 function TierUnlockModalWrapper() {
@@ -32,26 +37,55 @@ function TierUnlockModalWrapper() {
   );
 }
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TierProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <TierUnlockModalWrapper />
-        <DevDebugMenu />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<MapPage />} />
-            <Route path="/orders" element={<OrdersPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/merchant/dashboard" element={<MerchantDashboard />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </TierProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const hasSeenOnboarding = localStorage.getItem(ONBOARDING_KEY);
+    if (!hasSeenOnboarding) {
+      setShowOnboarding(true);
+    }
+    setIsLoading(false);
+  }, []);
+
+  const handleOnboardingComplete = () => {
+    localStorage.setItem(ONBOARDING_KEY, "true");
+    setShowOnboarding(false);
+  };
+
+  if (isLoading) {
+    return null;
+  }
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TierProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <TierUnlockModalWrapper />
+          <DevDebugMenu />
+          
+          <AnimatePresence>
+            {showOnboarding && (
+              <OnboardingFlow onComplete={handleOnboardingComplete} />
+            )}
+          </AnimatePresence>
+          
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<MapPage />} />
+              <Route path="/orders" element={<OrdersPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/merchant/dashboard" element={<MerchantDashboard />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </TierProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
