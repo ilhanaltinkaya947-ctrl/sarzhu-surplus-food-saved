@@ -211,22 +211,24 @@ export function ShopDrawer({
             onTouchStart={(e) => e.stopPropagation()}
             onTouchMove={(e) => e.stopPropagation()}
           >
-            {/* Fixed Header: Drag Handle + Hero Image */}
-            <div className="flex-shrink-0">
-              {/* Drag Handle */}
-              <div className="w-full h-12 flex items-center justify-center cursor-grab active:cursor-grabbing touch-none">
-                <div className="w-12 h-1.5 bg-[hsl(var(--sheet-muted))]/30 rounded-full" />
-              </div>
+            {/* Drag Handle - Fixed at top */}
+            <div className="w-full h-10 flex items-center justify-center cursor-grab active:cursor-grabbing flex-shrink-0 touch-none">
+              <div className="w-12 h-1.5 bg-[hsl(var(--sheet-muted))]/30 rounded-full" />
+            </div>
 
-              {/* Fixed Hero Image */}
-              <div className="relative h-48 w-full overflow-hidden">
-                <img
-                  src={shop.image_url || "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800"}
-                  alt={shop.name}
-                  className="h-full w-full object-cover"
-                />
+            {/* Scrollable Content - Image + Details */}
+            <div className="flex-1 overflow-y-auto overscroll-contain">
+              {/* Hero Image with rounded corners */}
+              <div className="relative mx-4 rounded-2xl overflow-hidden shadow-lg">
+                <div className="aspect-[16/10] w-full">
+                  <img
+                    src={shop.image_url || "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800"}
+                    alt={shop.name}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
                 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
                 
                 {discount > 0 && (
                   <span className="absolute bottom-4 left-4 rounded-lg bg-destructive px-3 py-1.5 text-sm font-bold text-white shadow-lg ring-2 ring-background">
@@ -236,7 +238,7 @@ export function ShopDrawer({
                 
                 <button 
                   onClick={handleFavoriteClick}
-                  className="absolute top-4 left-4 flex h-11 w-11 items-center justify-center rounded-full bg-[hsl(var(--sheet-bg))]/95 backdrop-blur-sm shadow-lg touch-active transition-all duration-200 active:scale-95"
+                  className="absolute top-3 left-3 flex h-10 w-10 items-center justify-center rounded-full bg-[hsl(var(--sheet-bg))]/95 backdrop-blur-sm shadow-lg touch-active transition-all duration-200 active:scale-95"
                 >
                   <Heart 
                     className={`h-5 w-5 transition-colors duration-200 ${
@@ -249,15 +251,14 @@ export function ShopDrawer({
                 
                 <button
                   onClick={handleClose}
-                  className="absolute top-4 right-4 flex h-11 w-11 items-center justify-center rounded-full bg-[hsl(var(--sheet-bg))]/95 backdrop-blur-sm shadow-lg touch-active transition-all duration-200 active:scale-95"
+                  className="absolute top-3 right-3 flex h-10 w-10 items-center justify-center rounded-full bg-[hsl(var(--sheet-bg))]/95 backdrop-blur-sm shadow-lg touch-active transition-all duration-200 active:scale-95"
                 >
                   <X className="h-5 w-5 text-[hsl(var(--sheet-foreground))]" />
                 </button>
               </div>
-            </div>
 
-            {/* Scrollable Content Area */}
-            <div className="flex-1 overflow-y-auto px-5 pt-5 pb-4 overscroll-contain">
+              {/* Content */}
+              <div className="px-5 pt-5 pb-4">
               <h1 className="text-3xl font-bold text-[hsl(var(--sheet-foreground))] mb-3 transition-colors duration-500">
                 {shop.name}
               </h1>
@@ -369,6 +370,7 @@ export function ShopDrawer({
                   </div>
                 </div>
               )}
+              </div>
             </div>
 
             {/* Fixed Footer */}
