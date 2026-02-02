@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import confetti from "canvas-confetti";
 
-// Import mascot image (Joe only - other tiers are "leveled up" versions)
+// Import mascot images for each tier
 import joeMascot from "@/assets/joe-mascot.png";
+import smartPickerMascot from "@/assets/smart-picker-mascot.png";
 
 export interface TierInfo {
   name: string;
@@ -25,7 +26,7 @@ const TIERS: TierInfo[] = [
   {
     name: "SmartPicker",
     displayName: "Smart Picker",
-    mascotImage: joeMascot,
+    mascotImage: smartPickerMascot,
     minOrders: 5,
     maxOrders: 19,
     perk: "AI Personalization",
@@ -33,7 +34,7 @@ const TIERS: TierInfo[] = [
   {
     name: "Legend",
     displayName: "Legend",
-    mascotImage: joeMascot,
+    mascotImage: smartPickerMascot,
     minOrders: 20,
     maxOrders: null,
     perk: "20% Lifetime Discount",
