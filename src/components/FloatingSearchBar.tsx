@@ -1,7 +1,10 @@
-import { Search, User } from "lucide-react";
+import { Search, User, Store } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function FloatingSearchBar() {
+  const { t } = useLanguage();
+  
   return (
     <div className="absolute top-12 left-4 right-4 z-20">
       <div className="flex items-center gap-3 rounded-2xl bg-white/90 backdrop-blur-xl px-4 py-3 shadow-lg">
@@ -11,6 +14,13 @@ export function FloatingSearchBar() {
           placeholder="Search for food..."
           className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
         />
+        <Link
+          to="/merchant/dashboard"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 touch-active flex-shrink-0"
+          title={t("merchant.switchToMerchant")}
+        >
+          <Store className="h-5 w-5 text-primary" />
+        </Link>
         <Link
           to="/profile"
           className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary touch-active flex-shrink-0"

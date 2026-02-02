@@ -6,17 +6,9 @@ import { FoodCard, MarketingBanner } from "./FoodCard";
 import { useProfile } from "@/hooks/useProfile";
 import { useTier } from "@/contexts/TierContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useMarketplace, Shop } from "@/contexts/MarketplaceContext";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-
-interface Shop {
-  id: string;
-  name: string;
-  lat: number;
-  long: number;
-  image_url: string | null;
-  description: string | null;
-}
 
 interface MysteryBag {
   id: string;

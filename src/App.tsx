@@ -13,6 +13,7 @@ import NotFound from "./pages/NotFound";
 import { TierProvider, useTier } from "./contexts/TierContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { BasketProvider } from "./contexts/BasketContext";
+import { MarketplaceProvider } from "./contexts/MarketplaceContext";
 import { TierUnlockModal } from "./components/TierUnlockModal";
 import { DevDebugMenu } from "./components/DevDebugMenu";
 import { OnboardingFlow } from "./components/OnboardingFlow";
@@ -91,13 +92,15 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
-        <TierProvider>
-          <BasketProvider>
-            <TooltipProvider>
-              <AppContent />
-            </TooltipProvider>
-          </BasketProvider>
-        </TierProvider>
+        <MarketplaceProvider>
+          <TierProvider>
+            <BasketProvider>
+              <TooltipProvider>
+                <AppContent />
+              </TooltipProvider>
+            </BasketProvider>
+          </TierProvider>
+        </MarketplaceProvider>
       </LanguageProvider>
     </QueryClientProvider>
   );
