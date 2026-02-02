@@ -63,13 +63,11 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         );
       case "joe":
         return (
-          <div className="w-32 h-32 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
-            <img 
-              src={smartPickerMascot} 
-              alt="Joe the AI Assistant" 
-              className="w-28 h-28 object-contain"
-            />
-          </div>
+          <img 
+            src={smartPickerMascot} 
+            alt="Joe the AI Assistant" 
+            className="w-48 h-48 object-contain drop-shadow-lg"
+          />
         );
       case "rocket":
         return (
