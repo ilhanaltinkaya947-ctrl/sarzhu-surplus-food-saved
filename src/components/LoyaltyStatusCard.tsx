@@ -1,24 +1,12 @@
 import { useTier } from "@/contexts/TierContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Progress } from "@/components/ui/progress";
 import { Crown, Lock, Star, Sparkles, Gift, Percent } from "lucide-react";
 
-// Tier icons mapping
 const TIER_ICONS = {
   FoodSaver: Star,
   SmartPicker: Sparkles,
   Legend: Crown,
-};
-
-// Next tier benefits
-const TIER_BENEFITS = {
-  SmartPicker: {
-    icon: Sparkles,
-    perks: ["AI-powered recommendations", "Personalized deal alerts"],
-  },
-  Legend: {
-    icon: Crown,
-    perks: ["20% Lifetime Discount on fees", "First access to limited bags", "Monthly rewards"],
-  },
 };
 
 export function LoyaltyStatusCard() {
@@ -29,24 +17,27 @@ export function LoyaltyStatusCard() {
     ordersToNextTier, 
     nextTierName 
   } = useTier();
+  const { t } = useLanguage();
 
   const TierIcon = TIER_ICONS[currentTier.name as keyof typeof TIER_ICONS] || Star;
   const isMaxTier = currentTier.name === "Legend";
 
-  // Get the next locked tier info
+  const getTierDisplayName = (tierName: string) => {
+    const tierKey = `tier.${tierName.charAt(0).toLowerCase() + tierName.slice(1)}`;
+    return t(tierKey) || tierName;
+  };
+
+  const TIER_BENEFITS = {
+    Legend: {
+      perks: [t("tier.lifetimeDiscount"), t("tier.firstAccessBags"), t("tier.monthlyRewards")],
+    },
+  };
+
   const getLockedTierInfo = () => {
-    if (currentTier.name === "FoodSaver") {
+    if (currentTier.name === "FoodSaver" || currentTier.name === "SmartPicker") {
       return {
         name: "Legend",
-        displayName: "Legend",
-        ordersRequired: 20,
-        ordersRemaining: 20 - completedOrders,
-        benefits: TIER_BENEFITS.Legend,
-      };
-    } else if (currentTier.name === "SmartPicker") {
-      return {
-        name: "Legend",
-        displayName: "Legend",
+        displayName: getTierDisplayName("Legend"),
         ordersRequired: 20,
         ordersRemaining: 20 - completedOrders,
         benefits: TIER_BENEFITS.Legend,
@@ -59,10 +50,8 @@ export function LoyaltyStatusCard() {
 
   return (
     <div className="bg-card rounded-2xl shadow-card overflow-hidden">
-      {/* Header Section */}
       <div className="p-5 border-b border-border">
         <div className="flex items-center gap-4">
-          {/* Current Tier Avatar */}
           <div className="relative">
             <div className="h-14 w-14 rounded-full overflow-hidden border-3 border-primary shadow-lg">
               <img 
@@ -76,44 +65,40 @@ export function LoyaltyStatusCard() {
             </div>
           </div>
 
-          {/* Status Info */}
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <h3 className="text-lg font-bold text-foreground">Loyalty Status</h3>
+              <h3 className="text-lg font-bold text-foreground">{t("loyalty.status")}</h3>
               {isMaxTier && (
                 <span className="text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded-full font-semibold uppercase tracking-wide">
-                  MAX
+                  {t("general.max")}
                 </span>
               )}
             </div>
             <p className="text-sm text-muted-foreground">
-              {currentTier.displayName} • {completedOrders} order{completedOrders !== 1 ? 's' : ''} completed
+              {getTierDisplayName(currentTier.name)} • {completedOrders} {completedOrders === 1 ? t("loyalty.orderCompleted") : t("loyalty.ordersCompleted")}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Progress Section */}
       {nextTierName && (
         <div className="p-5 bg-muted/30">
           <div className="flex items-center justify-between text-sm mb-2">
-            <span className="text-muted-foreground">Progress to {nextTierName}</span>
+            <span className="text-muted-foreground">{t("loyalty.progressTo")} {getTierDisplayName(nextTierName)}</span>
             <span className="font-semibold text-primary">
               {completedOrders}/{currentTier.name === "FoodSaver" ? 5 : 20}
             </span>
           </div>
           <Progress value={nextTierProgress} className="h-2.5" />
           <p className="text-xs text-muted-foreground mt-2">
-            {ordersToNextTier} more order{ordersToNextTier !== 1 ? 's' : ''} to unlock {nextTierName}
+            {ordersToNextTier} {ordersToNextTier === 1 ? t("loyalty.moreOrder") : t("loyalty.moreOrders")} {getTierDisplayName(nextTierName)}
           </p>
         </div>
       )}
 
-      {/* Locked Legend Preview - Show when not Legend */}
       {lockedTier && currentTier.name !== "Legend" && (
         <div className="p-5 border-t border-border">
           <div className="flex items-start gap-3">
-            {/* Locked Icon */}
             <div className="relative">
               <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center opacity-50">
                 <Crown className="h-6 w-6 text-muted-foreground" />
@@ -123,20 +108,18 @@ export function LoyaltyStatusCard() {
               </div>
             </div>
 
-            {/* Locked Tier Info */}
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <h4 className="font-semibold text-foreground text-sm">{lockedTier.displayName}</h4>
                 <span className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full font-medium">
-                  LOCKED
+                  {t("loyalty.locked")}
                 </span>
               </div>
               
               <p className="text-xs text-muted-foreground mb-3">
-                Reach {lockedTier.ordersRequired} orders to unlock
+                {t("loyalty.reachOrders").replace("{count}", String(lockedTier.ordersRequired))}
               </p>
 
-              {/* Preview Benefits */}
               <div className="space-y-1.5">
                 {lockedTier.benefits.perks.map((perk, index) => (
                   <div key={index} className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -154,29 +137,28 @@ export function LoyaltyStatusCard() {
         </div>
       )}
 
-      {/* Max Tier Perks - Show when Legend */}
       {isMaxTier && (
         <div className="p-5 bg-primary/10">
           <div className="flex items-center gap-2 mb-3">
             <Crown className="h-4 w-4 text-primary" />
-            <span className="text-sm font-semibold text-foreground">Your Active Perks</span>
+            <span className="text-sm font-semibold text-foreground">{t("loyalty.activePerks")}</span>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="flex items-center gap-2 text-xs text-muted-foreground bg-card rounded-lg p-2">
               <Percent className="h-3.5 w-3.5 text-primary" />
-              <span>20% off fees</span>
+              <span>{t("loyalty.offFees")}</span>
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground bg-card rounded-lg p-2">
               <Sparkles className="h-3.5 w-3.5 text-primary" />
-              <span>First access</span>
+              <span>{t("loyalty.firstAccess")}</span>
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground bg-card rounded-lg p-2">
               <Gift className="h-3.5 w-3.5 text-primary" />
-              <span>Monthly rewards</span>
+              <span>{t("loyalty.monthlyRewards")}</span>
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground bg-card rounded-lg p-2">
               <Star className="h-3.5 w-3.5 text-primary" />
-              <span>VIP status</span>
+              <span>{t("loyalty.vipStatus")}</span>
             </div>
           </div>
         </div>

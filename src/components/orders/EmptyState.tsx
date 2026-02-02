@@ -1,12 +1,15 @@
 import { ShoppingBag, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface EmptyStateProps {
   isLoggedIn: boolean;
 }
 
 export function EmptyState({ isLoggedIn }: EmptyStateProps) {
+  const { t } = useLanguage();
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -37,19 +40,19 @@ export function EmptyState({ isLoggedIn }: EmptyStateProps) {
       {isLoggedIn ? (
         <>
           <h2 className="text-xl font-bold text-foreground mb-2">
-            No bags yet
+            {t("empty.title")}
           </h2>
           <p className="text-muted-foreground text-center max-w-xs mb-8">
-            Start saving delicious food from restaurants and cafes near you. Every bag helps reduce waste!
+            {t("empty.subtitle")}
           </p>
         </>
       ) : (
         <>
           <h2 className="text-xl font-bold text-foreground mb-2">
-            Sign in to see orders
+            {t("empty.signInTitle")}
           </h2>
           <p className="text-muted-foreground text-center max-w-xs mb-8">
-            Create an account or sign in to view and manage your mystery bag reservations
+            {t("empty.signInSubtitle")}
           </p>
         </>
       )}
@@ -60,7 +63,7 @@ export function EmptyState({ isLoggedIn }: EmptyStateProps) {
         className="flex items-center gap-2 rounded-2xl bg-primary px-8 py-4 font-semibold text-primary-foreground shadow-lg transition-all active:scale-[0.98]"
       >
         <MapPin className="h-5 w-5" />
-        Find Food Nearby
+        {t("empty.explore")}
       </Link>
     </motion.div>
   );

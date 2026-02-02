@@ -2,6 +2,7 @@ import { useState } from "react";
 import { X, Mail, Lock, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Dialog,
   DialogContent,
@@ -20,6 +21,7 @@ export function AuthModal({ open, onOpenChange, onSuccess }: AuthModalProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const { t } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +34,7 @@ export function AuthModal({ open, onOpenChange, onSuccess }: AuthModalProps) {
           password,
         });
         if (error) throw error;
-        toast.success("Welcome back! 👋");
+        toast.success(t("auth.successLogin"));
       } else {
         const { error } = await supabase.auth.signUp({
           email,
@@ -42,13 +44,13 @@ export function AuthModal({ open, onOpenChange, onSuccess }: AuthModalProps) {
           },
         });
         if (error) throw error;
-        toast.success("Account created! You can now reserve bags.");
+        toast.success(t("auth.successSignup"));
       }
       
       onOpenChange(false);
       onSuccess?.();
     } catch (error: any) {
-      toast.error(error.message || "Authentication failed");
+      toast.error(error.message || t("general.error"));
     } finally {
       setLoading(false);
     }
@@ -64,7 +66,7 @@ export function AuthModal({ open, onOpenChange, onSuccess }: AuthModalProps) {
       });
       if (error) throw error;
     } catch (error: any) {
-      toast.error(error.message || "Google sign-in failed");
+      toast.error(error.message || t("general.error"));
     }
   };
 
@@ -74,18 +76,17 @@ export function AuthModal({ open, onOpenChange, onSuccess }: AuthModalProps) {
         <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-6">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-center">
-              {isLogin ? "Welcome Back" : "Create Account"}
+              {isLogin ? t("auth.welcomeBack") : t("auth.createAccount")}
             </DialogTitle>
             <p className="text-center text-muted-foreground text-sm mt-2">
               {isLogin
-                ? "Sign in to reserve mystery bags"
-                : "Join us to start saving food"}
+                ? t("auth.signInSubtitle")
+                : t("auth.signUpSubtitle")}
             </p>
           </DialogHeader>
         </div>
 
         <div className="p-6 space-y-4">
-          {/* Google Sign In */}
           <button
             onClick={handleGoogleSignIn}
             className="w-full flex items-center justify-center gap-3 rounded-xl border border-border py-3 px-4 font-medium text-foreground hover:bg-secondary transition-colors"
@@ -108,7 +109,7 @@ export function AuthModal({ open, onOpenChange, onSuccess }: AuthModalProps) {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            Continue with Google
+            {t("auth.continueGoogle")}
           </button>
 
           <div className="relative">
@@ -117,19 +118,18 @@ export function AuthModal({ open, onOpenChange, onSuccess }: AuthModalProps) {
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-background px-2 text-muted-foreground">
-                Or continue with email
+                {t("auth.orEmail")}
               </span>
             </div>
           </div>
 
-          {/* Email/Password Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <input
                   type="email"
-                  placeholder="Email address"
+                  placeholder={t("auth.email")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -140,7 +140,7 @@ export function AuthModal({ open, onOpenChange, onSuccess }: AuthModalProps) {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <input
                   type="password"
-                  placeholder="Password"
+                  placeholder={t("auth.password")}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -156,17 +156,17 @@ export function AuthModal({ open, onOpenChange, onSuccess }: AuthModalProps) {
               className="w-full rounded-xl bg-primary py-3 font-semibold text-primary-foreground shadow-lg transition-all hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-              {isLogin ? "Sign In" : "Create Account"}
+              {isLogin ? t("auth.signIn") : t("auth.signUp")}
             </button>
           </form>
 
           <p className="text-center text-sm text-muted-foreground">
-            {isLogin ? "Don't have an account? " : "Already have an account? "}
+            {isLogin ? t("auth.noAccount") + " " : t("auth.hasAccount") + " "}
             <button
               onClick={() => setIsLogin(!isLogin)}
               className="font-medium text-primary hover:underline"
             >
-              {isLogin ? "Sign up" : "Sign in"}
+              {isLogin ? t("auth.signUpLink") : t("auth.signInLink")}
             </button>
           </p>
         </div>

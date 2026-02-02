@@ -7,11 +7,11 @@ import { toast } from "sonner";
 import { AuthModal } from "./AuthModal";
 import { PickupSuccessScreen } from "./orders/PickupSuccessScreen";
 import { useTier } from "@/contexts/TierContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { User } from "@supabase/supabase-js";
 
-// Service fee constants
 const SERVICE_FEE = 200;
-const ZEUS_DISCOUNT = 0.20; // 20% off for Zeus tier
+const ZEUS_DISCOUNT = 0.20;
 
 interface Shop {
   id: string;
@@ -64,12 +64,11 @@ export function ShopDrawer({
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [confirmedOrderId, setConfirmedOrderId] = useState<string>("");
   const { currentTier } = useTier();
+  const { t } = useLanguage();
 
-  // Check if user is in Legend tier for discount
   const isLegend = currentTier.name === "Legend";
   const discountedServiceFee = isLegend ? Math.round(SERVICE_FEE * (1 - ZEUS_DISCOUNT)) : SERVICE_FEE;
 
-  // Calculate total with service fee
   const calculateTotal = () => {
     if (!bag) return 0;
     return bag.discounted_price + discountedServiceFee;
@@ -103,7 +102,7 @@ export function ShopDrawer({
     }
 
     if (!bag || bag.quantity_available <= 0) {
-      toast.error("Sorry, this bag is sold out!");
+      toast.error(t("shop.soldOut"));
       return;
     }
 
@@ -119,7 +118,7 @@ export function ShopDrawer({
       if (fetchError) throw fetchError;
 
       if (!currentBag || currentBag.quantity_available <= 0) {
-        toast.error("Sorry, this bag just sold out!");
+        toast.error(t("shop.soldOutToday"));
         return;
       }
 
@@ -156,7 +155,7 @@ export function ShopDrawer({
 
     } catch (error: any) {
       console.error("Reservation error:", error);
-      toast.error(error.message || "Failed to reserve. Please try again.");
+      toast.error(error.message || t("general.error"));
     } finally {
       setReserving(false);
     }
@@ -171,7 +170,6 @@ export function ShopDrawer({
   };
 
   const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    // Close if dragged down more than 100px OR flicked down fast
     if (info.offset.y > 100 || info.velocity.y > 500) {
       handleClose();
     }
@@ -179,7 +177,6 @@ export function ShopDrawer({
 
   return (
     <>
-      {/* Backdrop */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -194,7 +191,6 @@ export function ShopDrawer({
         )}
       </AnimatePresence>
 
-      {/* Super Drawer */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -215,12 +211,10 @@ export function ShopDrawer({
             onTouchStart={(e) => e.stopPropagation()}
             onTouchMove={(e) => e.stopPropagation()}
           >
-            {/* Drag Handle - Large hit area */}
             <div className="w-full h-12 flex items-center justify-center cursor-grab active:cursor-grabbing flex-shrink-0 touch-none">
               <div className="w-12 h-1.5 bg-[hsl(var(--sheet-muted))]/30 rounded-full" />
             </div>
 
-            {/* Hero Image */}
             <div className="relative h-56 w-full overflow-hidden flex-shrink-0">
               <img
                 src={shop.image_url || "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800"}
@@ -228,17 +222,14 @@ export function ShopDrawer({
                 className="h-full w-full object-cover"
               />
               
-              {/* Gradient Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
               
-              {/* Discount Badge */}
               {discount > 0 && (
                 <span className="absolute bottom-4 left-4 rounded-lg bg-destructive px-3 py-1.5 text-sm font-bold text-white shadow-lg">
-                  -{discount}% OFF
+                  -{discount}% {t("general.off")}
                 </span>
               )}
               
-              {/* Favorite Button - Top Left */}
               <button 
                 onClick={handleFavoriteClick}
                 className="absolute top-4 left-4 flex h-11 w-11 items-center justify-center rounded-full bg-[hsl(var(--sheet-bg))]/95 backdrop-blur-sm shadow-lg touch-active transition-all duration-200 active:scale-95"
@@ -252,7 +243,6 @@ export function ShopDrawer({
                 />
               </button>
               
-              {/* Close Button - Top Right */}
               <button
                 onClick={handleClose}
                 className="absolute top-4 right-4 flex h-11 w-11 items-center justify-center rounded-full bg-[hsl(var(--sheet-bg))]/95 backdrop-blur-sm shadow-lg touch-active transition-all duration-200 active:scale-95"
@@ -261,47 +251,40 @@ export function ShopDrawer({
               </button>
             </div>
 
-            {/* Scrollable Body */}
             <div className="flex-1 overflow-y-auto px-5 pt-5 pb-4 overscroll-contain">
-              {/* Title */}
               <h1 className="text-3xl font-bold text-[hsl(var(--sheet-foreground))] mb-3 transition-colors duration-500">
                 {shop.name}
               </h1>
 
-              {/* Status Badges */}
               <div className="flex flex-wrap items-center gap-2 mb-5">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1.5 text-sm font-medium text-emerald-500 transition-colors duration-500">
                   <Clock className="h-4 w-4" />
-                  Open until 23:00
+                  {t("shop.openUntil")} 23:00
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(var(--muted))] px-3 py-1.5 text-sm font-medium text-[hsl(var(--sheet-muted))] transition-colors duration-500">
                   <MapPin className="h-4 w-4" />
-                  350m away
+                  350m {t("shop.away")}
                 </span>
               </div>
 
-              {/* Description */}
               {shop.description && (
                 <p className="text-[hsl(var(--sheet-muted))] leading-relaxed mb-6 transition-colors duration-500">
                   {shop.description}
                 </p>
               )}
 
-              {/* What's in the bag Section */}
               <div className="mb-6">
                 <h3 className="flex items-center gap-2 text-lg font-semibold text-[hsl(var(--sheet-foreground))] mb-3 transition-colors duration-500">
                   <Sparkles className="h-5 w-5 text-primary transition-colors duration-500" />
-                  What's in the bag?
+                  {t("shop.whatsInBag")}
                 </h3>
                 <div className="rounded-2xl bg-[hsl(var(--info-box-bg))] border border-[hsl(var(--info-box-border))] p-4 transition-colors duration-500">
                   <p className="text-[hsl(var(--sheet-muted))] text-sm transition-colors duration-500">
-                    A surprise selection of delicious items that would otherwise go to waste. 
-                    Contents vary daily based on what's available!
+                    {t("shop.bagDescription")}
                   </p>
                 </div>
               </div>
 
-              {/* Mystery Bag Card */}
               {bag && (
                 <div className="rounded-2xl bg-[hsl(var(--muted))] border border-[hsl(var(--border))] p-5 transition-colors duration-500">
                   <div className="flex items-start gap-4">
@@ -310,7 +293,9 @@ export function ShopDrawer({
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <h4 className="font-semibold text-[hsl(var(--sheet-foreground))] text-lg transition-colors duration-500">Mystery Bag</h4>
+                        <h4 className="font-semibold text-[hsl(var(--sheet-foreground))] text-lg transition-colors duration-500">
+                          {t("shop.mysteryBag")}
+                        </h4>
                         <div className="text-right">
                           <span className="text-sm text-[hsl(var(--sheet-muted))] line-through block transition-colors duration-500">
                             {formatPrice(bag.original_price)}
@@ -322,31 +307,30 @@ export function ShopDrawer({
                       </div>
                       <p className={`text-sm mt-1 transition-colors duration-500 ${bag.quantity_available > 0 ? 'text-[hsl(var(--sheet-muted))]' : 'text-red-500 font-medium'}`}>
                         {bag.quantity_available > 0 
-                          ? `${bag.quantity_available} bags left today` 
-                          : 'Sold out for today'}
+                          ? `${bag.quantity_available} ${t("shop.bagsLeft")}` 
+                          : t("shop.soldOutToday")}
                       </p>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Price Breakdown Section */}
               {bag && (
-                <div className="rounded-2xl bg-[hsl(var(--muted))] border border-[hsl(var(--border))] p-4 space-y-3 transition-colors duration-500">
-                  <h4 className="font-semibold text-[hsl(var(--sheet-foreground))] text-sm transition-colors duration-500">Price Breakdown</h4>
+                <div className="rounded-2xl bg-[hsl(var(--muted))] border border-[hsl(var(--border))] p-4 space-y-3 transition-colors duration-500 mt-4">
+                  <h4 className="font-semibold text-[hsl(var(--sheet-foreground))] text-sm transition-colors duration-500">
+                    {t("shop.priceBreakdown")}
+                  </h4>
                   
-                  {/* Mystery Bag Line */}
                   <div className="flex justify-between text-sm">
-                    <span className="text-[hsl(var(--sheet-muted))] transition-colors duration-500">Mystery Bag</span>
+                    <span className="text-[hsl(var(--sheet-muted))] transition-colors duration-500">{t("shop.mysteryBag")}</span>
                     <span className="text-[hsl(var(--sheet-foreground))] font-medium transition-colors duration-500">
                       {formatPrice(bag.discounted_price)}
                     </span>
                   </div>
 
-                  {/* Service Fee Line */}
                   <div className="flex justify-between text-sm items-center">
-                    <span className="text-[hsl(var(--sheet-muted))] transition-colors duration-500">Service Fee</span>
-                  <div className="flex items-center gap-2">
+                    <span className="text-[hsl(var(--sheet-muted))] transition-colors duration-500">{t("shop.serviceFee")}</span>
+                    <div className="flex items-center gap-2">
                       {isLegend ? (
                         <>
                           <span className="text-[hsl(var(--sheet-muted))] line-through text-xs transition-colors duration-500">
@@ -364,17 +348,15 @@ export function ShopDrawer({
                     </div>
                   </div>
 
-                  {/* Legend Perk Badge */}
                   {isLegend && (
                     <div className="flex items-center justify-center gap-2 py-2 px-3 bg-primary/15 border border-primary/30 rounded-xl">
                       <Zap className="h-4 w-4 text-primary" />
-                      <span className="text-xs font-semibold text-primary">Legend Perk applied 👑</span>
+                      <span className="text-xs font-semibold text-primary">{t("shop.legendPerk")}</span>
                     </div>
                   )}
 
-                  {/* Total */}
                   <div className="flex justify-between pt-3 border-t border-[hsl(var(--border))]">
-                    <span className="font-semibold text-[hsl(var(--sheet-foreground))] transition-colors duration-500">Total</span>
+                    <span className="font-semibold text-[hsl(var(--sheet-foreground))] transition-colors duration-500">{t("shop.total")}</span>
                     <span className="font-bold text-lg text-primary transition-colors duration-500">
                       {formatPrice(calculateTotal())}
                     </span>
@@ -383,7 +365,6 @@ export function ShopDrawer({
               )}
             </div>
 
-            {/* Fixed Footer */}
             <div className="border-t border-[hsl(var(--border))] px-5 py-4 pb-safe bg-[hsl(var(--sheet-bg))] flex-shrink-0 transition-colors duration-500">
               <button 
                 onClick={handleReserveClick}
@@ -392,24 +373,22 @@ export function ShopDrawer({
               >
                 {reserving && <Loader2 className="h-5 w-5 animate-spin" />}
                 {!bag || bag.quantity_available <= 0 
-                  ? "Sold Out" 
+                  ? t("shop.soldOut")
                   : reserving 
-                    ? "Reserving..." 
-                    : `Reserve for ${formatPrice(calculateTotal())}`}
+                    ? t("shop.reserving")
+                    : `${t("shop.reserveFor")} ${formatPrice(calculateTotal())}`}
               </button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Auth Modal */}
       <AuthModal 
         open={authModalOpen} 
         onOpenChange={setAuthModalOpen}
         onSuccess={handleAuthSuccess}
       />
 
-      {/* Pickup Success Screen */}
       <PickupSuccessScreen
         open={confirmationOpen}
         onClose={() => setConfirmationOpen(false)}

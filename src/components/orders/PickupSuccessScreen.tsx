@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface PickupSuccessScreenProps {
   orderId: string;
@@ -20,9 +21,9 @@ export function PickupSuccessScreen({
 }: PickupSuccessScreenProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
   const navigate = useNavigate();
+  const { t, language } = useLanguage();
   const shortOrderId = `#GOU-${orderId.slice(0, 4).toUpperCase()}`;
 
-  // Update time every second for anti-screenshot proof
   useEffect(() => {
     if (!open) return;
     
@@ -33,13 +34,11 @@ export function PickupSuccessScreen({
     return () => clearInterval(interval);
   }, [open]);
 
-  // Play success sound and haptics on open
   useEffect(() => {
     if (!open) return;
     
     playSuccessSound();
     
-    // Haptic feedback
     if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
   }, [open]);
 
@@ -52,10 +51,9 @@ export function PickupSuccessScreen({
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
       
-      // "Ding" sound - rising pleasant tone
-      oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
-      oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.15); // E5
-      oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.3); // G5
+      oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime);
+      oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.15);
+      oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.3);
       
       gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
@@ -75,7 +73,8 @@ export function PickupSuccessScreen({
   };
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", {
+    const locale = language === "ru" ? "ru-RU" : language === "kz" ? "kk-KZ" : "en-US";
+    return date.toLocaleDateString(locale, {
       weekday: "long",
       month: "long",
       day: "numeric",
@@ -103,16 +102,13 @@ export function PickupSuccessScreen({
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-[100] bg-white flex flex-col"
         >
-          {/* Main Content - Centered */}
           <div className="flex-1 flex flex-col items-center justify-center px-6">
-            {/* Animated Checkmark */}
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
               className="relative mb-8"
             >
-              {/* Pulsing rings */}
               <motion.div
                 animate={{ scale: [1, 1.4, 1], opacity: [0.4, 0, 0.4] }}
                 transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
@@ -124,7 +120,6 @@ export function PickupSuccessScreen({
                 className="absolute inset-0 rounded-full bg-emerald-500"
               />
               
-              {/* Checkmark circle */}
               <motion.div 
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
@@ -141,14 +136,13 @@ export function PickupSuccessScreen({
               </motion.div>
             </motion.div>
 
-            {/* Success Title */}
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
               className="text-2xl font-bold text-foreground mb-2"
             >
-              Rescue Successful! 🎉
+              {t("success.title")}
             </motion.h1>
 
             <motion.p
@@ -157,10 +151,9 @@ export function PickupSuccessScreen({
               transition={{ delay: 0.55 }}
               className="text-muted-foreground mb-8"
             >
-              You just saved delicious food from going to waste
+              {t("success.subtitle")}
             </motion.p>
 
-            {/* Live Clock (Security Feature) */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -190,7 +183,6 @@ export function PickupSuccessScreen({
               </p>
             </motion.div>
 
-            {/* Order Details Card */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -205,13 +197,12 @@ export function PickupSuccessScreen({
               <div className="flex items-center justify-center gap-2 py-3 px-4 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800">
                 <MapPin className="h-4 w-4 text-amber-600" />
                 <span className="text-sm font-medium text-amber-700 dark:text-amber-500">
-                  Pickup by {pickupTime}
+                  {t("success.pickupBy")} {pickupTime}
                 </span>
               </div>
             </motion.div>
           </div>
 
-          {/* Footer Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -223,13 +214,13 @@ export function PickupSuccessScreen({
               onClick={handleViewOrders}
               className="w-full h-14 rounded-2xl bg-foreground text-background font-semibold shadow-lg mb-3 active:scale-[0.98] transition-transform"
             >
-              View My Orders
+              {t("success.viewOrders")}
             </button>
             <button
               onClick={handleDone}
               className="w-full h-12 rounded-2xl text-muted-foreground font-medium active:scale-[0.98] transition-transform"
             >
-              Back to Map
+              {t("success.backToMap")}
             </button>
           </motion.div>
         </motion.div>
