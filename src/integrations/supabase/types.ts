@@ -54,6 +54,7 @@ export type Database = {
           bag_id: string
           created_at: string
           id: string
+          order_number: string | null
           status: string
           user_id: string
         }
@@ -61,6 +62,7 @@ export type Database = {
           bag_id: string
           created_at?: string
           id?: string
+          order_number?: string | null
           status?: string
           user_id: string
         }
@@ -68,6 +70,7 @@ export type Database = {
           bag_id?: string
           created_at?: string
           id?: string
+          order_number?: string | null
           status?: string
           user_id?: string
         }

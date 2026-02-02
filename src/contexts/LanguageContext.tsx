@@ -41,6 +41,8 @@ export const translations: Record<Language, Record<string, string>> = {
     "profile.signOut": "Sign Out",
     "profile.signInButton": "Sign In",
     "profile.footer": "Made with 🐾 to reduce food waste",
+    "profile.orderHistory": "Order History",
+    "profile.noOrders": "No orders yet",
     
     // Bottom Nav
     "nav.map": "Map",
@@ -215,6 +217,8 @@ export const translations: Record<Language, Record<string, string>> = {
     "profile.signOut": "Шығу",
     "profile.signInButton": "Кіру",
     "profile.footer": "🐾 Тамақ қалдықтарын азайту үшін жасалды",
+    "profile.orderHistory": "Тапсырыстар тарихы",
+    "profile.noOrders": "Тапсырыстар жоқ",
     
     // Bottom Nav
     "nav.map": "Карта",
@@ -389,6 +393,8 @@ export const translations: Record<Language, Record<string, string>> = {
     "profile.signOut": "Выйти",
     "profile.signInButton": "Войти",
     "profile.footer": "Сделано с 🐾 для сокращения пищевых отходов",
+    "profile.orderHistory": "История заказов",
+    "profile.noOrders": "Заказов пока нет",
     
     // Bottom Nav
     "nav.map": "Карта",

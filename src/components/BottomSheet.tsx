@@ -281,8 +281,8 @@ export function BottomSheet({
               />
 
               {!isChatUnlocked && (
-                <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-secondary border-2 border-card flex items-center justify-center shadow-sm">
-                  <Lock className="h-2.5 w-2.5 text-foreground/60" />
+                <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-foreground/90 border-2 border-card flex items-center justify-center shadow-md">
+                  <Lock className="h-3 w-3 text-background" strokeWidth={2.5} />
                 </div>
               )}
 
