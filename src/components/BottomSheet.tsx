@@ -388,39 +388,15 @@ export function BottomSheet({
             className="flex-none mt-auto px-4 pt-4 bg-[hsl(var(--sheet-bg,var(--card)))] border-t border-border transition-colors duration-500"
             style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
           >
-            {hasSelection && isPackLeader && (
-              <div className="flex items-center justify-center gap-2 mb-3 py-2 px-4 bg-primary/10 border border-primary/30 rounded-xl">
-                <Crown className="h-4 w-4 text-primary" />
-                <span className="text-sm font-semibold text-primary">{currentTier.name} VIP</span>
-                <span className="text-xs text-muted-foreground line-through ml-2">
-                  +{formatPrice(SERVICE_FEE)}
-                </span>
-              </div>
-            )}
-
-            {hasSelection ? (
-              <button 
-                onClick={handleReserveClick}
-                onPointerDown={(e) => e.stopPropagation()}
-                className="flex w-full h-14 items-center justify-center gap-2 rounded-xl font-semibold shadow-lg transition-all active:scale-[0.98] bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                {t("bottomSheet.reserve")} {selectedShop?.name} • {buttonPrice}
-              </button>
-            ) : (
-              <div className="flex gap-3">
-                <button 
-                  onClick={() => navigate("/orders")}
-                  onPointerDown={(e) => e.stopPropagation()}
-                  className="flex h-14 items-center justify-center gap-2 rounded-xl font-semibold transition-all active:scale-[0.98] bg-secondary text-foreground px-5"
-                >
-                  <ShoppingBag className="h-5 w-5" />
-                  {t("bottomSheet.myOrders")}
-                </button>
-                <div className="flex-1 h-14 flex items-center justify-center rounded-xl bg-muted text-muted-foreground font-medium">
-                  {t("bottomSheet.selectShop")}
-                </div>
-              </div>
-            )}
+            {/* Single Basket Button */}
+            <button 
+              onClick={() => navigate("/orders")}
+              onPointerDown={(e) => e.stopPropagation()}
+              className="flex w-full h-14 items-center justify-center gap-3 rounded-xl font-semibold transition-all active:scale-[0.98] bg-primary text-primary-foreground"
+            >
+              <ShoppingBag className="h-5 w-5" />
+              {t("bottomSheet.basket")}
+            </button>
           </div>
         </div>
       </motion.div>
