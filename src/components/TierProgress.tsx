@@ -1,17 +1,17 @@
 import { useTier } from "@/contexts/TierContext";
 import { Progress } from "@/components/ui/progress";
-import { Crown, Star, Zap } from "lucide-react";
+import { Crown, Star, Sparkles } from "lucide-react";
 
 const TIER_ICONS = {
-  Joe: Star,
-  Shrek: Zap,
-  Zeus: Crown,
+  FoodSaver: Star,
+  SmartPicker: Sparkles,
+  Legend: Crown,
 };
 
 const TIER_DESCRIPTIONS = {
-  Joe: "Complete 5 orders to unlock Shrek tier!",
-  Shrek: "Complete 20 orders to reach legendary Zeus status!",
-  Zeus: "You've reached the highest tier! Enjoy all perks!",
+  FoodSaver: "Complete 5 orders to unlock Smart Picker!",
+  SmartPicker: "Complete 20 orders to reach Legend status!",
+  Legend: "You've reached the highest tier! Enjoy all perks!",
 };
 
 export function TierProgress() {
@@ -34,7 +34,7 @@ export function TierProgress() {
           <div className="h-16 w-16 rounded-full overflow-hidden border-3 border-primary shadow-lg">
             <img 
               src={currentTier.mascotImage} 
-              alt={`${currentTier.name} mascot`}
+              alt="Joe mascot"
               className="h-full w-full object-cover"
             />
           </div>
@@ -48,9 +48,9 @@ export function TierProgress() {
         <div className="flex-1">
           <div className="flex items-center gap-2">
             <h3 className="text-lg font-bold text-foreground">
-              {currentTier.name} Tier
+              {currentTier.displayName}
             </h3>
-            {currentTier.name === "Zeus" && (
+            {currentTier.name === "Legend" && (
               <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full font-medium">
                 MAX
               </span>

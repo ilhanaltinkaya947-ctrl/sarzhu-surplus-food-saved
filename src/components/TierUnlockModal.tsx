@@ -11,31 +11,31 @@ interface TierUnlockModalProps {
 }
 
 const TIER_CONFIG = {
-  Shrek: {
-    title: "Welcome to the Pack!",
-    subtitle: "You've unlocked Shrek tier",
-    emoji: "🐕",
-    gradient: "from-gray-900 to-gray-700",
-    accentColor: "text-white",
-    buttonClass: "bg-white text-black hover:bg-gray-100",
+  SmartPicker: {
+    title: "Level Up!",
+    subtitle: "You've unlocked Smart Picker",
+    emoji: "🎯",
+    gradient: "from-amber-600 to-yellow-500",
+    accentColor: "text-yellow-300",
+    buttonClass: "bg-white text-amber-700 hover:bg-yellow-50",
   },
-  Zeus: {
+  Legend: {
     title: "LEGENDARY STATUS!",
-    subtitle: "You've ascended to Zeus tier",
-    emoji: "⚡",
-    gradient: "from-cyan-900 via-blue-900 to-slate-900",
-    accentColor: "text-cyan-400",
-    buttonClass: "bg-cyan-400 text-black hover:bg-cyan-300",
+    subtitle: "You've become a Legend",
+    emoji: "👑",
+    gradient: "from-amber-700 via-yellow-600 to-amber-500",
+    accentColor: "text-yellow-200",
+    buttonClass: "bg-white text-amber-700 hover:bg-yellow-50",
   },
 };
 
 const TIER_PERKS = {
-  Shrek: [
-    "🎯 Priority access to new deals",
-    "🏷️ Exclusive member discounts",
+  SmartPicker: [
+    "🎯 AI-powered recommendations",
+    "📱 Personalized deal alerts",
     "⭐ Early notifications for popular items",
   ],
-  Zeus: [
+  Legend: [
     "👑 VIP status with all perks",
     "💰 20% off all service fees",
     "🚀 First access to limited bags",
@@ -76,7 +76,7 @@ export function TierUnlockModal({
             {[...Array(20)].map((_, i) => (
               <motion.div
                 key={i}
-                className={`absolute w-2 h-2 rounded-full ${config.accentColor} opacity-30`}
+                className={`absolute w-2 h-2 rounded-full bg-yellow-300 opacity-30`}
                 initial={{ 
                   x: Math.random() * window.innerWidth, 
                   y: window.innerHeight + 20 
@@ -119,7 +119,7 @@ export function TierUnlockModal({
               transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
               className={`mb-4 ${config.accentColor}`}
             >
-              {tierName === "Zeus" ? (
+              {tierName === "Legend" ? (
                 <Crown className="h-12 w-12" />
               ) : (
                 <Sparkles className="h-12 w-12" />
@@ -134,13 +134,13 @@ export function TierUnlockModal({
               className="relative mb-6"
             >
               {/* Glow ring */}
-              <div className={`absolute inset-0 rounded-full ${config.accentColor} blur-xl opacity-50`} />
+              <div className="absolute inset-0 rounded-full bg-yellow-300 blur-xl opacity-50" />
               
               {/* Mascot container */}
               <div className="relative h-32 w-32 rounded-full border-4 border-white/30 overflow-hidden shadow-2xl">
                 <img 
                   src={mascotImage} 
-                  alt={tierName}
+                  alt="Joe"
                   className="h-full w-full object-cover"
                 />
               </div>

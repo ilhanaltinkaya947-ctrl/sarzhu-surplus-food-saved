@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { useTier } from "@/contexts/TierContext";
 
 interface Shop {
   id: string;
@@ -32,14 +31,6 @@ interface MapViewProps {
 const CENTER: [number, number] = [43.25654, 76.94421];
 const DEFAULT_ZOOM = 15;
 
-const formatPrice = (price: number) => {
-  return new Intl.NumberFormat("en-KZ", {
-    style: "currency",
-    currency: "KZT",
-    maximumFractionDigits: 0,
-  }).format(price);
-};
-
 // Category detection from shop name/description
 const detectCategory = (name: string, description: string | null): 'bakery' | 'coffee' | 'grocery' | 'default' => {
   const text = `${name} ${description || ''}`.toLowerCase();
@@ -68,12 +59,11 @@ const createPinIcon = (
   imageUrl: string | null, 
   shopName: string, 
   shopDescription: string | null, 
-  isActive: boolean = false,
-  tierColors?: { primary: string; borderColor: string }
+  isActive: boolean = false
 ) => {
-  // Theme-aware colors
+  // Consistent gold theme colors
   const defaultBorderColor = "#FFFFFF";
-  const activeBorderColor = tierColors?.borderColor || "#FFB800"; // Uses tier primary as active border
+  const activeBorderColor = "#FFB800"; // Yorkie Gold
   const hasValidImage = imageUrl && imageUrl.trim() !== '';
   const category = detectCategory(shopName, shopDescription);
   const catStyle = categoryStyles[category];
@@ -83,9 +73,8 @@ const createPinIcon = (
   const borderColor = isActive ? activeBorderColor : defaultBorderColor;
   const borderWidth = isActive ? '4px' : '3px';
   const pointerColor = isActive ? activeBorderColor : "#1E293B"; // Yorkie Steel for pointer
-  const shadowColor = tierColors?.borderColor || '#FFB800';
   const shadowStyle = isActive 
-    ? `0 4px 20px -2px ${shadowColor}80, 0 0 0 4px ${shadowColor}33` 
+    ? `0 4px 20px -2px #FFB80080, 0 0 0 4px #FFB80033` 
     : '0 4px 12px -2px rgba(0,0,0,0.3)';
   const animationClass = isActive ? 'pin-active-pulse' : '';
   
@@ -169,7 +158,7 @@ const createPinIcon = (
         transform-origin: bottom center;
         transition: transform 0.25s ease;
       ">
-        <!-- Main pin circle with logo - map-marker-container class for tier theming -->
+        <!-- Main pin circle with logo -->
         <div class="pin-main map-marker-container" style="
           position: relative;
           width: 52px;
@@ -200,7 +189,7 @@ const createPinIcon = (
           ${heartBadge}
         </div>
         
-        <!-- Bottom pointer - map-marker-arrow class for tier theming -->
+        <!-- Bottom pointer -->
         <div class="map-marker-arrow" style="
           position: absolute;
           bottom: 0;
@@ -221,51 +210,10 @@ const createPinIcon = (
   });
 };
 
-const createPopupContent = (shop: Shop, bag?: MysteryBag) => {
-  const discount = bag
-    ? Math.round((1 - bag.discounted_price / bag.original_price) * 100)
-    : 0;
-
-  return `
-    <div style="width: 220px; font-family: Inter, -apple-system, sans-serif;">
-      <img 
-        src="${shop.image_url || 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400'}" 
-        alt="${shop.name}"
-        style="width: 100%; height: 100px; object-fit: cover; border-radius: 12px 12px 0 0;"
-      />
-      <div style="padding: 12px;">
-        <h3 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: #1a1a1a;">${shop.name}</h3>
-        ${bag ? `
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px;">
-            <span style="font-size: 11px; color: #666;">${bag.quantity_available} left</span>
-            <div>
-              <span style="font-size: 11px; color: #999; text-decoration: line-through;">${formatPrice(bag.original_price)}</span>
-              <span style="font-size: 14px; font-weight: 700; color: #3D8B5F; margin-left: 6px;">${formatPrice(bag.discounted_price)}</span>
-            </div>
-          </div>
-          ${discount > 0 ? `<span style="position: absolute; top: 8px; left: 8px; background: #E53935; color: white; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 6px;">-${discount}%</span>` : ''}
-        ` : ''}
-      </div>
-    </div>
-  `;
-};
-
 export function MapView({ shops, bags, followedShopIds = [], selectedShopId, onShopClick }: MapViewProps) {
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<Map<string, L.Marker>>(new Map());
-  const { currentTier } = useTier();
-
-  // Compute theme-aware pin colors
-  const tierColors = {
-    primary: `hsl(${currentTier.colors.primary})`,
-    borderColor: currentTier.name === 'Joe' ? '#FFB800' : 
-                 currentTier.name === 'Shrek' ? '#0F172A' : '#00F0FF',
-  };
-
-  const getBagForShop = (shopId: string) => {
-    return bags.find((bag) => bag.shop_id === shopId);
-  };
 
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
@@ -299,8 +247,6 @@ export function MapView({ shops, bags, followedShopIds = [], selectedShopId, onS
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(map);
 
-    // Zoom control disabled - mobile users use pinch to zoom
-
     mapRef.current = map;
 
     return () => {
@@ -325,7 +271,7 @@ export function MapView({ shops, bags, followedShopIds = [], selectedShopId, onS
       const isActive = selectedShopId === shop.id;
       
       const marker = L.marker([shop.lat, shop.long], {
-        icon: createPinIcon(isFollowed, shop.image_url, shop.name, shop.description, isActive, tierColors),
+        icon: createPinIcon(isFollowed, shop.image_url, shop.name, shop.description, isActive),
         zIndexOffset: isActive ? 1000 : 0,
       }).addTo(mapRef.current!);
 
@@ -343,26 +289,13 @@ export function MapView({ shops, bags, followedShopIds = [], selectedShopId, onS
         onShopClick?.(shop);
       });
     });
-  }, [shops, bags, followedShopIds, selectedShopId, onShopClick, tierColors.borderColor]);
-
-  // Expose flyTo for external use - fast 0.6s animation
-  const flyToShop = (lat: number, long: number) => {
-    if (mapRef.current) {
-      mapRef.current.flyTo([lat, long], 17, {
-        duration: 0.6,
-        easeLinearity: 0.25,
-      });
-    }
-  };
-
-  // Dynamic pulse color based on tier
-  const pulseColor = tierColors.borderColor;
+  }, [shops, bags, followedShopIds, selectedShopId, onShopClick]);
 
   return (
     <div className="absolute inset-0 z-0">
       <div 
         ref={mapContainerRef} 
-        className="h-full w-full transition-colors duration-500"
+        className="h-full w-full"
         style={{ background: "hsl(var(--muted))" }}
       />
       <style>{`
@@ -386,16 +319,16 @@ export function MapView({ shops, bags, followedShopIds = [], selectedShopId, onS
         .leaflet-tooltip {
           display: none !important;
         }
-        /* Active pin pulsing shadow animation - Uses tier color */
+        /* Active pin pulsing shadow animation - Gold theme */
         .pin-active-pulse .pin-main {
           animation: active-pulse 1.5s ease-in-out infinite;
         }
         @keyframes active-pulse {
           0%, 100% {
-            box-shadow: 0 4px 20px -2px ${pulseColor}80, 0 0 0 4px ${pulseColor}33;
+            box-shadow: 0 4px 20px -2px #FFB80080, 0 0 0 4px #FFB80033;
           }
           50% {
-            box-shadow: 0 4px 25px -2px ${pulseColor}B3, 0 0 0 8px ${pulseColor}1A;
+            box-shadow: 0 4px 25px -2px #FFB800B3, 0 0 0 8px #FFB8001A;
           }
         }
       `}</style>

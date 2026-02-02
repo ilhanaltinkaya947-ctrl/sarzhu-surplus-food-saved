@@ -17,39 +17,39 @@ export function DevDebugMenu() {
       <div className="flex items-center gap-1">
         <GripVertical className="h-3 w-3 text-white/40" />
         <span className="text-[10px] text-white/60 font-mono">
-          Dev: {currentTier.name} ({completedOrders})
+          Dev: {currentTier.displayName} ({completedOrders})
         </span>
       </div>
       <div className="flex gap-1">
         <button
           onClick={() => setCompletedOrders(0)}
           className={`px-2 py-1 text-xs rounded transition-all ${
-            currentTier.name === 'Joe' 
+            currentTier.name === 'FoodSaver' 
               ? 'bg-yellow-500 text-black font-semibold' 
               : 'bg-white/20 text-white hover:bg-white/30'
           }`}
         >
-          🐶 Joe
+          🐶 Saver
         </button>
         <button
           onClick={() => setCompletedOrders(5)}
           className={`px-2 py-1 text-xs rounded transition-all ${
-            currentTier.name === 'Shrek' 
-              ? 'bg-white text-black font-semibold' 
+            currentTier.name === 'SmartPicker' 
+              ? 'bg-yellow-500 text-black font-semibold' 
               : 'bg-white/20 text-white hover:bg-white/30'
           }`}
         >
-          🐻 Shrek
+          🎯 Smart
         </button>
         <button
           onClick={() => setCompletedOrders(20)}
           className={`px-2 py-1 text-xs rounded transition-all ${
-            currentTier.name === 'Zeus' 
-              ? 'bg-cyan-400 text-black font-semibold' 
+            currentTier.name === 'Legend' 
+              ? 'bg-yellow-500 text-black font-semibold' 
               : 'bg-white/20 text-white hover:bg-white/30'
           }`}
         >
-          🐺 Zeus
+          👑 Legend
         </button>
       </div>
     </motion.div>

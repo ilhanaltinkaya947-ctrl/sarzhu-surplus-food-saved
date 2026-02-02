@@ -65,9 +65,9 @@ export function ShopDrawer({
   const [confirmedOrderId, setConfirmedOrderId] = useState<string>("");
   const { currentTier } = useTier();
 
-  // Check if user is in Zeus tier for discount
-  const isZeus = currentTier.name === "Zeus";
-  const discountedServiceFee = isZeus ? Math.round(SERVICE_FEE * (1 - ZEUS_DISCOUNT)) : SERVICE_FEE;
+  // Check if user is in Legend tier for discount
+  const isLegend = currentTier.name === "Legend";
+  const discountedServiceFee = isLegend ? Math.round(SERVICE_FEE * (1 - ZEUS_DISCOUNT)) : SERVICE_FEE;
 
   // Calculate total with service fee
   const calculateTotal = () => {
@@ -346,8 +346,8 @@ export function ShopDrawer({
                   {/* Service Fee Line */}
                   <div className="flex justify-between text-sm items-center">
                     <span className="text-[hsl(var(--sheet-muted))] transition-colors duration-500">Service Fee</span>
-                    <div className="flex items-center gap-2">
-                      {isZeus ? (
+                  <div className="flex items-center gap-2">
+                      {isLegend ? (
                         <>
                           <span className="text-[hsl(var(--sheet-muted))] line-through text-xs transition-colors duration-500">
                             {formatPrice(SERVICE_FEE)}
@@ -364,11 +364,11 @@ export function ShopDrawer({
                     </div>
                   </div>
 
-                  {/* Zeus Perk Badge */}
-                  {isZeus && (
+                  {/* Legend Perk Badge */}
+                  {isLegend && (
                     <div className="flex items-center justify-center gap-2 py-2 px-3 bg-primary/15 border border-primary/30 rounded-xl">
                       <Zap className="h-4 w-4 text-primary" />
-                      <span className="text-xs font-semibold text-primary">Zeus Perk applied ⚡</span>
+                      <span className="text-xs font-semibold text-primary">Legend Perk applied 👑</span>
                     </div>
                   )}
 

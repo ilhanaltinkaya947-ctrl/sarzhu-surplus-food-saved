@@ -1,126 +1,58 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import confetti from "canvas-confetti";
-import { toast } from "sonner";
 
-// Import mascot images
+// Import mascot image (Joe only - other tiers are "leveled up" versions)
 import joeMascot from "@/assets/joe-mascot.png";
-import shrekMascot from "@/assets/shrek-mascot.png";
-import zeusMascot from "@/assets/zeus-mascot.png";
-
-// Mascot paths
-const MASCOTS = {
-  joe: joeMascot,
-  shrek: shrekMascot,
-  zeus: zeusMascot,
-};
 
 export interface TierInfo {
   name: string;
-  mascot: "joe" | "shrek" | "zeus";
+  displayName: string;
   mascotImage: string;
   minOrders: number;
   maxOrders: number | null;
-  colors: {
-    primary: string;      // HSL values without hsl() wrapper
-    primaryForeground: string;
-    secondary: string;
-    secondaryForeground: string;
-    background: string;
-    foreground: string;
-    muted: string;
-    mutedForeground: string;
-    accent: string;
-    accentForeground: string;
-    card: string;
-    cardForeground: string;
-    border: string;
-  };
+  perk: string | null;
 }
 
 const TIERS: TierInfo[] = [
   {
-    name: "Joe",
-    mascot: "joe",
-    mascotImage: MASCOTS.joe,
+    name: "FoodSaver",
+    displayName: "Food Saver",
+    mascotImage: joeMascot,
     minOrders: 0,
     maxOrders: 4,
-    colors: {
-      primary: "43 100% 50%",           // #FFB800 Yorkie Gold
-      primaryForeground: "215 28% 17%", // #1E293B Yorkie Steel
-      secondary: "210 40% 96%",         // Light slate
-      secondaryForeground: "215 28% 17%",
-      background: "0 0% 100%",          // White
-      foreground: "215 28% 17%",        // Yorkie Steel
-      muted: "210 40% 96%",
-      mutedForeground: "215 16% 47%",
-      accent: "43 100% 50%",
-      accentForeground: "215 28% 17%",
-      card: "0 0% 100%",
-      cardForeground: "215 28% 17%",
-      border: "214 32% 91%",
-    },
+    perk: null,
   },
   {
-    name: "Shrek",
-    mascot: "shrek",
-    mascotImage: MASCOTS.shrek,
+    name: "SmartPicker",
+    displayName: "Smart Picker",
+    mascotImage: joeMascot,
     minOrders: 5,
     maxOrders: 19,
-    colors: {
-      primary: "0 0% 0%",               // Black
-      primaryForeground: "0 0% 100%",   // White
-      secondary: "220 14% 96%",         // Light Grey #F3F4F6
-      secondaryForeground: "0 0% 0%",
-      background: "220 14% 96%",        // Light Grey
-      foreground: "0 0% 0%",            // Black
-      muted: "220 14% 90%",
-      mutedForeground: "220 9% 46%",
-      accent: "0 0% 0%",
-      accentForeground: "0 0% 100%",
-      card: "0 0% 100%",
-      cardForeground: "0 0% 0%",
-      border: "220 13% 91%",
-    },
+    perk: "AI Personalization",
   },
   {
-    name: "Zeus",
-    mascot: "zeus",
-    mascotImage: MASCOTS.zeus,
+    name: "Legend",
+    displayName: "Legend",
+    mascotImage: joeMascot,
     minOrders: 20,
     maxOrders: null,
-    colors: {
-      primary: "183 100% 50%",          // #00F0FF Electric Cyan
-      primaryForeground: "0 0% 0%",     // Black
-      secondary: "222 47% 11%",         // Dark Navy #0F172A
-      secondaryForeground: "183 100% 50%",
-      background: "222 47% 11%",        // Dark Navy
-      foreground: "0 0% 100%",          // White
-      muted: "217 33% 17%",
-      mutedForeground: "215 20% 65%",
-      accent: "183 100% 50%",
-      accentForeground: "0 0% 0%",
-      card: "222 47% 14%",
-      cardForeground: "0 0% 100%",
-      border: "217 33% 17%",
-    },
+    perk: "20% Lifetime Discount",
   },
 ];
 
-// Confetti configurations for each tier
+// Confetti configurations for tier unlocks
 const TIER_CONFETTI = {
-  shrek: {
-    colors: ["#000000", "#FFFFFF", "#333333", "#666666"],
-    emoji: "🐕",
-    message: "You've unlocked Shrek tier! 🎉",
+  SmartPicker: {
+    colors: ["#FFB800", "#F59E0B", "#FBBF24", "#FCD34D"],
+    message: "You've unlocked Smart Picker! 🎉",
   },
-  zeus: {
-    colors: ["#00F0FF", "#0099FF", "#FFFFFF", "#00CCFF"],
-    emoji: "⚡",
-    message: "LEGENDARY! You've unlocked Zeus tier! ⚡👑",
+  Legend: {
+    colors: ["#FFB800", "#F59E0B", "#FBBF24", "#FCD34D", "#FFFFFF"],
+    message: "LEGENDARY STATUS! 👑🎉",
   },
 };
 
-const fireTierConfetti = (tierName: "shrek" | "zeus") => {
+const fireTierConfetti = (tierName: "SmartPicker" | "Legend") => {
   const config = TIER_CONFETTI[tierName];
   
   // First burst - center explosion
@@ -153,8 +85,8 @@ const fireTierConfetti = (tierName: "shrek" | "zeus") => {
     });
   }, 300);
 
-  // Zeus gets extra dramatic confetti
-  if (tierName === "zeus") {
+  // Legend gets extra dramatic confetti
+  if (tierName === "Legend") {
     setTimeout(() => {
       confetti({
         particleCount: 150,
@@ -230,13 +162,12 @@ export function TierProvider({ children }: { children: ReactNode }) {
       
       if (currIndex > prevIndex) {
         // It's a tier upgrade! Celebrate!
-        if (currentTier.mascot === "shrek" || currentTier.mascot === "zeus") {
-          fireTierConfetti(currentTier.mascot);
+        if (currentTier.name === "SmartPicker" || currentTier.name === "Legend") {
+          fireTierConfetti(currentTier.name);
           
           // Haptic feedback for mobile devices
           if (navigator.vibrate) {
-            // Zeus gets a stronger vibration pattern
-            if (currentTier.mascot === "zeus") {
+            if (currentTier.name === "Legend") {
               navigator.vibrate([100, 50, 100, 50, 200]); // Dramatic pattern
             } else {
               navigator.vibrate([50, 30, 100]); // Quick celebratory pattern
@@ -253,33 +184,6 @@ export function TierProvider({ children }: { children: ReactNode }) {
     previousTierRef.current = currentTier.name;
   }, [currentTier]);
 
-  // Apply theme via data-theme attribute and CSS variables
-  useEffect(() => {
-    const root = document.documentElement;
-    const colors = currentTier.colors;
-
-    // Set data-theme attribute for CSS tier-specific styles
-    document.body.setAttribute('data-theme', currentTier.name.toLowerCase());
-
-    // Also set inline CSS variables as fallback
-    root.style.setProperty("--primary", colors.primary);
-    root.style.setProperty("--primary-foreground", colors.primaryForeground);
-    root.style.setProperty("--secondary", colors.secondary);
-    root.style.setProperty("--secondary-foreground", colors.secondaryForeground);
-    root.style.setProperty("--background", colors.background);
-    root.style.setProperty("--foreground", colors.foreground);
-    root.style.setProperty("--muted", colors.muted);
-    root.style.setProperty("--muted-foreground", colors.mutedForeground);
-    root.style.setProperty("--accent", colors.accent);
-    root.style.setProperty("--accent-foreground", colors.accentForeground);
-    root.style.setProperty("--card", colors.card);
-    root.style.setProperty("--card-foreground", colors.cardForeground);
-    root.style.setProperty("--border", colors.border);
-
-    // Update body background for smooth transitions
-    document.body.style.backgroundColor = `hsl(${colors.background})`;
-  }, [currentTier]);
-
   // Persist orders to localStorage
   const setCompletedOrders = useCallback((orders: number) => {
     setCompletedOrdersState(orders);
@@ -293,11 +197,11 @@ export function TierProvider({ children }: { children: ReactNode }) {
   // Debug: cycle through tiers
   const cycleTierForDebug = useCallback(() => {
     if (completedOrders < 5) {
-      setCompletedOrders(5); // Jump to Shrek
+      setCompletedOrders(5); // Jump to Smart Picker
     } else if (completedOrders < 20) {
-      setCompletedOrders(20); // Jump to Zeus
+      setCompletedOrders(20); // Jump to Legend
     } else {
-      setCompletedOrders(0); // Reset to Joe
+      setCompletedOrders(0); // Reset to Food Saver
     }
   }, [completedOrders, setCompletedOrders]);
 
@@ -313,7 +217,7 @@ export function TierProvider({ children }: { children: ReactNode }) {
         completedOrders,
         nextTierProgress,
         ordersToNextTier,
-        nextTierName: nextTier?.name || null,
+        nextTierName: nextTier?.displayName || null,
         setCompletedOrders,
         incrementOrders,
         cycleTierForDebug,

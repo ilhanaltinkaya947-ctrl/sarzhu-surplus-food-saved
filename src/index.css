@@ -1,11 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Gou Design System - Dynamic Dog Tier Theming */
+/* Gou Design System - Consistent Gold/White Theme */
 
 @layer base {
   :root {
@@ -20,7 +18,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 215 28% 17%;
 
-    /* Primary - Yorkie Gold (default) */
+    /* Primary - Yorkie Gold */
     --primary: 43 100% 50%;
     --primary-foreground: 215 28% 17%;
 
@@ -73,6 +71,13 @@
     --safe-top: env(safe-area-inset-top);
     --safe-bottom: env(safe-area-inset-bottom);
 
+    /* Sheet/Drawer specific */
+    --sheet-bg: 0 0% 100%;
+    --sheet-foreground: 215 28% 17%;
+    --sheet-muted: 215 16% 47%;
+    --info-box-bg: 43 100% 96%;
+    --info-box-border: 43 80% 85%;
+
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 215 28% 17%;
     --sidebar-primary: 43 100% 50%;
@@ -100,96 +105,6 @@
     --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
     --tracking-normal: 0em;
     --spacing: 0.25rem;
-  }
-
-  /* ========================================
-     TIER 1: JOE (Warm & Friendly - Default)
-     ======================================== */
-  [data-theme='joe'] {
-    --primary: 43 100% 50%;
-    --primary-foreground: 215 28% 17%;
-    --background: 0 0% 100%;
-    --foreground: 215 28% 17%;
-    --card: 0 0% 100%;
-    --card-foreground: 215 28% 17%;
-    --muted: 210 40% 98%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 43 100% 50%;
-    --accent-foreground: 215 28% 17%;
-    --border: 214 32% 91%;
-    --map-pin-color: 43 100% 50%;
-    --price-tag-bg: 43 100% 50%;
-    --price-tag-fg: 215 28% 17%;
-    --gradient-hero: linear-gradient(135deg, hsl(43 100% 50%), hsl(35 100% 45%));
-    /* Sheet/Drawer specific */
-    --sheet-bg: 0 0% 100%;
-    --sheet-foreground: 215 28% 17%;
-    --sheet-muted: 215 16% 47%;
-    --info-box-bg: 43 100% 96%;
-    --info-box-border: 43 80% 85%;
-  }
-
-  /* ========================================
-     TIER 2: SHREK (Luxury Monochrome)
-     ======================================== */
-  [data-theme='shrek'] {
-    --primary: 222 47% 11%;
-    --primary-foreground: 0 0% 100%;
-    --background: 220 14% 96%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --muted: 220 14% 90%;
-    --muted-foreground: 220 9% 46%;
-    --accent: 222 47% 11%;
-    --accent-foreground: 0 0% 100%;
-    --border: 220 13% 91%;
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 222 47% 11%;
-    --map-pin-color: 222 47% 11%;
-    --price-tag-bg: 222 47% 11%;
-    --price-tag-fg: 0 0% 100%;
-    --gradient-hero: linear-gradient(135deg, hsl(222 47% 11%), hsl(222 47% 20%));
-    --shadow-card: 0 4px 20px -4px hsl(222 47% 11% / 0.1);
-    --shadow-elevated: 0 8px 30px -8px hsl(222 47% 11% / 0.15);
-    /* Sheet/Drawer specific */
-    --sheet-bg: 0 0% 100%;
-    --sheet-foreground: 222 47% 11%;
-    --sheet-muted: 220 9% 46%;
-    --info-box-bg: 220 14% 96%;
-    --info-box-border: 220 13% 91%;
-  }
-
-  /* ========================================
-     TIER 3: ZEUS (Cyberpunk "Lights Out" Mode)
-     ======================================== */
-  [data-theme='zeus'] {
-    --primary: 183 100% 50%;
-    --primary-foreground: 0 0% 0%;
-    --background: 222 47% 3%;
-    --foreground: 0 0% 100%;
-    --card: 222 47% 6%;
-    --card-foreground: 0 0% 100%;
-    --muted: 217 33% 12%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 183 100% 50%;
-    --accent-foreground: 0 0% 0%;
-    --border: 217 33% 20%;
-    --secondary: 222 47% 8%;
-    --secondary-foreground: 183 100% 50%;
-    --map-pin-color: 183 100% 50%;
-    --price-tag-bg: 183 100% 50%;
-    --price-tag-fg: 0 0% 0%;
-    --gradient-hero: linear-gradient(135deg, hsl(183 100% 50%), hsl(199 100% 50%));
-    --shadow-card: 0 4px 20px -4px hsl(183 100% 50% / 0.15);
-    --shadow-elevated: 0 8px 30px -8px hsl(183 100% 50% / 0.2);
-    --shadow-gold: 0 4px 20px -4px hsl(183 100% 50% / 0.4);
-    /* Sheet/Drawer specific - Deep Dark */
-    --sheet-bg: 222 47% 3%;
-    --sheet-foreground: 0 0% 100%;
-    --sheet-muted: 215 20% 65%;
-    --info-box-bg: 222 47% 8%;
-    --info-box-border: 183 100% 50%;
   }
 
   .dark {
@@ -260,13 +175,6 @@
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* Smooth theme transitions */
-    transition: background-color 0.5s ease-in-out, color 0.5s ease-in-out;
-  }
-
-  /* Apply smooth transitions to all themed elements */
-  .transition-theme {
-    @apply transition-colors duration-500 ease-in-out;
   }
 
   /* Safe area utilities */
@@ -324,36 +232,14 @@
 }
 
 /* ========================================
-   GLOBAL MAP PIN THEMES
+   GLOBAL MAP PIN STYLING - Consistent Gold
    ======================================== */
 
-/* === TIER 1: JOE (Friendly Gold) === */
-[data-theme='joe'] .map-marker-container {
+.map-marker-container {
   border: 3px solid #FFB800 !important;
   background: white !important;
 }
-[data-theme='joe'] .map-marker-arrow {
+
+.map-marker-arrow {
   border-top-color: #FFB800 !important;
-}
-
-/* === TIER 2: SHREK (Noir Luxury) === */
-[data-theme='shrek'] .map-marker-container {
-  border: 3px solid #000000 !important;
-  background: white !important;
-}
-[data-theme='shrek'] .map-marker-container img {
-  filter: grayscale(100%);
-}
-[data-theme='shrek'] .map-marker-arrow {
-  border-top-color: #000000 !important;
-}
-
-/* === TIER 3: ZEUS (Cyberpunk Glow) === */
-[data-theme='zeus'] .map-marker-container {
-  border: 2px solid #00F0FF !important;
-  background: #000 !important;
-  box-shadow: 0 0 15px #00F0FF, inset 0 0 5px rgba(0, 240, 255, 0.3) !important;
-}
-[data-theme='zeus'] .map-marker-arrow {
-  border-top-color: #00F0FF !important;
 }
