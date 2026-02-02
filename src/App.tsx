@@ -38,7 +38,8 @@ function TierUnlockModalWrapper() {
   );
 }
 
-const App = () => {
+// Inner app content that needs all providers
+function AppContent() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -60,30 +61,38 @@ const App = () => {
   }
 
   return (
+    <>
+      <Toaster />
+      <Sonner />
+      <TierUnlockModalWrapper />
+      <DevDebugMenu />
+      
+      <AnimatePresence>
+        {showOnboarding && (
+          <OnboardingFlow onComplete={handleOnboardingComplete} />
+        )}
+      </AnimatePresence>
+      
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<MapPage />} />
+          <Route path="/orders" element={<OrdersPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/merchant/dashboard" element={<MerchantDashboard />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </>
+  );
+}
+
+const App = () => {
+  return (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
         <TierProvider>
           <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <TierUnlockModalWrapper />
-            <DevDebugMenu />
-            
-            <AnimatePresence>
-              {showOnboarding && (
-                <OnboardingFlow onComplete={handleOnboardingComplete} />
-              )}
-            </AnimatePresence>
-            
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<MapPage />} />
-                <Route path="/orders" element={<OrdersPage />} />
-                <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/merchant/dashboard" element={<MerchantDashboard />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
+            <AppContent />
           </TooltipProvider>
         </TierProvider>
       </LanguageProvider>
