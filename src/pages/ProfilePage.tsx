@@ -9,6 +9,7 @@ import { LoyaltyStatusCard } from "@/components/LoyaltyStatusCard";
 import { useTier } from "@/contexts/TierContext";
 import { useLanguage, Language } from "@/contexts/LanguageContext";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { AuthModal } from "@/components/AuthModal";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
@@ -41,6 +42,7 @@ export default function ProfilePage() {
   const { completedOrders } = useTier();
   const { t, language } = useLanguage();
   const [languageDialogOpen, setLanguageDialogOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
 
@@ -184,7 +186,10 @@ export default function ProfilePage() {
               <p className="text-sm text-muted-foreground text-center mb-4 max-w-xs">
                 {t("profile.signIn")}
               </p>
-              <Button className="touch-target gradient-hero text-primary-foreground font-semibold px-8">
+              <Button 
+                onClick={() => setAuthModalOpen(true)}
+                className="touch-target bg-primary text-primary-foreground font-semibold px-8"
+              >
                 <LogIn className="h-4 w-4 mr-2" />
                 {t("profile.signInButton")}
               </Button>
@@ -313,6 +318,12 @@ export default function ProfilePage() {
           <LanguageSelector />
         </DialogContent>
       </Dialog>
+
+      {/* Auth Modal */}
+      <AuthModal 
+        open={authModalOpen} 
+        onOpenChange={setAuthModalOpen}
+      />
     </motion.div>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { MapView } from "@/components/MapView";
 import { FloatingSearchBar } from "@/components/FloatingSearchBar";
 import { BottomSheet } from "@/components/BottomSheet";
@@ -7,6 +7,7 @@ import { JoeChat } from "@/components/JoeChat";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+
 interface Shop {
   id: string;
   name: string;
@@ -24,6 +25,13 @@ interface MysteryBag {
   discounted_price: number;
 }
 
+// Category keywords for filtering
+const categoryKeywords: Record<string, string[]> = {
+  bakery: ["bakery", "bread", "pastry", "cake", "croissant", "bun", "наубайхана", "хлеб", "булочная", "пекарня"],
+  coffee: ["coffee", "café", "cafe", "espresso", "latte", "кофе", "кофейня"],
+  healthy: ["healthy", "salad", "vegan", "organic", "fresh", "здоровый", "салат", "фреш"],
+};
+
 export default function MapPage() {
   const { user } = useAuth();
   const [shops, setShops] = useState<Shop[]>([]);
@@ -34,6 +42,18 @@ export default function MapPage() {
   const [followedShopIds, setFollowedShopIds] = useState<string[]>([]);
   const [joeChatOpen, setJoeChatOpen] = useState(false);
   const [showJoeBadge, setShowJoeBadge] = useState(true);
+  const [activeCategory, setActiveCategory] = useState("all");
+
+  // Filter shops based on active category
+  const filteredShops = useMemo(() => {
+    if (activeCategory === "all") return shops;
+    
+    const keywords = categoryKeywords[activeCategory] || [];
+    return shops.filter(shop => {
+      const searchText = `${shop.name} ${shop.description || ""}`.toLowerCase();
+      return keywords.some(keyword => searchText.includes(keyword.toLowerCase()));
+    });
+  }, [shops, activeCategory]);
 
   useEffect(() => {
     async function fetchData() {
@@ -162,7 +182,7 @@ export default function MapPage() {
       ) : (
         <div className={drawerOpen ? "pointer-events-none" : "pointer-events-auto"}>
           <MapView 
-            shops={shops} 
+            shops={filteredShops}
             bags={bags} 
             followedShopIds={followedShopIds}
             selectedShopId={selectedShop?.id}
@@ -185,6 +205,7 @@ export default function MapPage() {
           onShopClick={handleShopClick}
           onJoeClick={handleJoeOpen}
           showJoeBadge={showJoeBadge}
+          onCategoryChange={setActiveCategory}
         />
       </div>
 
