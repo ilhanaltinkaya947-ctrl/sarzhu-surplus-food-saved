@@ -4,15 +4,27 @@ import { useNavigate } from "react-router-dom";
 import { motion, PanInfo } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
-import { TreatTracker } from "@/components/TreatTracker";
 import { LoyaltyStatusCard } from "@/components/LoyaltyStatusCard";
 import { useTier } from "@/contexts/TierContext";
+
+// Average savings per order in KZT
+const AVG_SAVINGS_PER_ORDER = 1200;
 
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { profile, loading } = useProfile();
   const { completedOrders } = useTier();
+
+  // Calculate total money saved
+  const totalMoneySaved = completedOrders * AVG_SAVINGS_PER_ORDER;
+  
+  const formatMoneySaved = (amount: number) => {
+    if (amount >= 1000) {
+      return `${(amount / 1000).toFixed(1)}K`;
+    }
+    return amount.toString();
+  };
 
   const menuItems = [
     { icon: Heart, label: "Saved Shops", count: 0 },
@@ -65,20 +77,10 @@ export default function ProfilePage() {
       </header>
       
       <main className="pt-20 pb-24 px-4">
-        {/* Loyalty Status Card - Replaces TierProgress */}
+        {/* Loyalty Status Card */}
         <div className="mb-6">
           <LoyaltyStatusCard />
         </div>
-
-        {/* Joe's Treat Tracker - Only show when logged in */}
-        {user && profile && (
-          <div className="mb-6">
-            <TreatTracker 
-              points={profile.loyalty_points} 
-              tier={profile.tier} 
-            />
-          </div>
-        )}
 
         {/* Profile Header */}
         <div className="flex flex-col items-center py-8">
@@ -116,21 +118,15 @@ export default function ProfilePage() {
           )}
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
+        {/* Stats - Orders and Money Saved */}
+        <div className="grid grid-cols-2 gap-4 mb-8">
           <div className="bg-card rounded-2xl p-4 text-center shadow-card">
             <p className="text-2xl font-bold text-primary">{completedOrders}</p>
-            <p className="text-xs text-muted-foreground">Orders</p>
+            <p className="text-xs text-muted-foreground">Total Orders</p>
           </div>
           <div className="bg-card rounded-2xl p-4 text-center shadow-card">
-            <p className="text-2xl font-bold text-primary">{(completedOrders * 0.8).toFixed(1)} kg</p>
-            <p className="text-xs text-muted-foreground">Food Saved</p>
-          </div>
-          <div className="bg-card rounded-2xl p-4 text-center shadow-card">
-            <p className="text-2xl font-bold text-primary">
-              🦴 {profile?.loyalty_points || 0}
-            </p>
-            <p className="text-xs text-muted-foreground">Treats</p>
+            <p className="text-2xl font-bold text-primary">₸{formatMoneySaved(totalMoneySaved)}</p>
+            <p className="text-xs text-muted-foreground">Money Saved</p>
           </div>
         </div>
 
