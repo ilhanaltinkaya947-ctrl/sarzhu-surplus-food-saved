@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Store, MapPin, Image, Tag, Save } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useMarketplace, Shop } from "@/contexts/MarketplaceContext";
+import { ImageUploader } from "./ImageUploader";
 import { toast } from "sonner";
 
 interface ProfileTabProps {
@@ -125,23 +126,13 @@ export function ProfileTab({ shop }: ProfileTabProps) {
         <div className="space-y-2">
           <Label className="flex items-center gap-2">
             <Image className="h-4 w-4" />
-            {t("merchant.imageUrl")}
+            {t("merchant.shopImage")}
           </Label>
-          <Input
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            placeholder="https://example.com/shop-image.jpg"
+          <ImageUploader
+            currentImageUrl={imageUrl}
+            onImageChange={setImageUrl}
+            bucket="shop-images"
           />
-          {imageUrl && (
-            <div className="mt-2 rounded-xl overflow-hidden h-32 bg-secondary">
-              <img
-                src={imageUrl}
-                alt="Shop preview"
-                className="w-full h-full object-cover"
-                onError={(e) => (e.currentTarget.style.display = "none")}
-              />
-            </div>
-          )}
         </div>
       </div>
 
