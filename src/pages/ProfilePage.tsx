@@ -1,4 +1,5 @@
-import { User, Settings, Heart, HelpCircle, LogIn, ArrowLeft } from "lucide-react";
+import { useState } from "react";
+import { User, Heart, HelpCircle, LogIn, ArrowLeft, Globe, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { motion, PanInfo } from "framer-motion";
@@ -6,15 +7,31 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { LoyaltyStatusCard } from "@/components/LoyaltyStatusCard";
 import { useTier } from "@/contexts/TierContext";
+import { useLanguage, Language } from "@/contexts/LanguageContext";
+import { LanguageSelector } from "@/components/LanguageSelector";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // Average savings per order in KZT
 const AVG_SAVINGS_PER_ORDER = 1200;
+
+const languageLabels: Record<Language, string> = {
+  en: "English",
+  kz: "Қазақша",
+  ru: "Русский",
+};
 
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { profile, loading } = useProfile();
   const { completedOrders } = useTier();
+  const { t, language } = useLanguage();
+  const [languageDialogOpen, setLanguageDialogOpen] = useState(false);
 
   // Calculate total money saved
   const totalMoneySaved = completedOrders * AVG_SAVINGS_PER_ORDER;
@@ -27,9 +44,9 @@ export default function ProfilePage() {
   };
 
   const menuItems = [
-    { icon: Heart, label: "Saved Shops", count: 0 },
-    { icon: Settings, label: "Settings" },
-    { icon: HelpCircle, label: "Help & Support" },
+    { icon: Heart, label: t("profile.savedShops"), count: 0 },
+    { icon: Globe, label: t("profile.language"), value: languageLabels[language], onClick: () => setLanguageDialogOpen(true) },
+    { icon: HelpCircle, label: t("profile.help") },
   ];
 
   const handleGoBack = () => {
@@ -69,7 +86,7 @@ export default function ProfilePage() {
           </button>
           
           {/* Title */}
-          <h1 className="text-lg font-semibold text-foreground">Profile</h1>
+          <h1 className="text-lg font-semibold text-foreground">{t("profile.title")}</h1>
           
           {/* Spacer for alignment */}
           <div className="h-10 w-10" />
@@ -99,20 +116,20 @@ export default function ProfilePage() {
                 className="mt-4"
                 onClick={signOut}
               >
-                Sign Out
+                {t("profile.signOut")}
               </Button>
             </>
           ) : (
             <>
               <h2 className="text-lg font-semibold text-foreground mb-2">
-                Welcome to Sarzhu
+                {t("profile.guest")}
               </h2>
               <p className="text-sm text-muted-foreground text-center mb-4 max-w-xs">
-                Sign in to save your favorite shops and view your orders
+                {t("profile.signIn")}
               </p>
               <Button className="touch-target gradient-hero text-primary-foreground font-semibold px-8">
                 <LogIn className="h-4 w-4 mr-2" />
-                Sign In
+                {t("profile.signInButton")}
               </Button>
             </>
           )}
@@ -122,11 +139,11 @@ export default function ProfilePage() {
         <div className="grid grid-cols-2 gap-4 mb-8">
           <div className="bg-card rounded-2xl p-4 text-center shadow-card">
             <p className="text-2xl font-bold text-primary">{completedOrders}</p>
-            <p className="text-xs text-muted-foreground">Total Orders</p>
+            <p className="text-xs text-muted-foreground">{t("profile.totalOrders")}</p>
           </div>
           <div className="bg-card rounded-2xl p-4 text-center shadow-card">
             <p className="text-2xl font-bold text-primary">₸{formatMoneySaved(totalMoneySaved)}</p>
-            <p className="text-xs text-muted-foreground">Money Saved</p>
+            <p className="text-xs text-muted-foreground">{t("profile.moneySaved")}</p>
           </div>
         </div>
 
@@ -135,15 +152,24 @@ export default function ProfilePage() {
           {menuItems.map((item) => (
             <button
               key={item.label}
+              onClick={item.onClick}
               className="w-full flex items-center justify-between p-4 touch-active border-b border-border last:border-0"
             >
               <div className="flex items-center gap-3">
                 <item.icon className="h-5 w-5 text-muted-foreground" />
                 <span className="font-medium text-foreground">{item.label}</span>
               </div>
-              {item.count !== undefined && (
-                <span className="text-sm text-muted-foreground">{item.count}</span>
-              )}
+              <div className="flex items-center gap-2">
+                {item.value && (
+                  <span className="text-sm text-muted-foreground">{item.value}</span>
+                )}
+                {item.count !== undefined && (
+                  <span className="text-sm text-muted-foreground">{item.count}</span>
+                )}
+                {item.onClick && (
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                )}
+              </div>
             </button>
           ))}
         </div>
@@ -153,6 +179,16 @@ export default function ProfilePage() {
           Made with 🐾 to reduce food waste
         </p>
       </main>
+
+      {/* Language Selection Dialog */}
+      <Dialog open={languageDialogOpen} onOpenChange={setLanguageDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t("profile.language")}</DialogTitle>
+          </DialogHeader>
+          <LanguageSelector />
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 }
