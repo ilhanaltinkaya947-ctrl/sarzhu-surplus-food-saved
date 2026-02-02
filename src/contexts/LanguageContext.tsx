@@ -62,9 +62,7 @@ export const translations: Record<Language, Record<string, string>> = {
     "bottomSheet.featuredDeals": "Featured Deals",
     "bottomSheet.seeAll": "See all",
     "bottomSheet.noShops": "No shops available nearby",
-    "bottomSheet.selectShop": "Select a shop to reserve",
-    "bottomSheet.reserve": "Reserve",
-    "bottomSheet.myOrders": "My Orders",
+    "bottomSheet.basket": "Basket",
     "bottomSheet.nextTier": "Next",
     "bottomSheet.maxTier": "Max Tier! 👑",
     "bottomSheet.aiLocked": "🔒 AI Chat unlocks at Smart Picker tier!",
@@ -82,20 +80,44 @@ export const translations: Record<Language, Record<string, string>> = {
     "shop.serviceFee": "Service Fee",
     "shop.legendPerk": "Legend Perk applied 👑",
     "shop.total": "Total",
+    "shop.price": "Price",
+    "shop.addToBasket": "Add to Basket",
+    "shop.inBasket": "Already in Basket",
     "shop.reserveFor": "Reserve for",
     "shop.soldOut": "Sold Out",
     "shop.reserving": "Reserving...",
     
+    // Basket
+    "basket.title": "Basket",
+    "basket.empty": "Your basket is empty",
+    "basket.alreadyInBasket": "Item already in basket",
+    "basket.addedToBasket": "Added to basket! 🛒",
+    "basket.removed": "Removed from basket",
+    "basket.subtotal": "Subtotal",
+    "basket.paymentMethod": "Payment Method",
+    "basket.expires": "Expires",
+    "basket.cardNumber": "Card number",
+    "basket.addCard": "Save Card",
+    "basket.addNewCard": "Add New Card",
+    "basket.invalidCard": "Please enter valid card details",
+    "basket.cardAdded": "Card saved successfully",
+    "basket.selectCard": "Please select a payment method",
+    "basket.processing": "Processing...",
+    "basket.pay": "Pay",
+    "basket.purchaseSuccess": "Purchase successful! 🎉",
+    
     // Orders Page
-    "orders.title": "My Bags",
+    "orders.title": "My Orders",
     "orders.active": "Active",
     "orders.past": "Past",
-    "orders.noActive": "No active reservations",
+    "orders.noActive": "No active orders",
     "orders.noPast": "No past orders yet",
     "orders.pickupBy": "Pickup by",
-    "orders.reserved": "Reserved",
-    "orders.pickedUp": "Picked Up",
-    "orders.swipeConfirm": "Swipe to confirm pickup",
+    "orders.pending": "Pending",
+    "orders.reserved": "Purchased",
+    "orders.pickedUp": "Completed",
+    "orders.pickupToday": "Pickup today",
+    "orders.waitingPickup": "Ready for pickup",
     
     // Pickup Success
     "success.title": "Rescue Successful! 🎉",
@@ -103,6 +125,12 @@ export const translations: Record<Language, Record<string, string>> = {
     "success.pickupBy": "Pickup by",
     "success.viewOrders": "View My Orders",
     "success.backToMap": "Back to Map",
+    
+    // General
+    "general.cancel": "Cancel",
+    "general.error": "Something went wrong",
+    "general.off": "OFF",
+    "general.retry": "Please try again",
     
     // Auth Modal
     "auth.welcomeBack": "Welcome Back",
@@ -177,9 +205,6 @@ export const translations: Record<Language, Record<string, string>> = {
     
     // General
     "general.loading": "Loading...",
-    "general.error": "Something went wrong",
-    "general.retry": "Try again",
-    "general.off": "OFF",
     "general.max": "MAX",
     
     // Joe Chat

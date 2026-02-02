@@ -1,17 +1,11 @@
 import { useState } from "react";
-import { Clock, MapPin, Heart, X, Loader2, Package, Sparkles, Zap } from "lucide-react";
+import { Clock, MapPin, Heart, X, Package, Sparkles, Zap, ShoppingCart } from "lucide-react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import confetti from "canvas-confetti";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { AuthModal } from "./AuthModal";
-import { PickupSuccessScreen } from "./orders/PickupSuccessScreen";
 import { useTier } from "@/contexts/TierContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBasket } from "@/contexts/BasketContext";
 import type { User } from "@supabase/supabase-js";
-
-const SERVICE_FEE = 200;
-const ZEUS_DISCOUNT = 0.20;
 
 interface Shop {
   id: string;
@@ -59,26 +53,19 @@ export function ShopDrawer({
   user,
   onReservationComplete,
 }: ShopDrawerProps) {
-  const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [reserving, setReserving] = useState(false);
-  const [confirmationOpen, setConfirmationOpen] = useState(false);
-  const [confirmedOrderId, setConfirmedOrderId] = useState<string>("");
   const { currentTier } = useTier();
   const { t } = useLanguage();
+  const { addItem, items } = useBasket();
 
   const isLegend = currentTier.name === "Legend";
-  const discountedServiceFee = isLegend ? Math.round(SERVICE_FEE * (1 - ZEUS_DISCOUNT)) : SERVICE_FEE;
-
-  const calculateTotal = () => {
-    if (!bag) return 0;
-    return bag.discounted_price + discountedServiceFee;
-  };
 
   if (!shop) return null;
 
   const discount = bag
     ? Math.round((1 - bag.discounted_price / bag.original_price) * 100)
     : 0;
+
+  const isInBasket = items.some(item => item.bag.id === bag?.id);
 
   const handleFavoriteClick = () => {
     if (!isFavorite) {
@@ -95,74 +82,11 @@ export function ShopDrawer({
     onToggleFavorite(shop.id);
   };
 
-  const handleReserveClick = async () => {
-    if (!user) {
-      setAuthModalOpen(true);
-      return;
-    }
-
-    if (!bag || bag.quantity_available <= 0) {
-      toast.error(t("shop.soldOut"));
-      return;
-    }
-
-    setReserving(true);
-
-    try {
-      const { data: currentBag, error: fetchError } = await supabase
-        .from("mystery_bags")
-        .select("quantity_available")
-        .eq("id", bag.id)
-        .maybeSingle();
-
-      if (fetchError) throw fetchError;
-
-      if (!currentBag || currentBag.quantity_available <= 0) {
-        toast.error(t("shop.soldOutToday"));
-        return;
-      }
-
-      const { error: updateError } = await supabase
-        .from("mystery_bags")
-        .update({ quantity_available: currentBag.quantity_available - 1 })
-        .eq("id", bag.id);
-
-      if (updateError) throw updateError;
-
-      const { data: newOrder, error: orderError } = await supabase
-        .from("orders")
-        .insert({
-          user_id: user.id,
-          bag_id: bag.id,
-          status: "reserved",
-        })
-        .select()
-        .single();
-
-      if (orderError) throw orderError;
-
-      setConfirmedOrderId(newOrder.id);
-      onOpenChange(false);
-      setConfirmationOpen(true);
-      onReservationComplete?.();
-
-      confetti({
-        particleCount: 150,
-        spread: 100,
-        origin: { y: 0.6 },
-        colors: ['#10B981', '#34D399', '#6EE7B7'],
-      });
-
-    } catch (error: any) {
-      console.error("Reservation error:", error);
-      toast.error(error.message || t("general.error"));
-    } finally {
-      setReserving(false);
-    }
-  };
-
-  const handleAuthSuccess = () => {
-    handleReserveClick();
+  const handleAddToBasket = () => {
+    if (!bag || bag.quantity_available <= 0) return;
+    
+    addItem(shop, bag);
+    onOpenChange(false);
   };
 
   const handleClose = () => {
@@ -335,37 +259,10 @@ export function ShopDrawer({
                     </span>
                   </div>
 
-                  <div className="flex justify-between text-sm items-center">
-                    <span className="text-[hsl(var(--sheet-muted))] transition-colors duration-500">{t("shop.serviceFee")}</span>
-                    <div className="flex items-center gap-2">
-                      {isLegend ? (
-                        <>
-                          <span className="text-[hsl(var(--sheet-muted))] line-through text-xs transition-colors duration-500">
-                            {formatPrice(SERVICE_FEE)}
-                          </span>
-                          <span className="text-primary font-bold transition-colors duration-500">
-                            {formatPrice(discountedServiceFee)}
-                          </span>
-                        </>
-                      ) : (
-                        <span className="text-[hsl(var(--sheet-foreground))] font-medium transition-colors duration-500">
-                          {formatPrice(SERVICE_FEE)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {isLegend && (
-                    <div className="flex items-center justify-center gap-2 py-2 px-3 bg-primary/15 border border-primary/30 rounded-xl">
-                      <Zap className="h-4 w-4 text-primary" />
-                      <span className="text-xs font-semibold text-primary">{t("shop.legendPerk")}</span>
-                    </div>
-                  )}
-
                   <div className="flex justify-between pt-3 border-t border-[hsl(var(--border))]">
-                    <span className="font-semibold text-[hsl(var(--sheet-foreground))] transition-colors duration-500">{t("shop.total")}</span>
+                    <span className="font-semibold text-[hsl(var(--sheet-foreground))] transition-colors duration-500">{t("shop.price")}</span>
                     <span className="font-bold text-lg text-primary transition-colors duration-500">
-                      {formatPrice(calculateTotal())}
+                      {formatPrice(bag.discounted_price)}
                     </span>
                   </div>
                 </div>
@@ -376,34 +273,21 @@ export function ShopDrawer({
             {/* Fixed Footer */}
             <div className="border-t border-[hsl(var(--border))] px-5 py-4 pb-safe bg-[hsl(var(--sheet-bg))] flex-shrink-0 transition-colors duration-500">
               <button 
-                onClick={handleReserveClick}
-                disabled={reserving || !bag || bag.quantity_available <= 0}
+                onClick={handleAddToBasket}
+                disabled={!bag || bag.quantity_available <= 0 || isInBasket}
                 className="w-full rounded-2xl bg-primary py-4 text-center font-semibold text-primary-foreground shadow-lg touch-active transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                {reserving && <Loader2 className="h-5 w-5 animate-spin" />}
+                <ShoppingCart className="h-5 w-5" />
                 {!bag || bag.quantity_available <= 0 
                   ? t("shop.soldOut")
-                  : reserving 
-                    ? t("shop.reserving")
-                    : `${t("shop.reserveFor")} ${formatPrice(calculateTotal())}`}
+                  : isInBasket
+                    ? t("shop.inBasket")
+                    : t("shop.addToBasket")}
               </button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      <AuthModal 
-        open={authModalOpen} 
-        onOpenChange={setAuthModalOpen}
-        onSuccess={handleAuthSuccess}
-      />
-
-      <PickupSuccessScreen
-        open={confirmationOpen}
-        onClose={() => setConfirmationOpen(false)}
-        orderId={confirmedOrderId}
-        shopName={shop.name}
-      />
     </>
   );
 }

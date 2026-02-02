@@ -12,6 +12,7 @@ import MerchantDashboard from "./pages/MerchantDashboard";
 import NotFound from "./pages/NotFound";
 import { TierProvider, useTier } from "./contexts/TierContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
+import { BasketProvider } from "./contexts/BasketContext";
 import { TierUnlockModal } from "./components/TierUnlockModal";
 import { DevDebugMenu } from "./components/DevDebugMenu";
 import { OnboardingFlow } from "./components/OnboardingFlow";
@@ -91,9 +92,11 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
         <TierProvider>
-          <TooltipProvider>
-            <AppContent />
-          </TooltipProvider>
+          <BasketProvider>
+            <TooltipProvider>
+              <AppContent />
+            </TooltipProvider>
+          </BasketProvider>
         </TierProvider>
       </LanguageProvider>
     </QueryClientProvider>
