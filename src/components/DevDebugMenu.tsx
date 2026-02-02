@@ -1,15 +1,28 @@
 import { useTier } from "@/contexts/TierContext";
 import { motion } from "framer-motion";
 import { GripVertical } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const ONBOARDING_KEY = "hasSeenOnboarding";
 
 export function DevDebugMenu() {
   const { setCompletedOrders, currentTier, completedOrders } = useTier();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const isMerchantPage = location.pathname.includes("/merchant");
 
   const handleReplayIntro = () => {
     localStorage.removeItem(ONBOARDING_KEY);
     window.location.reload();
+  };
+
+  const handleMerchantToggle = () => {
+    if (isMerchantPage) {
+      navigate("/");
+    } else {
+      navigate("/merchant/dashboard");
+    }
   };
 
   return (
@@ -59,6 +72,17 @@ export function DevDebugMenu() {
           👑 Legend
         </button>
       </div>
+      {/* Merchant Mode Toggle */}
+      <button
+        onClick={handleMerchantToggle}
+        className={`px-2 py-1 text-xs rounded transition-all font-semibold ${
+          isMerchantPage
+            ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+            : 'bg-purple-500 text-white hover:bg-purple-600'
+        }`}
+      >
+        {isMerchantPage ? '🏠 Back to User' : '🏪 Merchant Mode'}
+      </button>
       {/* Replay Intro Button */}
       <button
         onClick={handleReplayIntro}
