@@ -1,12 +1,13 @@
-import { Utensils, Coffee, Cake, Salad, ShoppingBag, Crown, Lock } from "lucide-react";
+import { Utensils, Coffee, Cake, Salad, Crown, Lock, ShoppingBag } from "lucide-react";
 import { motion, PanInfo, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { FoodCard, MarketingBanner } from "./FoodCard";
 import { useProfile } from "@/hooks/useProfile";
 import { useTier } from "@/contexts/TierContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 interface Shop {
   id: string;
@@ -70,6 +71,7 @@ export function BottomSheet({
   const { profile } = useProfile();
   const { currentTier, nextTierProgress, ordersToNextTier, nextTierName, cycleTierForDebug, completedOrders } = useTier();
   const { t } = useLanguage();
+  const navigate = useNavigate();
   
   const clickCountRef = useRef(0);
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -81,8 +83,25 @@ export function BottomSheet({
     { id: "bakery", labelKey: "category.bakery", icon: Cake },
     { id: "coffee", labelKey: "category.coffee", icon: Coffee },
     { id: "healthy", labelKey: "category.healthy", icon: Salad },
-    { id: "grocery", labelKey: "category.grocery", icon: ShoppingBag },
   ];
+
+  // Category keywords for filtering
+  const categoryKeywords: Record<string, string[]> = {
+    bakery: ["bakery", "bread", "pastry", "cake", "croissant", "bun", "наубайхана", "хлеб", "булочная"],
+    coffee: ["coffee", "café", "cafe", "espresso", "latte", "кофе", "кофейня"],
+    healthy: ["healthy", "salad", "vegan", "organic", "fresh", "здоровый", "салат", "фреш"],
+  };
+
+  // Filter shops based on category
+  const filteredShops = useMemo(() => {
+    if (activeCategory === "all") return shops;
+    
+    const keywords = categoryKeywords[activeCategory] || [];
+    return shops.filter(shop => {
+      const searchText = `${shop.name} ${shop.description || ""}`.toLowerCase();
+      return keywords.some(keyword => searchText.includes(keyword.toLowerCase()));
+    });
+  }, [shops, activeCategory]);
   
   const handleMascotClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -262,8 +281,8 @@ export function BottomSheet({
               />
 
               {!isChatUnlocked && (
-                <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-muted border-2 border-background flex items-center justify-center">
-                  <Lock className="h-2.5 w-2.5 text-muted-foreground" />
+                <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-secondary border-2 border-card flex items-center justify-center shadow-sm">
+                  <Lock className="h-2.5 w-2.5 text-foreground/60" />
                 </div>
               )}
 
@@ -327,7 +346,7 @@ export function BottomSheet({
                 <MarketingBanner className="mb-5" />
 
                 <div className="grid grid-cols-2 gap-3">
-                  {shops.map((shop) => {
+                  {filteredShops.map((shop) => {
                     const bag = getBagForShop(shop.id);
 
                     return (
@@ -346,9 +365,9 @@ export function BottomSheet({
                   })}
                 </div>
 
-                {shops.length === 0 && (
+                {filteredShops.length === 0 && (
                   <div className="text-center py-12">
-                    <p className="text-gray-500">{t("bottomSheet.noShops")}</p>
+                    <p className="text-muted-foreground">{t("bottomSheet.noShops")}</p>
                   </div>
                 )}
               </div>
@@ -369,22 +388,29 @@ export function BottomSheet({
               </div>
             )}
 
-            <button 
-              onClick={handleReserveClick}
-              onPointerDown={(e) => e.stopPropagation()}
-              disabled={!hasSelection}
-              className={cn(
-                "flex w-full h-14 items-center justify-center gap-2 rounded-xl font-semibold shadow-lg transition-all active:scale-[0.98]",
-                hasSelection 
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90" 
-                  : "bg-muted text-muted-foreground"
-              )}
-            >
-              {hasSelection 
-                ? `${t("bottomSheet.reserve")} ${selectedShop?.name} • ${buttonPrice}`
-                : t("bottomSheet.selectShop")
-              }
-            </button>
+            {hasSelection ? (
+              <button 
+                onClick={handleReserveClick}
+                onPointerDown={(e) => e.stopPropagation()}
+                className="flex w-full h-14 items-center justify-center gap-2 rounded-xl font-semibold shadow-lg transition-all active:scale-[0.98] bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                {t("bottomSheet.reserve")} {selectedShop?.name} • {buttonPrice}
+              </button>
+            ) : (
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => navigate("/orders")}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  className="flex h-14 items-center justify-center gap-2 rounded-xl font-semibold transition-all active:scale-[0.98] bg-secondary text-foreground px-5"
+                >
+                  <ShoppingBag className="h-5 w-5" />
+                  {t("bottomSheet.myOrders")}
+                </button>
+                <div className="flex-1 h-14 flex items-center justify-center rounded-xl bg-muted text-muted-foreground font-medium">
+                  {t("bottomSheet.selectShop")}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </motion.div>
