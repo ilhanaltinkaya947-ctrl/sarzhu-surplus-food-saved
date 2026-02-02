@@ -11,6 +11,7 @@ import ProfilePage from "./pages/ProfilePage";
 import MerchantDashboard from "./pages/MerchantDashboard";
 import NotFound from "./pages/NotFound";
 import { TierProvider, useTier } from "./contexts/TierContext";
+import { LanguageProvider } from "./contexts/LanguageContext";
 import { TierUnlockModal } from "./components/TierUnlockModal";
 import { DevDebugMenu } from "./components/DevDebugMenu";
 import { OnboardingFlow } from "./components/OnboardingFlow";
@@ -60,30 +61,32 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TierProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <TierUnlockModalWrapper />
-          <DevDebugMenu />
-          
-          <AnimatePresence>
-            {showOnboarding && (
-              <OnboardingFlow onComplete={handleOnboardingComplete} />
-            )}
-          </AnimatePresence>
-          
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<MapPage />} />
-              <Route path="/orders" element={<OrdersPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/merchant/dashboard" element={<MerchantDashboard />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </TierProvider>
+      <LanguageProvider>
+        <TierProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <TierUnlockModalWrapper />
+            <DevDebugMenu />
+            
+            <AnimatePresence>
+              {showOnboarding && (
+                <OnboardingFlow onComplete={handleOnboardingComplete} />
+              )}
+            </AnimatePresence>
+            
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<MapPage />} />
+                <Route path="/orders" element={<OrdersPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/merchant/dashboard" element={<MerchantDashboard />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </TierProvider>
+      </LanguageProvider>
     </QueryClientProvider>
   );
 };
