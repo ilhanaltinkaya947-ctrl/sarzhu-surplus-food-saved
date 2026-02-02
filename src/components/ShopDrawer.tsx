@@ -211,46 +211,52 @@ export function ShopDrawer({
             onTouchStart={(e) => e.stopPropagation()}
             onTouchMove={(e) => e.stopPropagation()}
           >
-            <div className="w-full h-12 flex items-center justify-center cursor-grab active:cursor-grabbing flex-shrink-0 touch-none">
-              <div className="w-12 h-1.5 bg-[hsl(var(--sheet-muted))]/30 rounded-full" />
-            </div>
+            {/* Fixed Header: Drag Handle + Hero Image */}
+            <div className="flex-shrink-0">
+              {/* Drag Handle */}
+              <div className="w-full h-12 flex items-center justify-center cursor-grab active:cursor-grabbing touch-none">
+                <div className="w-12 h-1.5 bg-[hsl(var(--sheet-muted))]/30 rounded-full" />
+              </div>
 
-            <div className="relative h-56 w-full overflow-hidden flex-shrink-0">
-              <img
-                src={shop.image_url || "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800"}
-                alt={shop.name}
-                className="h-full w-full object-cover"
-              />
-              
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-              
-              {discount > 0 && (
-                <span className="absolute bottom-4 left-4 rounded-lg bg-destructive px-3 py-1.5 text-sm font-bold text-white shadow-lg">
-                  -{discount}% {t("general.off")}
-                </span>
-              )}
-              
-              <button 
-                onClick={handleFavoriteClick}
-                className="absolute top-4 left-4 flex h-11 w-11 items-center justify-center rounded-full bg-[hsl(var(--sheet-bg))]/95 backdrop-blur-sm shadow-lg touch-active transition-all duration-200 active:scale-95"
-              >
-                <Heart 
-                  className={`h-5 w-5 transition-colors duration-200 ${
-                    isFavorite 
-                      ? 'fill-red-500 text-red-500' 
-                      : 'text-[hsl(var(--sheet-muted))]'
-                  }`} 
+              {/* Fixed Hero Image */}
+              <div className="relative h-48 w-full overflow-hidden">
+                <img
+                  src={shop.image_url || "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800"}
+                  alt={shop.name}
+                  className="h-full w-full object-cover"
                 />
-              </button>
-              
-              <button
-                onClick={handleClose}
-                className="absolute top-4 right-4 flex h-11 w-11 items-center justify-center rounded-full bg-[hsl(var(--sheet-bg))]/95 backdrop-blur-sm shadow-lg touch-active transition-all duration-200 active:scale-95"
-              >
-                <X className="h-5 w-5 text-[hsl(var(--sheet-foreground))]" />
-              </button>
+                
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                
+                {discount > 0 && (
+                  <span className="absolute bottom-4 left-4 rounded-lg bg-destructive px-3 py-1.5 text-sm font-bold text-white shadow-lg ring-2 ring-background">
+                    -{discount}% {t("general.off")}
+                  </span>
+                )}
+                
+                <button 
+                  onClick={handleFavoriteClick}
+                  className="absolute top-4 left-4 flex h-11 w-11 items-center justify-center rounded-full bg-[hsl(var(--sheet-bg))]/95 backdrop-blur-sm shadow-lg touch-active transition-all duration-200 active:scale-95"
+                >
+                  <Heart 
+                    className={`h-5 w-5 transition-colors duration-200 ${
+                      isFavorite 
+                        ? 'fill-red-500 text-red-500' 
+                        : 'text-[hsl(var(--sheet-muted))]'
+                    }`} 
+                  />
+                </button>
+                
+                <button
+                  onClick={handleClose}
+                  className="absolute top-4 right-4 flex h-11 w-11 items-center justify-center rounded-full bg-[hsl(var(--sheet-bg))]/95 backdrop-blur-sm shadow-lg touch-active transition-all duration-200 active:scale-95"
+                >
+                  <X className="h-5 w-5 text-[hsl(var(--sheet-foreground))]" />
+                </button>
+              </div>
             </div>
 
+            {/* Scrollable Content Area */}
             <div className="flex-1 overflow-y-auto px-5 pt-5 pb-4 overscroll-contain">
               <h1 className="text-3xl font-bold text-[hsl(var(--sheet-foreground))] mb-3 transition-colors duration-500">
                 {shop.name}
@@ -365,6 +371,7 @@ export function ShopDrawer({
               )}
             </div>
 
+            {/* Fixed Footer */}
             <div className="border-t border-[hsl(var(--border))] px-5 py-4 pb-safe bg-[hsl(var(--sheet-bg))] flex-shrink-0 transition-colors duration-500">
               <button 
                 onClick={handleReserveClick}
