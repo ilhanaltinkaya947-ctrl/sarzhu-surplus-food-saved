@@ -4,6 +4,7 @@ import confetti from "canvas-confetti";
 // Import mascot images for each tier
 import joeMascot from "@/assets/joe-mascot.png";
 import smartPickerMascot from "@/assets/smart-picker-mascot.png";
+import legendMascot from "@/assets/legend-mascot.png";
 
 export interface TierInfo {
   name: string;
@@ -34,7 +35,7 @@ const TIERS: TierInfo[] = [
   {
     name: "Legend",
     displayName: "Legend",
-    mascotImage: smartPickerMascot,
+    mascotImage: legendMascot,
     minOrders: 20,
     maxOrders: null,
     perk: "20% Lifetime Discount",

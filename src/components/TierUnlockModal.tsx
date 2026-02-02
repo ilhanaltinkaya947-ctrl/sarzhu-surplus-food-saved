@@ -31,6 +31,7 @@ const TIER_CONFIG = {
 
 const TIER_PERKS = {
   SmartPicker: [
+    "🤖 AI Assistant Unlocked!",
     "🎯 AI-powered recommendations",
     "📱 Personalized deal alerts",
     "⭐ Early notifications for popular items",
