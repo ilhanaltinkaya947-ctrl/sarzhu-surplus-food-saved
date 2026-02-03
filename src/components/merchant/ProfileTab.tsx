@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Store, MapPin, Image, Tag, Save } from "lucide-react";
+import { Store, MapPin, Image, Tag, Save, Search, Loader2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useMarketplace, Shop } from "@/contexts/MarketplaceContext";
 import { ImageUploader } from "./ImageUploader";
@@ -13,12 +13,43 @@ interface ProfileTabProps {
   shop: Shop;
 }
 
+interface GeocodingResult {
+  lat: string;
+  lon: string;
+  display_name: string;
+}
+
 const CATEGORIES = [
   { id: "bakery", labelKey: "category.bakery" },
   { id: "coffee", labelKey: "category.coffee" },
   { id: "healthy", labelKey: "category.healthy" },
   { id: "restaurant", labelKey: "category.restaurant" },
 ];
+
+// Geocode address using OpenStreetMap Nominatim
+async function geocodeAddress(address: string): Promise<{ lat: number; long: number } | null> {
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`,
+      {
+        headers: {
+          "User-Agent": "YorkieApp/1.0",
+        },
+      }
+    );
+    const data: GeocodingResult[] = await response.json();
+    if (data.length > 0) {
+      return {
+        lat: parseFloat(data[0].lat),
+        long: parseFloat(data[0].lon),
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error("Geocoding error:", error);
+    return null;
+  }
+}
 
 export function ProfileTab({ shop }: ProfileTabProps) {
   const { t } = useLanguage();
@@ -27,17 +58,41 @@ export function ProfileTab({ shop }: ProfileTabProps) {
   const [name, setName] = useState(shop.name);
   const [category, setCategory] = useState(shop.category || "bakery");
   const [address, setAddress] = useState(shop.address || "");
+  const [lat, setLat] = useState(shop.lat);
+  const [long, setLong] = useState(shop.long);
   const [imageUrl, setImageUrl] = useState(shop.image_url || "");
   const [isOpen, setIsOpen] = useState(shop.isOpen);
   const [saving, setSaving] = useState(false);
+  const [geocoding, setGeocoding] = useState(false);
 
   useEffect(() => {
     setName(shop.name);
     setCategory(shop.category || "bakery");
     setAddress(shop.address || "");
+    setLat(shop.lat);
+    setLong(shop.long);
     setImageUrl(shop.image_url || "");
     setIsOpen(shop.isOpen);
   }, [shop]);
+
+  const handleGeocodeAddress = useCallback(async () => {
+    if (!address.trim()) {
+      toast.error(t("merchant.enterAddress"));
+      return;
+    }
+    
+    setGeocoding(true);
+    const coords = await geocodeAddress(address);
+    setGeocoding(false);
+    
+    if (coords) {
+      setLat(coords.lat);
+      setLong(coords.long);
+      toast.success(t("merchant.locationFound"));
+    } else {
+      toast.error(t("merchant.locationNotFound"));
+    }
+  }, [address, t]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -47,6 +102,8 @@ export function ProfileTab({ shop }: ProfileTabProps) {
         category,
         address,
         image_url: imageUrl,
+        lat,
+        long,
       });
       toast.success(t("merchant.changesSaved"));
     } catch (error) {
@@ -116,11 +173,33 @@ export function ProfileTab({ shop }: ProfileTabProps) {
             <MapPin className="h-4 w-4" />
             {t("merchant.address")}
           </Label>
-          <Input
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            placeholder={t("merchant.addressPlaceholder")}
-          />
+          <div className="flex gap-2">
+            <Input
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder={t("merchant.addressPlaceholder")}
+              className="flex-1"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={handleGeocodeAddress}
+              disabled={geocoding}
+              className="shrink-0"
+            >
+              {geocoding ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Search className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+          {lat && long && (
+            <p className="text-xs text-muted-foreground">
+              📍 {lat.toFixed(5)}, {long.toFixed(5)}
+            </p>
+          )}
         </div>
 
         <div className="space-y-2">
