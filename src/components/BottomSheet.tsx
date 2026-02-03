@@ -7,6 +7,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useTier } from "@/contexts/TierContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useMarketplace, Shop } from "@/contexts/MarketplaceContext";
+import { isShopCurrentlyOpen } from "@/lib/shopUtils";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
@@ -355,6 +356,11 @@ export function BottomSheet({
                   <div className="grid grid-cols-2 gap-3">
                     {filteredShops.map((shop) => {
                       const bag = getBagForShop(shop.id);
+                      const shopIsOpen = isShopCurrentlyOpen(
+                        shop.opening_time,
+                        shop.closing_time,
+                        shop.days_open
+                      );
 
                       return (
                         <FoodCard
@@ -367,6 +373,8 @@ export function BottomSheet({
                           discountedPrice={bag?.discounted_price}
                           bagsLeft={bag?.quantity_available}
                           onClick={() => onShopClick?.(shop)}
+                          isClosed={!shopIsOpen}
+                          opensAt={shop.opening_time}
                         />
                       );
                     })}

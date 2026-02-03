@@ -1,4 +1,4 @@
-import { Star, Percent, ArrowRight, Award } from "lucide-react";
+import { Star, Percent, ArrowRight, Award, Clock } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +13,8 @@ interface FoodCardProps {
   rating?: number;
   onClick?: () => void;
   className?: string;
+  isClosed?: boolean;
+  opensAt?: string | null;
 }
 
 const formatPrice = (price: number) => {
@@ -45,7 +47,10 @@ export function FoodCard({
   rating = 4.5 + Math.random() * 0.5,
   onClick,
   className,
+  isClosed = false,
+  opensAt,
 }: FoodCardProps) {
+  const { t } = useLanguage();
   const discount = originalPrice && discountedPrice
     ? Math.round((1 - discountedPrice / originalPrice) * 100)
     : 0;
@@ -58,6 +63,7 @@ export function FoodCard({
       onClick={onClick}
       className={cn(
         "w-full text-left rounded-2xl bg-card overflow-hidden shadow-sm border border-border transition-all active:scale-[0.98] touch-active",
+        isClosed && "opacity-60",
         className
       )}
     >
@@ -66,15 +72,33 @@ export function FoodCard({
         <img
           src={imageUrl || placeholderImage}
           alt={name}
-          className="h-full w-full object-cover"
+          className={cn(
+            "h-full w-full object-cover",
+            isClosed && "grayscale"
+          )}
           loading="lazy"
           onError={(e) => {
             (e.target as HTMLImageElement).src = placeholderImage;
           }}
         />
         
+        {/* Closed Badge */}
+        {isClosed && (
+          <div className={cn(
+            "absolute top-3 left-3 z-10",
+            "flex items-center gap-1 rounded-lg px-2 py-1",
+            "bg-muted text-muted-foreground",
+            "shadow-xl ring-2 ring-background"
+          )}>
+            <Clock className="h-3.5 w-3.5" />
+            <span className="text-xs font-bold">
+              {opensAt ? t("shop.opensAt").replace("{time}", opensAt) : t("shop.currentlyClosed")}
+            </span>
+          </div>
+        )}
+        
         {/* Discount Badge - High contrast themed */}
-        {discount > 0 && (
+        {discount > 0 && !isClosed && (
           <div className={cn(
             "absolute top-3 left-3 z-10",
             "flex items-center gap-1 rounded-lg px-2 py-1",
@@ -87,7 +111,7 @@ export function FoodCard({
         )}
         
         {/* Bags Left Badge - High contrast themed */}
-        {bagsLeft !== undefined && bagsLeft > 0 && bagsLeft <= 3 && (
+        {bagsLeft !== undefined && bagsLeft > 0 && bagsLeft <= 3 && !isClosed && (
           <div className={cn(
             "absolute top-3 right-3 z-10",
             "rounded-lg px-2 py-1",

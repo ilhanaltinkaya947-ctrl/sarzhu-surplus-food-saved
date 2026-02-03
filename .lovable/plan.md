@@ -1,12 +1,14 @@
 
 # Business Hours & Multi-Location Management for Merchants
 
+## Status: ✅ IMPLEMENTED
+
 ## Overview
 
 This plan adds two major features that will significantly improve merchant experience and make the app more professional for App Store approval:
 
-1. **Automatic Opening Hours** - Shops auto-show as "closed" based on time, no manual toggle needed
-2. **Multi-Location Support** - One merchant account can manage multiple shop locations
+1. **✅ Automatic Opening Hours** - Shops auto-show as "closed" based on time, no manual toggle needed
+2. **✅ Multi-Location Support** - One merchant account can manage multiple shop locations
 
 ---
 

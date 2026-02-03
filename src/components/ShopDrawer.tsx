@@ -5,6 +5,7 @@ import confetti from "canvas-confetti";
 import { useTier } from "@/contexts/TierContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useBasket } from "@/contexts/BasketContext";
+import { isShopCurrentlyOpen } from "@/lib/shopUtils";
 import type { User } from "@supabase/supabase-js";
 
 interface Shop {
@@ -14,6 +15,9 @@ interface Shop {
   long: number;
   image_url: string | null;
   description: string | null;
+  opening_time?: string | null;
+  closing_time?: string | null;
+  days_open?: string[] | null;
 }
 
 interface MysteryBag {
@@ -61,11 +65,14 @@ export function ShopDrawer({
 
   if (!shop) return null;
 
+  const shopIsOpen = isShopCurrentlyOpen(shop.opening_time, shop.closing_time, shop.days_open);
+
   const discount = bag
     ? Math.round((1 - bag.discounted_price / bag.original_price) * 100)
     : 0;
 
   const isInBasket = items.some(item => item.bag.id === bag?.id);
+  const canAddToBasket = bag && bag.quantity_available > 0 && !isInBasket && shopIsOpen;
 
   const handleFavoriteClick = () => {
     if (!isFavorite) {
@@ -188,10 +195,20 @@ export function ShopDrawer({
               </h1>
 
               <div className="flex flex-wrap items-center gap-2 mb-5">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1.5 text-sm font-medium text-emerald-500 transition-colors duration-500">
-                  <Clock className="h-4 w-4" />
-                  {t("shop.openUntil")} 23:00
-                </span>
+                {shopIsOpen ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1.5 text-sm font-medium text-emerald-500 transition-colors duration-500">
+                    <Clock className="h-4 w-4" />
+                    {t("shop.openUntil")} {shop.closing_time || "23:00"}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors duration-500">
+                    <Clock className="h-4 w-4" />
+                    {shop.opening_time 
+                      ? t("shop.opensAt").replace("{time}", shop.opening_time)
+                      : t("shop.currentlyClosed")
+                    }
+                  </span>
+                )}
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(var(--muted))] px-3 py-1.5 text-sm font-medium text-[hsl(var(--sheet-muted))] transition-colors duration-500">
                   <MapPin className="h-4 w-4" />
                   350m {t("shop.away")}
@@ -274,15 +291,17 @@ export function ShopDrawer({
             <div className="border-t border-[hsl(var(--border))] px-5 py-4 pb-safe bg-[hsl(var(--sheet-bg))] flex-shrink-0 transition-colors duration-500">
               <button 
                 onClick={handleAddToBasket}
-                disabled={!bag || bag.quantity_available <= 0 || isInBasket}
+                disabled={!canAddToBasket}
                 className="w-full rounded-2xl bg-primary py-4 text-center font-semibold text-primary-foreground shadow-lg touch-active transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 <ShoppingCart className="h-5 w-5" />
                 {!bag || bag.quantity_available <= 0 
                   ? t("shop.soldOut")
-                  : isInBasket
-                    ? t("shop.inBasket")
-                    : t("shop.addToBasket")}
+                  : !shopIsOpen
+                    ? t("shop.currentlyClosed")
+                    : isInBasket
+                      ? t("shop.inBasket")
+                      : t("shop.addToBasket")}
               </button>
             </div>
           </motion.div>

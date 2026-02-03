@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { isShopCurrentlyOpen } from "@/lib/shopUtils";
 
 interface Shop {
   id: string;
@@ -9,6 +10,9 @@ interface Shop {
   long: number;
   image_url: string | null;
   description: string | null;
+  opening_time?: string | null;
+  closing_time?: string | null;
+  days_open?: string[] | null;
 }
 
 interface MysteryBag {
@@ -59,10 +63,11 @@ const createPinIcon = (
   imageUrl: string | null, 
   shopName: string, 
   shopDescription: string | null, 
-  isActive: boolean = false
+  isActive: boolean = false,
+  isClosed: boolean = false
 ) => {
   // Consistent gold theme colors
-  const defaultBorderColor = "#FFFFFF";
+  const defaultBorderColor = isClosed ? "#9CA3AF" : "#FFFFFF";
   const activeBorderColor = "#FFB800"; // Yorkie Gold
   const hasValidImage = imageUrl && imageUrl.trim() !== '';
   const category = detectCategory(shopName, shopDescription);
@@ -72,11 +77,12 @@ const createPinIcon = (
   const scale = isActive ? 'scale(1.3)' : 'scale(1)';
   const borderColor = isActive ? activeBorderColor : defaultBorderColor;
   const borderWidth = isActive ? '4px' : '3px';
-  const pointerColor = isActive ? activeBorderColor : "#1E293B"; // Yorkie Steel for pointer
+  const pointerColor = isActive ? activeBorderColor : (isClosed ? "#9CA3AF" : "#1E293B"); // Gray for closed
   const shadowStyle = isActive 
     ? `0 4px 20px -2px #FFB80080, 0 0 0 4px #FFB80033` 
     : '0 4px 12px -2px rgba(0,0,0,0.3)';
   const animationClass = isActive ? 'pin-active-pulse' : '';
+  const grayscaleFilter = isClosed ? 'grayscale(1) opacity(0.6)' : 'none';
   
   // Fallback content when no image
   const fallbackContent = `
@@ -157,6 +163,7 @@ const createPinIcon = (
         transform: ${scale};
         transform-origin: bottom center;
         transition: transform 0.25s ease;
+        filter: ${grayscaleFilter};
       ">
         <!-- Main pin circle with logo -->
         <div class="pin-main map-marker-container" style="
@@ -269,10 +276,11 @@ export function MapView({ shops, bags, followedShopIds = [], selectedShopId, onS
     shops.forEach((shop) => {
       const isFollowed = followedShopIds.includes(shop.id);
       const isActive = selectedShopId === shop.id;
+      const isClosed = !isShopCurrentlyOpen(shop.opening_time, shop.closing_time, shop.days_open);
       
       const marker = L.marker([shop.lat, shop.long], {
-        icon: createPinIcon(isFollowed, shop.image_url, shop.name, shop.description, isActive),
-        zIndexOffset: isActive ? 1000 : 0,
+        icon: createPinIcon(isFollowed, shop.image_url, shop.name, shop.description, isActive, isClosed),
+        zIndexOffset: isActive ? 1000 : (isClosed ? -100 : 0),
       }).addTo(mapRef.current!);
 
       // Store marker reference
