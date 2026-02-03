@@ -186,10 +186,42 @@
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }
 
+  /* iOS-specific padding for content below fixed headers */
+  .mt-header-safe {
+    margin-top: calc(56px + env(safe-area-inset-top, 0px));
+  }
+
   /* Touch-friendly targets */
   .touch-target {
     min-height: 44px;
     min-width: 44px;
+  }
+
+  /* iOS smooth scrolling */
+  .ios-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Prevent iOS rubber band on body */
+  html, body {
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* iOS selection color */
+  ::selection {
+    background-color: hsl(var(--primary) / 0.3);
+  }
+
+  /* Prevent text size adjustment on orientation change */
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  /* Safe tap highlight */
+  * {
+    -webkit-tap-highlight-color: transparent;
   }
 }
 

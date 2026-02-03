@@ -330,7 +330,7 @@ export function BottomSheet({
             ref={scrollRef}
             className={cn(
               "flex-1 min-h-0 px-4 overflow-hidden",
-              isOpen && "overflow-y-auto overscroll-contain"
+              isOpen && "overflow-y-auto overscroll-contain ios-scroll"
             )}
             animate={{ opacity: isOpen ? 1 : 0 }}
             transition={{ duration: 0.15 }}
@@ -338,8 +338,8 @@ export function BottomSheet({
           >
             {isOpen && (
               <div className="pb-4">
-                <div className="flex items-center justify-between mb-4 sticky top-0 bg-[hsl(var(--sheet-bg,var(--card)))] py-2 -mx-4 px-4 z-10 transition-colors duration-500">
-                  <h3 className="text-lg font-bold text-[hsl(var(--sheet-foreground,var(--card-foreground)))]">
+                <div className="flex items-center justify-between mb-4 sticky top-0 bg-card py-3 -mx-4 px-4 z-10 border-b border-border/50 backdrop-blur-sm">
+                  <h3 className="text-lg font-bold text-foreground">
                     {t("bottomSheet.featuredDeals")}
                   </h3>
                   <button className="text-sm font-medium text-primary">{t("bottomSheet.seeAll")}</button>

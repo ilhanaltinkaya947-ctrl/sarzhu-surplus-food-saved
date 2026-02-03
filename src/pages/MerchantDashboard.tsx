@@ -51,9 +51,9 @@ export default function MerchantDashboard() {
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-background border-b border-border px-6 py-4 pt-safe">
-        <div className="flex items-center gap-4">
-          <Link to="/" className="p-2 -ml-2 rounded-xl hover:bg-secondary">
+      <header className="sticky top-0 z-40 bg-background border-b border-border">
+        <div className="flex items-center gap-4 px-6 py-4" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 16px)' }}>
+          <Link to="/" className="p-2 -ml-2 rounded-xl hover:bg-secondary touch-target">
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <div>
