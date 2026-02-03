@@ -22,6 +22,31 @@ export function DevDebugMenu() {
     }
   };
 
+  // Hide on merchant pages to avoid overlap with merchant tabs
+  if (isMerchantPage) {
+    return (
+      <motion.div
+        drag
+        dragMomentum={false}
+        dragElastic={0.1}
+        whileDrag={{ scale: 1.05, cursor: "grabbing" }}
+        className="fixed top-20 right-4 z-[100] bg-black/60 backdrop-blur-sm rounded-lg p-2 flex flex-col gap-1.5 cursor-grab active:cursor-grabbing touch-none"
+        style={{ touchAction: "none" }}
+      >
+        <div className="flex items-center gap-1">
+          <GripVertical className="h-3 w-3 text-white/40" />
+          <span className="text-[10px] text-white/60 font-mono">Dev</span>
+        </div>
+        <button
+          onClick={handleMerchantToggle}
+          className="px-2 py-1 text-xs rounded bg-emerald-500 text-white hover:bg-emerald-600 transition-all font-semibold"
+        >
+          🏠 Exit
+        </button>
+      </motion.div>
+    );
+  }
+
   return (
     <motion.div
       drag
@@ -72,13 +97,9 @@ export function DevDebugMenu() {
       {/* Merchant Mode Toggle */}
       <button
         onClick={handleMerchantToggle}
-        className={`px-2 py-1 text-xs rounded transition-all font-semibold ${
-          isMerchantPage
-            ? 'bg-emerald-500 text-white hover:bg-emerald-600'
-            : 'bg-purple-500 text-white hover:bg-purple-600'
-        }`}
+        className="px-2 py-1 text-xs rounded bg-purple-500 text-white hover:bg-purple-600 transition-all font-semibold"
       >
-        {isMerchantPage ? '🏠 Back to User' : '🏪 Merchant Mode'}
+        🏪 Merchant Mode
       </button>
       {/* Replay Intro Button */}
       <button
