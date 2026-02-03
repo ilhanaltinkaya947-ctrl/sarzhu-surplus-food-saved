@@ -357,6 +357,7 @@ export function BottomSheet({
                     {filteredShops.map((shop) => {
                       const bag = getBagForShop(shop.id);
                       const shopIsOpen = isShopCurrentlyOpen(
+                        shop.business_hours,
                         shop.opening_time,
                         shop.closing_time,
                         shop.days_open

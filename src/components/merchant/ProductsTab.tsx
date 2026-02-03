@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Package, Clock, Trash2, Edit2 } from "lucide-react";
+import { Plus, Package, Clock, Trash2, Edit2, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,6 +24,8 @@ export function ProductsTab({ shop }: ProductsTabProps) {
   
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<MysteryBox | null>(null);
+  const [editingQuantity, setEditingQuantity] = useState<string | null>(null);
+  const [tempQuantity, setTempQuantity] = useState("");
   
   // Form state
   const [name, setName] = useState("");
@@ -48,18 +50,23 @@ export function ProductsTab({ shop }: ProductsTabProps) {
       return;
     }
 
-    await addProduct(shop.id, {
-      name,
-      price: Number(price),
-      originalPrice: Number(originalPrice),
-      quantity: Number(quantity),
-      pickupWindow,
-      description,
-    });
+    try {
+      await addProduct(shop.id, {
+        name,
+        price: Number(price),
+        originalPrice: Number(originalPrice),
+        quantity: Number(quantity),
+        pickupWindow,
+        description,
+      });
 
-    toast.success(t("merchant.productAdded"));
-    resetForm();
-    setShowAddForm(false);
+      toast.success(t("merchant.productAdded"));
+      resetForm();
+      setShowAddForm(false);
+    } catch (error: any) {
+      console.error("Error adding product:", error);
+      toast.error(error?.message || t("general.error"));
+    }
   };
 
   const handleUpdateProduct = async () => {
@@ -68,23 +75,33 @@ export function ProductsTab({ shop }: ProductsTabProps) {
       return;
     }
 
-    await updateProduct(shop.id, editingProduct.id, {
-      name,
-      price: Number(price),
-      originalPrice: Number(originalPrice),
-      quantity: Number(quantity),
-      pickupWindow,
-      description,
-    });
+    try {
+      await updateProduct(shop.id, editingProduct.id, {
+        name,
+        price: Number(price),
+        originalPrice: Number(originalPrice),
+        quantity: Number(quantity),
+        pickupWindow,
+        description,
+      });
 
-    toast.success(t("merchant.productUpdated"));
-    resetForm();
-    setEditingProduct(null);
+      toast.success(t("merchant.productUpdated"));
+      resetForm();
+      setEditingProduct(null);
+    } catch (error: any) {
+      console.error("Error updating product:", error);
+      toast.error(error?.message || t("general.error"));
+    }
   };
 
   const handleDeleteProduct = async (productId: string) => {
-    await deleteProduct(shop.id, productId);
-    toast.success(t("merchant.productDeleted"));
+    try {
+      await deleteProduct(shop.id, productId);
+      toast.success(t("merchant.productDeleted"));
+    } catch (error: any) {
+      console.error("Error deleting product:", error);
+      toast.error(error?.message || t("general.error"));
+    }
   };
 
   const openEditForm = (product: MysteryBox) => {
@@ -95,6 +112,40 @@ export function ProductsTab({ shop }: ProductsTabProps) {
     setQuantity(String(product.quantity));
     setPickupWindow(product.pickupWindow);
     setDescription(product.description);
+  };
+
+  const handleQuantityClick = (product: MysteryBox) => {
+    setEditingQuantity(product.id);
+    setTempQuantity(String(product.quantity));
+  };
+
+  const handleQuantityChange = async (productId: string, delta: number) => {
+    const product = shop.inventory.find(p => p.id === productId);
+    if (!product) return;
+    
+    const newQuantity = Math.max(0, product.quantity + delta);
+    try {
+      await updateProduct(shop.id, productId, { quantity: newQuantity });
+    } catch (error: any) {
+      toast.error(error?.message || t("general.error"));
+    }
+  };
+
+  const handleQuantitySave = async (productId: string) => {
+    const newQty = parseInt(tempQuantity);
+    if (isNaN(newQty) || newQty < 0) {
+      toast.error(t("merchant.invalidQuantity"));
+      setEditingQuantity(null);
+      return;
+    }
+    
+    try {
+      await updateProduct(shop.id, productId, { quantity: newQty });
+      toast.success(t("merchant.productUpdated"));
+    } catch (error: any) {
+      toast.error(error?.message || t("general.error"));
+    }
+    setEditingQuantity(null);
   };
 
   const formatPrice = (price: number) => {
@@ -169,9 +220,46 @@ export function ProductsTab({ shop }: ProductsTabProps) {
                     {product.pickupWindow}
                   </div>
                 </div>
-                <div className="px-3 py-1 rounded-full bg-secondary font-semibold text-sm">
-                  {product.quantity} {t("merchant.left")}
-                </div>
+                
+                {/* Editable Quantity */}
+                {editingQuantity === product.id ? (
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => {
+                        const newQty = Math.max(0, parseInt(tempQuantity) - 1);
+                        setTempQuantity(String(newQty));
+                      }}
+                      className="p-1.5 rounded-lg bg-secondary"
+                    >
+                      <Minus className="h-3 w-3" />
+                    </button>
+                    <input
+                      type="number"
+                      value={tempQuantity}
+                      onChange={(e) => setTempQuantity(e.target.value)}
+                      onBlur={() => handleQuantitySave(product.id)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleQuantitySave(product.id)}
+                      className="w-12 text-center bg-secondary rounded-lg py-1 font-semibold text-sm"
+                      autoFocus
+                    />
+                    <button
+                      onClick={() => {
+                        const newQty = parseInt(tempQuantity) + 1;
+                        setTempQuantity(String(newQty));
+                      }}
+                      className="p-1.5 rounded-lg bg-secondary"
+                    >
+                      <Plus className="h-3 w-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => handleQuantityClick(product)}
+                    className="px-3 py-1 rounded-full bg-secondary font-semibold text-sm hover:bg-secondary/80 transition-colors cursor-pointer"
+                  >
+                    {product.quantity} {t("merchant.left")}
+                  </button>
+                )}
               </div>
             </motion.div>
           ))}

@@ -122,6 +122,7 @@ export type Database = {
       }
       shops: {
         Row: {
+          business_hours: Json | null
           closing_time: string | null
           created_at: string
           days_open: string[] | null
@@ -135,6 +136,7 @@ export type Database = {
           owner_id: string | null
         }
         Insert: {
+          business_hours?: Json | null
           closing_time?: string | null
           created_at?: string
           days_open?: string[] | null
@@ -148,6 +150,7 @@ export type Database = {
           owner_id?: string | null
         }
         Update: {
+          business_hours?: Json | null
           closing_time?: string | null
           created_at?: string
           days_open?: string[] | null

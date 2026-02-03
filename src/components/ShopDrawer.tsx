@@ -5,7 +5,7 @@ import confetti from "canvas-confetti";
 import { useTier } from "@/contexts/TierContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useBasket } from "@/contexts/BasketContext";
-import { isShopCurrentlyOpen } from "@/lib/shopUtils";
+import { isShopCurrentlyOpen, BusinessHours } from "@/lib/shopUtils";
 import type { User } from "@supabase/supabase-js";
 
 interface Shop {
@@ -18,6 +18,7 @@ interface Shop {
   opening_time?: string | null;
   closing_time?: string | null;
   days_open?: string[] | null;
+  business_hours?: BusinessHours | null;
 }
 
 interface MysteryBag {
@@ -65,7 +66,7 @@ export function ShopDrawer({
 
   if (!shop) return null;
 
-  const shopIsOpen = isShopCurrentlyOpen(shop.opening_time, shop.closing_time, shop.days_open);
+  const shopIsOpen = isShopCurrentlyOpen(shop.business_hours, shop.opening_time, shop.closing_time, shop.days_open);
 
   const discount = bag
     ? Math.round((1 - bag.discounted_price / bag.original_price) * 100)

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { BusinessHours } from "@/lib/shopUtils";
 
 export interface MysteryBox {
   id: string;
@@ -27,6 +28,7 @@ export interface Shop {
   opening_time?: string | null;
   closing_time?: string | null;
   days_open?: string[] | null;
+  business_hours?: BusinessHours | null;
 }
 
 interface MarketplaceContextType {
@@ -66,6 +68,7 @@ export function MarketplaceProvider({ children }: { children: ReactNode }) {
             opening_time: shop.opening_time || null,
             closing_time: shop.closing_time || null,
             days_open: shop.days_open || null,
+            business_hours: shop.business_hours as BusinessHours | null,
             inventory: shopBags.map((bag) => ({
               id: bag.id,
               name: "Mystery Bag",
@@ -187,6 +190,7 @@ export function MarketplaceProvider({ children }: { children: ReactNode }) {
         ...data,
         isOpen: true,
         inventory: [],
+        business_hours: data.business_hours as BusinessHours | null,
       };
 
       setShops((prev) => [...prev, shopWithInventory]);
@@ -208,6 +212,7 @@ export function MarketplaceProvider({ children }: { children: ReactNode }) {
       if (updates.opening_time !== undefined) updateData.opening_time = updates.opening_time;
       if (updates.closing_time !== undefined) updateData.closing_time = updates.closing_time;
       if (updates.days_open !== undefined) updateData.days_open = updates.days_open;
+      if (updates.business_hours !== undefined) updateData.business_hours = updates.business_hours;
 
       const { error } = await supabase
         .from("shops")
@@ -227,86 +232,74 @@ export function MarketplaceProvider({ children }: { children: ReactNode }) {
   };
 
   const addProduct = async (shopId: string, product: Omit<MysteryBox, "id">) => {
-    try {
-      const { data, error } = await supabase
-        .from("mystery_bags")
-        .insert({
-          shop_id: shopId,
-          original_price: product.originalPrice,
-          discounted_price: product.price,
-          quantity_available: product.quantity,
-        })
-        .select()
-        .single();
+    const { data, error } = await supabase
+      .from("mystery_bags")
+      .insert({
+        shop_id: shopId,
+        original_price: product.originalPrice,
+        discounted_price: product.price,
+        quantity_available: product.quantity,
+      })
+      .select()
+      .single();
 
-      if (error) throw error;
+    if (error) throw error;
 
-      const newProduct: MysteryBox = {
-        id: data.id,
-        ...product,
-      };
+    const newProduct: MysteryBox = {
+      id: data.id,
+      ...product,
+    };
 
-      setShops((prev) =>
-        prev.map((shop) =>
-          shop.id === shopId
-            ? { ...shop, inventory: [...shop.inventory, newProduct] }
-            : shop
-        )
-      );
-    } catch (error) {
-      console.error("Error adding product:", error);
-    }
+    setShops((prev) =>
+      prev.map((shop) =>
+        shop.id === shopId
+          ? { ...shop, inventory: [...shop.inventory, newProduct] }
+          : shop
+      )
+    );
   };
 
   const updateProduct = async (shopId: string, productId: string, updates: Partial<MysteryBox>) => {
-    try {
-      const { error } = await supabase
-        .from("mystery_bags")
-        .update({
-          original_price: updates.originalPrice,
-          discounted_price: updates.price,
-          quantity_available: updates.quantity,
-        })
-        .eq("id", productId);
+    const { error } = await supabase
+      .from("mystery_bags")
+      .update({
+        original_price: updates.originalPrice,
+        discounted_price: updates.price,
+        quantity_available: updates.quantity,
+      })
+      .eq("id", productId);
 
-      if (error) throw error;
+    if (error) throw error;
 
-      setShops((prev) =>
-        prev.map((shop) =>
-          shop.id === shopId
-            ? {
-                ...shop,
-                inventory: shop.inventory.map((p) =>
-                  p.id === productId ? { ...p, ...updates } : p
-                ),
-              }
-            : shop
-        )
-      );
-    } catch (error) {
-      console.error("Error updating product:", error);
-    }
+    setShops((prev) =>
+      prev.map((shop) =>
+        shop.id === shopId
+          ? {
+              ...shop,
+              inventory: shop.inventory.map((p) =>
+                p.id === productId ? { ...p, ...updates } : p
+              ),
+            }
+          : shop
+      )
+    );
   };
 
   const deleteProduct = async (shopId: string, productId: string) => {
-    try {
-      const { error } = await supabase
-        .from("mystery_bags")
-        .delete()
-        .eq("id", productId);
+    const { error } = await supabase
+      .from("mystery_bags")
+      .delete()
+      .eq("id", productId);
 
-      if (error) throw error;
+    if (error) throw error;
 
-      setShops((prev) =>
-        prev.map((shop) =>
-          shop.id === shopId
-            ? { ...shop, inventory: shop.inventory.filter((p) => p.id !== productId) }
-            : shop
-        )
-      );
-    } catch (error) {
-      console.error("Error deleting product:", error);
-    }
+    setShops((prev) =>
+      prev.map((shop) =>
+        shop.id === shopId
+          ? { ...shop, inventory: shop.inventory.filter((p) => p.id !== productId) }
+          : shop
+      )
+    );
   };
 
   const updateShopStatus = (shopId: string, isOpen: boolean) => {
