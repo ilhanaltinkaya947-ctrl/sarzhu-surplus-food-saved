@@ -338,44 +338,46 @@ export function BottomSheet({
           >
             {isOpen && (
               <div className="pb-4">
-                <div className="flex items-center justify-between mb-4 sticky top-0 bg-background py-3 -mx-4 px-4 z-10 border-b border-border shadow-sm">
+                <div className="flex items-center justify-between mb-4 sticky top-0 bg-background py-3 -mx-4 px-4 z-20 border-b border-border shadow-sm isolate">
                   <h3 className="text-lg font-bold text-foreground">
                     {t("bottomSheet.featuredDeals")}
                   </h3>
                   <button className="text-sm font-medium text-primary">{t("bottomSheet.seeAll")}</button>
                 </div>
 
-                <FeaturedShopBanner 
-                  className="mb-5" 
-                  shop={filteredShops[0]}
-                  onExplore={() => filteredShops[0] && onShopClick?.(filteredShops[0])}
-                />
+                <div className="relative z-0">
+                  <FeaturedShopBanner 
+                    className="mb-5" 
+                    shop={filteredShops[0]}
+                    onExplore={() => filteredShops[0] && onShopClick?.(filteredShops[0])}
+                  />
 
-                <div className="grid grid-cols-2 gap-3">
-                  {filteredShops.map((shop) => {
-                    const bag = getBagForShop(shop.id);
+                  <div className="grid grid-cols-2 gap-3">
+                    {filteredShops.map((shop) => {
+                      const bag = getBagForShop(shop.id);
 
-                    return (
-                      <FoodCard
-                        key={shop.id}
-                        id={shop.id}
-                        name={shop.name}
-                        imageUrl={shop.image_url}
-                        description={shop.description}
-                        originalPrice={bag?.original_price}
-                        discountedPrice={bag?.discounted_price}
-                        bagsLeft={bag?.quantity_available}
-                        onClick={() => onShopClick?.(shop)}
-                      />
-                    );
-                  })}
-                </div>
-
-                {filteredShops.length === 0 && (
-                  <div className="text-center py-12">
-                    <p className="text-muted-foreground">{t("bottomSheet.noShops")}</p>
+                      return (
+                        <FoodCard
+                          key={shop.id}
+                          id={shop.id}
+                          name={shop.name}
+                          imageUrl={shop.image_url}
+                          description={shop.description}
+                          originalPrice={bag?.original_price}
+                          discountedPrice={bag?.discounted_price}
+                          bagsLeft={bag?.quantity_available}
+                          onClick={() => onShopClick?.(shop)}
+                        />
+                      );
+                    })}
                   </div>
-                )}
+
+                  {filteredShops.length === 0 && (
+                    <div className="text-center py-12">
+                      <p className="text-muted-foreground">{t("bottomSheet.noShops")}</p>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </motion.div>
