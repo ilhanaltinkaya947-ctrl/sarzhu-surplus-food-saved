@@ -122,33 +122,42 @@ export type Database = {
       }
       shops: {
         Row: {
+          closing_time: string | null
           created_at: string
+          days_open: string[] | null
           description: string | null
           id: string
           image_url: string | null
           lat: number
           long: number
           name: string
+          opening_time: string | null
           owner_id: string | null
         }
         Insert: {
+          closing_time?: string | null
           created_at?: string
+          days_open?: string[] | null
           description?: string | null
           id?: string
           image_url?: string | null
           lat: number
           long: number
           name: string
+          opening_time?: string | null
           owner_id?: string | null
         }
         Update: {
+          closing_time?: string | null
           created_at?: string
+          days_open?: string[] | null
           description?: string | null
           id?: string
           image_url?: string | null
           lat?: number
           long?: number
           name?: string
+          opening_time?: string | null
           owner_id?: string | null
         }
         Relationships: []

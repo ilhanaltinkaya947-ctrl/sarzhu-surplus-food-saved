@@ -1,13 +1,14 @@
 import { useState, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Store, MapPin, Image, Tag, Save, Search, Loader2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Store, MapPin, Image, Tag, Save, Search, Loader2, Clock } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useMarketplace, Shop } from "@/contexts/MarketplaceContext";
 import { ImageUploader } from "./ImageUploader";
 import { toast } from "sonner";
+import { DAY_OPTIONS } from "@/lib/shopUtils";
 
 interface ProfileTabProps {
   shop: Shop;
@@ -53,7 +54,7 @@ async function geocodeAddress(address: string): Promise<{ lat: number; long: num
 
 export function ProfileTab({ shop }: ProfileTabProps) {
   const { t } = useLanguage();
-  const { updateShop, updateShopStatus } = useMarketplace();
+  const { updateShop } = useMarketplace();
   
   const [name, setName] = useState(shop.name);
   const [category, setCategory] = useState(shop.category || "bakery");
@@ -61,7 +62,9 @@ export function ProfileTab({ shop }: ProfileTabProps) {
   const [lat, setLat] = useState(shop.lat);
   const [long, setLong] = useState(shop.long);
   const [imageUrl, setImageUrl] = useState(shop.image_url || "");
-  const [isOpen, setIsOpen] = useState(shop.isOpen);
+  const [openingTime, setOpeningTime] = useState(shop.opening_time || "09:00");
+  const [closingTime, setClosingTime] = useState(shop.closing_time || "21:00");
+  const [daysOpen, setDaysOpen] = useState<string[]>(shop.days_open || ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']);
   const [saving, setSaving] = useState(false);
   const [geocoding, setGeocoding] = useState(false);
 
@@ -72,7 +75,9 @@ export function ProfileTab({ shop }: ProfileTabProps) {
     setLat(shop.lat);
     setLong(shop.long);
     setImageUrl(shop.image_url || "");
-    setIsOpen(shop.isOpen);
+    setOpeningTime(shop.opening_time || "09:00");
+    setClosingTime(shop.closing_time || "21:00");
+    setDaysOpen(shop.days_open || ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']);
   }, [shop]);
 
   const handleGeocodeAddress = useCallback(async () => {
@@ -104,6 +109,9 @@ export function ProfileTab({ shop }: ProfileTabProps) {
         image_url: imageUrl,
         lat,
         long,
+        opening_time: openingTime,
+        closing_time: closingTime,
+        days_open: daysOpen,
       });
       toast.success(t("merchant.changesSaved"));
     } catch (error) {
@@ -113,23 +121,62 @@ export function ProfileTab({ shop }: ProfileTabProps) {
     }
   };
 
-  const handleToggleOpen = (checked: boolean) => {
-    setIsOpen(checked);
-    updateShopStatus(shop.id, checked);
-    toast.success(checked ? t("merchant.storeOpened") : t("merchant.storeClosed"));
+  const toggleDay = (dayId: string) => {
+    setDaysOpen(prev => 
+      prev.includes(dayId) 
+        ? prev.filter(d => d !== dayId)
+        : [...prev, dayId]
+    );
   };
 
   return (
     <div className="space-y-6">
-      {/* Store Status Toggle */}
-      <div className="flex items-center justify-between p-4 rounded-2xl border-2 border-border bg-card">
-        <div className="flex items-center gap-3">
-          <div className={`h-3 w-3 rounded-full ${isOpen ? "bg-emerald-500" : "bg-destructive"}`} />
-          <span className="font-semibold">
-            {isOpen ? t("merchant.storeOpen") : t("merchant.storeClosed")}
-          </span>
+      {/* Business Hours Section */}
+      <div className="p-4 rounded-2xl border-2 border-border bg-card space-y-4">
+        <div className="flex items-center gap-2 text-lg font-semibold">
+          <Clock className="h-5 w-5 text-primary" />
+          {t("merchant.businessHours")}
         </div>
-        <Switch checked={isOpen} onCheckedChange={handleToggleOpen} />
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>{t("merchant.opensAt")}</Label>
+            <Input
+              type="time"
+              value={openingTime}
+              onChange={(e) => setOpeningTime(e.target.value)}
+              className="text-center"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>{t("merchant.closesAt")}</Label>
+            <Input
+              type="time"
+              value={closingTime}
+              onChange={(e) => setClosingTime(e.target.value)}
+              className="text-center"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label>{t("merchant.daysOpen")}</Label>
+          <div className="flex flex-wrap gap-2">
+            {DAY_OPTIONS.map((day) => (
+              <button
+                key={day.id}
+                onClick={() => toggleDay(day.id)}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                  daysOpen.includes(day.id)
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-muted-foreground"
+                }`}
+              >
+                {t(day.labelKey)}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Form Fields */}

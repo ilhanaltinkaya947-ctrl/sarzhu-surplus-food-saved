@@ -1,11 +1,18 @@
-import { useState, useEffect, useCallback } from "react";
-import { Clock, CheckCircle2, Package } from "lucide-react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { Clock, CheckCircle2, Package, Filter } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Shop } from "@/contexts/MarketplaceContext";
 import { SwipeButton } from "./SwipeButton";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Order {
   id: string;
@@ -13,26 +20,56 @@ interface Order {
   status: string;
   created_at: string;
   user_id: string;
+  bag_id: string;
 }
 
 interface OrdersTabProps {
   shop: Shop;
+  allShops?: Shop[];
 }
 
-export function OrdersTab({ shop }: OrdersTabProps) {
+export function OrdersTab({ shop, allShops }: OrdersTabProps) {
   const { t } = useLanguage();
   const [activeOrders, setActiveOrders] = useState<Order[]>([]);
   const [completedOrders, setCompletedOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [locationFilter, setLocationFilter] = useState<string>("all");
+
+  // Get all bag IDs from all shops or just current shop
+  const getAllBagIds = useCallback(() => {
+    const shops = allShops && allShops.length > 0 ? allShops : [shop];
+    return shops.flatMap(s => s.inventory.map(p => p.id));
+  }, [shop, allShops]);
+
+  // Filter orders by location
+  const filteredActiveOrders = useMemo(() => {
+    if (locationFilter === "all" || !allShops || allShops.length <= 1) {
+      return activeOrders;
+    }
+    const selectedShop = allShops.find(s => s.id === locationFilter);
+    if (!selectedShop) return activeOrders;
+    const shopBagIds = selectedShop.inventory.map(p => p.id);
+    return activeOrders.filter(o => shopBagIds.includes(o.bag_id));
+  }, [activeOrders, locationFilter, allShops]);
+
+  const filteredCompletedOrders = useMemo(() => {
+    if (locationFilter === "all" || !allShops || allShops.length <= 1) {
+      return completedOrders;
+    }
+    const selectedShop = allShops.find(s => s.id === locationFilter);
+    if (!selectedShop) return completedOrders;
+    const shopBagIds = selectedShop.inventory.map(p => p.id);
+    return completedOrders.filter(o => shopBagIds.includes(o.bag_id));
+  }, [completedOrders, locationFilter, allShops]);
 
   const fetchOrders = useCallback(async () => {
-    if (shop.inventory.length === 0) {
+    const bagIds = getAllBagIds();
+    if (bagIds.length === 0) {
       setLoading(false);
       return;
     }
 
     try {
-      const bagIds = shop.inventory.map((p) => p.id);
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
 
@@ -53,7 +90,7 @@ export function OrdersTab({ shop }: OrdersTabProps) {
     } finally {
       setLoading(false);
     }
-  }, [shop.inventory]);
+  }, [getAllBagIds]);
 
   useEffect(() => {
     fetchOrders();
@@ -61,9 +98,8 @@ export function OrdersTab({ shop }: OrdersTabProps) {
 
   // Real-time subscription
   useEffect(() => {
-    if (shop.inventory.length === 0) return;
-
-    const bagIds = shop.inventory.map((p) => p.id);
+    const bagIds = getAllBagIds();
+    if (bagIds.length === 0) return;
     
     const channel = supabase
       .channel("merchant-orders-tab")
@@ -72,7 +108,7 @@ export function OrdersTab({ shop }: OrdersTabProps) {
         { event: "*", schema: "public", table: "orders" },
         (payload) => {
           const order = payload.new as Order;
-          if (bagIds.includes((order as any).bag_id)) {
+          if (bagIds.includes(order.bag_id)) {
             fetchOrders();
             
             if (payload.eventType === "INSERT") {
@@ -86,7 +122,7 @@ export function OrdersTab({ shop }: OrdersTabProps) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [shop.inventory, fetchOrders, t]);
+  }, [getAllBagIds, fetchOrders, t]);
 
   const handleCompleteOrder = async (orderId: string) => {
     try {
@@ -133,13 +169,33 @@ export function OrdersTab({ shop }: OrdersTabProps) {
 
   return (
     <div className="space-y-6">
+      {/* Location Filter (only if multiple locations) */}
+      {allShops && allShops.length > 1 && (
+        <div className="flex items-center gap-3">
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          <Select value={locationFilter} onValueChange={setLocationFilter}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder={t("merchant.allLocations")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("merchant.allLocations")}</SelectItem>
+              {allShops.map((s) => (
+                <SelectItem key={s.id} value={s.id}>
+                  {s.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
       {/* Active Orders */}
       <div>
         <h2 className="text-lg font-bold mb-4">
-          {t("merchant.activeOrders")} ({activeOrders.length})
+          {t("merchant.activeOrders")} ({filteredActiveOrders.length})
         </h2>
 
-        {activeOrders.length === 0 ? (
+        {filteredActiveOrders.length === 0 ? (
           <div className="rounded-2xl border-2 border-dashed border-border p-8 text-center">
             <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
             <p className="text-muted-foreground">{t("merchant.noActiveOrders")}</p>
@@ -147,7 +203,7 @@ export function OrdersTab({ shop }: OrdersTabProps) {
         ) : (
           <div className="space-y-4">
             <AnimatePresence mode="popLayout">
-              {activeOrders.map((order) => (
+              {filteredActiveOrders.map((order) => (
                 <motion.div
                   key={order.id}
                   layout
@@ -186,15 +242,15 @@ export function OrdersTab({ shop }: OrdersTabProps) {
       </div>
 
       {/* Completed Orders */}
-      {completedOrders.length > 0 && (
+      {filteredCompletedOrders.length > 0 && (
         <div>
           <h2 className="text-lg font-bold mb-4">
-            {t("merchant.completedToday")} ({completedOrders.length})
+            {t("merchant.completedToday")} ({filteredCompletedOrders.length})
           </h2>
           
           <div className="space-y-3">
             <AnimatePresence mode="popLayout">
-              {completedOrders.slice(0, 5).map((order) => (
+              {filteredCompletedOrders.slice(0, 5).map((order) => (
                 <motion.div
                   key={order.id}
                   layout

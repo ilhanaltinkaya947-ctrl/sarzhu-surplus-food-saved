@@ -23,6 +23,10 @@ export interface Shop {
   isOpen: boolean;
   owner_id?: string | null;
   inventory: MysteryBox[];
+  // Business hours
+  opening_time?: string | null;
+  closing_time?: string | null;
+  days_open?: string[] | null;
 }
 
 interface MarketplaceContextType {
@@ -36,6 +40,7 @@ interface MarketplaceContextType {
   updateShopStatus: (shopId: string, isOpen: boolean) => void;
   refreshShops: () => Promise<void>;
   getShopById: (shopId: string) => Shop | undefined;
+  getUserShops: (userId: string) => Shop[];
 }
 
 const MarketplaceContext = createContext<MarketplaceContextType | null>(null);
@@ -58,6 +63,9 @@ export function MarketplaceProvider({ children }: { children: ReactNode }) {
           return {
             ...shop,
             isOpen: true, // Default to open
+            opening_time: shop.opening_time || null,
+            closing_time: shop.closing_time || null,
+            days_open: shop.days_open || null,
             inventory: shopBags.map((bag) => ({
               id: bag.id,
               name: "Mystery Bag",
@@ -197,6 +205,9 @@ export function MarketplaceProvider({ children }: { children: ReactNode }) {
       if (updates.description !== undefined) updateData.description = updates.description;
       if (updates.lat !== undefined) updateData.lat = updates.lat;
       if (updates.long !== undefined) updateData.long = updates.long;
+      if (updates.opening_time !== undefined) updateData.opening_time = updates.opening_time;
+      if (updates.closing_time !== undefined) updateData.closing_time = updates.closing_time;
+      if (updates.days_open !== undefined) updateData.days_open = updates.days_open;
 
       const { error } = await supabase
         .from("shops")
@@ -308,6 +319,10 @@ export function MarketplaceProvider({ children }: { children: ReactNode }) {
     return shops.find((shop) => shop.id === shopId);
   };
 
+  const getUserShops = (userId: string) => {
+    return shops.filter((shop) => shop.owner_id === userId);
+  };
+
   return (
     <MarketplaceContext.Provider
       value={{
@@ -321,6 +336,7 @@ export function MarketplaceProvider({ children }: { children: ReactNode }) {
         updateShopStatus,
         refreshShops: fetchShops,
         getShopById,
+        getUserShops,
       }}
     >
       {children}

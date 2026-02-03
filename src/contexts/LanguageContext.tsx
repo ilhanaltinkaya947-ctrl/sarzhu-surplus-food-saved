@@ -294,6 +294,25 @@ export const translations: Record<Language, Record<string, string>> = {
     "merchant.locationFound": "Location found! Coordinates updated.",
     "merchant.locationNotFound": "Could not find location. Try a more specific address.",
     "auth.signInRequired": "Please sign in to upload images",
+    // Business Hours
+    "merchant.businessHours": "Business Hours",
+    "merchant.opensAt": "Opens",
+    "merchant.closesAt": "Closes",
+    "merchant.daysOpen": "Days Open",
+    "merchant.allLocations": "All Locations",
+    "merchant.addLocation": "Add Location",
+    "merchant.selectLocation": "Select Location",
+    "merchant.locationAdded": "Location added successfully",
+    "shop.currentlyClosed": "Currently Closed",
+    "shop.opensAt": "Opens at {time}",
+    // Days
+    "days.mon": "Mon",
+    "days.tue": "Tue",
+    "days.wed": "Wed",
+    "days.thu": "Thu",
+    "days.fri": "Fri",
+    "days.sat": "Sat",
+    "days.sun": "Sun",
   },
   kz: {
     // Onboarding
@@ -578,6 +597,25 @@ export const translations: Record<Language, Record<string, string>> = {
     "merchant.locationFound": "Орын табылды! Координаталар жаңартылды.",
     "merchant.locationNotFound": "Орын табылмады. Дәлірек мекенжай енгізіп көріңіз.",
     "auth.signInRequired": "Суреттерді жүктеу үшін жүйеге кіріңіз",
+    // Business Hours
+    "merchant.businessHours": "Жұмыс уақыты",
+    "merchant.opensAt": "Ашылу",
+    "merchant.closesAt": "Жабылу",
+    "merchant.daysOpen": "Жұмыс күндері",
+    "merchant.allLocations": "Барлық орындар",
+    "merchant.addLocation": "Орын қосу",
+    "merchant.selectLocation": "Орынды таңдау",
+    "merchant.locationAdded": "Орын сәтті қосылды",
+    "shop.currentlyClosed": "Қазір жабық",
+    "shop.opensAt": "{time} ашылады",
+    // Days
+    "days.mon": "Дс",
+    "days.tue": "Сс",
+    "days.wed": "Ср",
+    "days.thu": "Бс",
+    "days.fri": "Жм",
+    "days.sat": "Сб",
+    "days.sun": "Жс",
   },
   ru: {
     // Onboarding
@@ -862,6 +900,25 @@ export const translations: Record<Language, Record<string, string>> = {
     "merchant.locationFound": "Местоположение найдено! Координаты обновлены.",
     "merchant.locationNotFound": "Местоположение не найдено. Попробуйте более точный адрес.",
     "auth.signInRequired": "Войдите для загрузки изображений",
+    // Business Hours
+    "merchant.businessHours": "Часы работы",
+    "merchant.opensAt": "Открытие",
+    "merchant.closesAt": "Закрытие",
+    "merchant.daysOpen": "Рабочие дни",
+    "merchant.allLocations": "Все точки",
+    "merchant.addLocation": "Добавить точку",
+    "merchant.selectLocation": "Выбрать точку",
+    "merchant.locationAdded": "Точка успешно добавлена",
+    "shop.currentlyClosed": "Сейчас закрыто",
+    "shop.opensAt": "Откроется в {time}",
+    // Days
+    "days.mon": "Пн",
+    "days.tue": "Вт",
+    "days.wed": "Ср",
+    "days.thu": "Чт",
+    "days.fri": "Пт",
+    "days.sat": "Сб",
+    "days.sun": "Вс",
   },
 };
 
