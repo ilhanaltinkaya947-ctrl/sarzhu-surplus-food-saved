@@ -1,19 +1,20 @@
-import { Home, Package, Zap } from "lucide-react";
+import { Home, Package, Zap, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface MerchantTabsProps {
-  activeTab: "profile" | "products" | "orders";
-  onTabChange: (tab: "profile" | "products" | "orders") => void;
+  activeTab: "profile" | "products" | "orders" | "analytics";
+  onTabChange: (tab: "profile" | "products" | "orders" | "analytics") => void;
 }
 
 export function MerchantTabs({ activeTab, onTabChange }: MerchantTabsProps) {
   const { t } = useLanguage();
 
   const tabs = [
-    { id: "profile" as const, icon: Home, labelKey: "merchant.tabs.profile" },
-    { id: "products" as const, icon: Package, labelKey: "merchant.tabs.products" },
     { id: "orders" as const, icon: Zap, labelKey: "merchant.tabs.orders" },
+    { id: "products" as const, icon: Package, labelKey: "merchant.tabs.products" },
+    { id: "analytics" as const, icon: BarChart3, labelKey: "merchant.tabs.analytics" },
+    { id: "profile" as const, icon: Home, labelKey: "merchant.tabs.profile" },
   ];
 
   return (
@@ -31,13 +32,13 @@ export function MerchantTabs({ activeTab, onTabChange }: MerchantTabsProps) {
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
               className={cn(
-                "flex flex-col items-center gap-1 px-6 py-2 rounded-xl transition-all",
+                "flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all",
                 isActive 
                   ? "text-primary" 
                   : "text-muted-foreground"
               )}
             >
-              <Icon className={cn("h-6 w-6", isActive && "scale-110")} />
+              <Icon className={cn("h-5 w-5", isActive && "scale-110")} />
               <span className="text-xs font-medium">{t(tab.labelKey)}</span>
             </button>
           );

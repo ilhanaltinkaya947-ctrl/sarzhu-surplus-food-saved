@@ -313,6 +313,21 @@ export const translations: Record<Language, Record<string, string>> = {
     "days.fri": "Fri",
     "days.sat": "Sat",
     "days.sun": "Sun",
+    // Analytics
+    "merchant.tabs.analytics": "Analytics",
+    "analytics.lastWeek": "Week",
+    "analytics.lastMonth": "Month",
+    "analytics.allTime": "All",
+    "analytics.totalOrders": "Total Orders",
+    "analytics.revenue": "Revenue",
+    "analytics.pending": "Pending",
+    "analytics.completed": "Completed",
+    "analytics.dailySales": "Daily Sales",
+    "analytics.revenueChart": "Revenue Trend",
+    "analytics.orders": "orders",
+    "analytics.noData": "No sales data yet",
+    "analytics.startSelling": "Start selling to see analytics",
+    "merchant.invalidQuantity": "Please enter a valid quantity",
   },
   kz: {
     // Onboarding

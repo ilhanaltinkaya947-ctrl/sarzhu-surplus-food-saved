@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { isShopCurrentlyOpen } from "@/lib/shopUtils";
+import { isShopCurrentlyOpen, BusinessHours } from "@/lib/shopUtils";
 
 interface Shop {
   id: string;
@@ -13,6 +13,7 @@ interface Shop {
   opening_time?: string | null;
   closing_time?: string | null;
   days_open?: string[] | null;
+  business_hours?: BusinessHours | null;
 }
 
 interface MysteryBag {
@@ -276,7 +277,7 @@ export function MapView({ shops, bags, followedShopIds = [], selectedShopId, onS
     shops.forEach((shop) => {
       const isFollowed = followedShopIds.includes(shop.id);
       const isActive = selectedShopId === shop.id;
-      const isClosed = !isShopCurrentlyOpen(shop.opening_time, shop.closing_time, shop.days_open);
+      const isClosed = !isShopCurrentlyOpen(shop.business_hours, shop.opening_time, shop.closing_time, shop.days_open);
       
       const marker = L.marker([shop.lat, shop.long], {
         icon: createPinIcon(isFollowed, shop.image_url, shop.name, shop.description, isActive, isClosed),
