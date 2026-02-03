@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Store, MapPin, Image, Tag, Save, Search, Loader2, Clock } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useMarketplace, Shop } from "@/contexts/MarketplaceContext";
 import { ImageUploader } from "./ImageUploader";
+import { TimeInput } from "./TimeInput";
 import { toast } from "sonner";
 import { DAY_OPTIONS, BusinessHours, DEFAULT_BUSINESS_HOURS } from "@/lib/shopUtils";
 
@@ -117,13 +118,25 @@ export function ProfileTab({ shop }: ProfileTabProps) {
   };
 
   const updateDayHours = (dayId: string, field: 'open' | 'close', value: string) => {
+    // Only update if value is a valid time string (HH:MM format)
+    const timeValue = value && value.match(/^\d{2}:\d{2}$/) ? value : null;
     setBusinessHours(prev => ({
       ...prev,
       [dayId]: {
         ...prev[dayId as keyof BusinessHours],
-        [field]: value || null,
+        [field]: timeValue,
       },
     }));
+  };
+
+  // Handle time input change with multiple event support for mobile compatibility
+  const handleTimeChange = (dayId: string, field: 'open' | 'close') => (
+    e: React.ChangeEvent<HTMLInputElement> | React.FormEvent<HTMLInputElement>
+  ) => {
+    const target = e.target as HTMLInputElement;
+    if (target.value) {
+      updateDayHours(dayId, field, target.value);
+    }
   };
 
   const toggleDayClosed = (dayId: string) => {
@@ -175,25 +188,19 @@ export function ProfileTab({ shop }: ProfileTabProps) {
                 
                 {!isClosed && (
                   <div className="flex items-center gap-3">
-                    <div className="flex-1">
-                      <label className="text-xs text-muted-foreground mb-1 block">{t("merchant.opensAt")}</label>
-                      <Input
-                        type="time"
-                        value={dayHours?.open || '09:00'}
-                        onChange={(e) => updateDayHours(day.id, 'open', e.target.value)}
-                        className="h-12 text-center text-base font-medium"
-                      />
-                    </div>
+                    <TimeInput
+                      value={dayHours?.open || '09:00'}
+                      onChange={(value) => updateDayHours(day.id, 'open', value)}
+                      label={t("merchant.opensAt")}
+                      className="flex-1"
+                    />
                     <span className="text-muted-foreground mt-5">—</span>
-                    <div className="flex-1">
-                      <label className="text-xs text-muted-foreground mb-1 block">{t("merchant.closesAt")}</label>
-                      <Input
-                        type="time"
-                        value={dayHours?.close || '21:00'}
-                        onChange={(e) => updateDayHours(day.id, 'close', e.target.value)}
-                        className="h-12 text-center text-base font-medium"
-                      />
-                    </div>
+                    <TimeInput
+                      value={dayHours?.close || '21:00'}
+                      onChange={(value) => updateDayHours(day.id, 'close', value)}
+                      label={t("merchant.closesAt")}
+                      className="flex-1"
+                    />
                   </div>
                 )}
               </div>
