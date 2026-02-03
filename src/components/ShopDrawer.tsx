@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Clock, MapPin, Heart, X, Package, Sparkles, Zap, ShoppingCart } from "lucide-react";
+import { Clock, MapPin, Heart, X, Package, Sparkles, Zap, ShoppingCart, Star } from "lucide-react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import confetti from "canvas-confetti";
 import { useTier } from "@/contexts/TierContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useBasket } from "@/contexts/BasketContext";
 import { isShopCurrentlyOpen, BusinessHours } from "@/lib/shopUtils";
+import { ReviewSection } from "@/components/reviews/ReviewSection";
 import type { User } from "@supabase/supabase-js";
 
 interface Shop {
@@ -285,6 +286,11 @@ export function ShopDrawer({
                   </div>
                 </div>
               )}
+
+              {/* Reviews Section */}
+              <div className="mt-6 pt-6 border-t border-[hsl(var(--border))]">
+                <ReviewSection shopId={shop.id} userId={user?.id || null} />
+              </div>
               </div>
             </div>
 
