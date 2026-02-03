@@ -1,6 +1,5 @@
-import { Clock } from "lucide-react";
+import { Clock, QrCode } from "lucide-react";
 import { motion } from "framer-motion";
-import { SwipeToConfirm } from "./SwipeToConfirm";
 
 interface TicketCardProps {
   order: {
@@ -10,11 +9,9 @@ interface TicketCardProps {
     shop_name: string;
     shop_image: string | null;
   };
-  onConfirmPickup: () => void;
-  isProcessing?: boolean;
 }
 
-export function TicketCard({ order, onConfirmPickup, isProcessing = false }: TicketCardProps) {
+export function TicketCard({ order }: TicketCardProps) {
   const shortOrderId = order.id.slice(0, 8).toUpperCase();
   
   const formatPickupTime = () => {
@@ -96,13 +93,16 @@ export function TicketCard({ order, onConfirmPickup, isProcessing = false }: Tic
         <div className="absolute -right-3 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full bg-background" />
       </div>
 
-      {/* Bottom Section - Action */}
+      {/* Bottom Section - Info */}
       {order.status === "reserved" ? (
-        <div className="p-4">
-          <SwipeToConfirm 
-            onConfirm={onConfirmPickup} 
-            disabled={isProcessing}
-          />
+        <div className="p-4 text-center space-y-2">
+          <div className="flex items-center justify-center gap-2 text-primary">
+            <QrCode className="h-5 w-5" />
+            <span className="text-sm font-semibold">Order #{shortOrderId}</span>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Show this code to staff when picking up
+          </p>
         </div>
       ) : (
         <div className="p-4 text-center">

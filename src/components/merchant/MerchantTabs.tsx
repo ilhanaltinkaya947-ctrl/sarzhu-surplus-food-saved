@@ -33,14 +33,14 @@ export function MerchantTabs({ activeTab, onTabChange }: MerchantTabsProps) {
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
               className={cn(
-                "flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all",
+                "flex flex-col items-center gap-0.5 px-2 py-2 rounded-xl transition-all min-w-0 flex-1",
                 isActive 
                   ? "text-primary" 
                   : "text-muted-foreground"
               )}
             >
-              <Icon className={cn("h-5 w-5", isActive && "scale-110")} />
-              <span className="text-xs font-medium">{t(tab.labelKey)}</span>
+              <Icon className={cn("h-5 w-5 flex-shrink-0", isActive && "scale-110")} />
+              <span className="text-[10px] font-medium truncate max-w-full">{t(tab.labelKey)}</span>
             </button>
           );
         })}
