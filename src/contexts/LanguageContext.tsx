@@ -357,9 +357,31 @@ export const translations: Record<Language, Record<string, string>> = {
     "shop.serviceFee": "Қызмет ақысы",
     "shop.legendPerk": "Legend артықшылығы қолданылды 👑",
     "shop.total": "Барлығы",
+    "shop.price": "Баға",
+    "shop.addToBasket": "Себетке қосу",
+    "shop.inBasket": "Себетте бар",
     "shop.reserveFor": "Брондау",
     "shop.soldOut": "Таусылды",
     "shop.reserving": "Брондалуда...",
+    
+    // Basket
+    "basket.title": "Себет",
+    "basket.empty": "Себетіңіз бос",
+    "basket.alreadyInBasket": "Өнім себетте бар",
+    "basket.addedToBasket": "Себетке қосылды! 🛒",
+    "basket.removed": "Себеттен алынды",
+    "basket.subtotal": "Аралық жиын",
+    "basket.paymentMethod": "Төлем әдісі",
+    "basket.expires": "Мерзімі",
+    "basket.cardNumber": "Карта нөмірі",
+    "basket.addCard": "Картаны сақтау",
+    "basket.addNewCard": "Жаңа карта қосу",
+    "basket.invalidCard": "Карта мәліметтерін дұрыс енгізіңіз",
+    "basket.cardAdded": "Карта сәтті сақталды",
+    "basket.selectCard": "Төлем әдісін таңдаңыз",
+    "basket.processing": "Өңделуде...",
+    "basket.pay": "Төлеу",
+    "basket.purchaseSuccess": "Сәтті сатып алынды! 🎉",
     
     // Orders Page
     "orders.title": "Менің сөмкелерім",
@@ -368,8 +390,11 @@ export const translations: Record<Language, Record<string, string>> = {
     "orders.noActive": "Белсенді брондаулар жоқ",
     "orders.noPast": "Өткен тапсырыстар жоқ",
     "orders.pickupBy": "Алу уақыты",
+    "orders.pending": "Күтуде",
     "orders.reserved": "Брондалған",
     "orders.pickedUp": "Алынған",
+    "orders.pickupToday": "Бүгін алу",
+    "orders.waitingPickup": "Алуға дайын",
     "orders.swipeConfirm": "Растау үшін сырғытыңыз",
     
     // Pickup Success
@@ -451,6 +476,7 @@ export const translations: Record<Language, Record<string, string>> = {
     "empty.signIn": "Кіру",
     
     // General
+    "general.cancel": "Болдырмау",
     "general.loading": "Жүктелуде...",
     "general.error": "Бірдеңе дұрыс болмады",
     "general.retry": "Қайталау",
@@ -607,9 +633,31 @@ export const translations: Record<Language, Record<string, string>> = {
     "shop.serviceFee": "Сервисный сбор",
     "shop.legendPerk": "Привилегия Legend применена 👑",
     "shop.total": "Итого",
+    "shop.price": "Цена",
+    "shop.addToBasket": "В корзину",
+    "shop.inBasket": "Уже в корзине",
     "shop.reserveFor": "Забронировать за",
     "shop.soldOut": "Распродано",
     "shop.reserving": "Бронирование...",
+    
+    // Basket
+    "basket.title": "Корзина",
+    "basket.empty": "Корзина пуста",
+    "basket.alreadyInBasket": "Товар уже в корзине",
+    "basket.addedToBasket": "Добавлено в корзину! 🛒",
+    "basket.removed": "Удалено из корзины",
+    "basket.subtotal": "Подитог",
+    "basket.paymentMethod": "Способ оплаты",
+    "basket.expires": "Истекает",
+    "basket.cardNumber": "Номер карты",
+    "basket.addCard": "Сохранить карту",
+    "basket.addNewCard": "Добавить карту",
+    "basket.invalidCard": "Введите корректные данные карты",
+    "basket.cardAdded": "Карта сохранена",
+    "basket.selectCard": "Выберите способ оплаты",
+    "basket.processing": "Обработка...",
+    "basket.pay": "Оплатить",
+    "basket.purchaseSuccess": "Покупка успешна! 🎉",
     
     // Orders Page
     "orders.title": "Мои пакеты",
@@ -618,8 +666,11 @@ export const translations: Record<Language, Record<string, string>> = {
     "orders.noActive": "Нет активных бронирований",
     "orders.noPast": "Нет прошлых заказов",
     "orders.pickupBy": "Забрать до",
+    "orders.pending": "Ожидает",
     "orders.reserved": "Забронировано",
     "orders.pickedUp": "Забрано",
+    "orders.pickupToday": "Забрать сегодня",
+    "orders.waitingPickup": "Готово к выдаче",
     "orders.swipeConfirm": "Свайпните для подтверждения",
     
     // Pickup Success
@@ -701,6 +752,7 @@ export const translations: Record<Language, Record<string, string>> = {
     "empty.signIn": "Войти",
     
     // General
+    "general.cancel": "Отмена",
     "general.loading": "Загрузка...",
     "general.error": "Что-то пошло не так",
     "general.retry": "Попробовать снова",
