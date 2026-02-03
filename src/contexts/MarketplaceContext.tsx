@@ -88,8 +88,63 @@ export function MarketplaceProvider({ children }: { children: ReactNode }) {
       .channel("marketplace-shops")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "shops" },
-        () => fetchShops()
+        { event: "INSERT", schema: "public", table: "shops" },
+        (payload) => {
+          // Immediately add new shop to state without full refresh
+          const newShop = payload.new as {
+            id: string;
+            name: string;
+            lat: number;
+            long: number;
+            image_url: string | null;
+            description: string | null;
+            owner_id: string | null;
+          };
+          
+          setShops((prev) => {
+            // Avoid duplicates
+            if (prev.some((s) => s.id === newShop.id)) return prev;
+            return [
+              ...prev,
+              {
+                ...newShop,
+                isOpen: true,
+                inventory: [],
+              },
+            ];
+          });
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "shops" },
+        (payload) => {
+          const updated = payload.new as {
+            id: string;
+            name: string;
+            lat: number;
+            long: number;
+            image_url: string | null;
+            description: string | null;
+            owner_id: string | null;
+          };
+          
+          setShops((prev) =>
+            prev.map((shop) =>
+              shop.id === updated.id
+                ? { ...shop, ...updated }
+                : shop
+            )
+          );
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "shops" },
+        (payload) => {
+          const deleted = payload.old as { id: string };
+          setShops((prev) => prev.filter((shop) => shop.id !== deleted.id));
+        }
       )
       .on(
         "postgres_changes",
@@ -136,22 +191,27 @@ export function MarketplaceProvider({ children }: { children: ReactNode }) {
 
   const updateShop = async (shopId: string, updates: Partial<Shop>) => {
     try {
+      const updateData: Record<string, unknown> = {};
+      if (updates.name !== undefined) updateData.name = updates.name;
+      if (updates.image_url !== undefined) updateData.image_url = updates.image_url;
+      if (updates.description !== undefined) updateData.description = updates.description;
+      if (updates.lat !== undefined) updateData.lat = updates.lat;
+      if (updates.long !== undefined) updateData.long = updates.long;
+
       const { error } = await supabase
         .from("shops")
-        .update({
-          name: updates.name,
-          image_url: updates.image_url,
-          description: updates.description,
-        })
+        .update(updateData)
         .eq("id", shopId);
 
       if (error) throw error;
 
+      // Optimistic update - will be confirmed by realtime subscription
       setShops((prev) =>
         prev.map((shop) => (shop.id === shopId ? { ...shop, ...updates } : shop))
       );
     } catch (error) {
       console.error("Error updating shop:", error);
+      throw error;
     }
   };
 

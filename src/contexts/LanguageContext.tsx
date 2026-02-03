@@ -290,6 +290,9 @@ export const translations: Record<Language, Record<string, string>> = {
     "merchant.invalidImageType": "Please select an image file",
     "merchant.imageTooLarge": "Image must be less than 5MB",
     "merchant.imageUrlSet": "Image URL set",
+    "merchant.enterAddress": "Please enter an address",
+    "merchant.locationFound": "Location found! Coordinates updated.",
+    "merchant.locationNotFound": "Could not find location. Try a more specific address.",
     "auth.signInRequired": "Please sign in to upload images",
   },
   kz: {
@@ -571,6 +574,9 @@ export const translations: Record<Language, Record<string, string>> = {
     "merchant.invalidImageType": "Сурет файлын таңдаңыз",
     "merchant.imageTooLarge": "Сурет 5MB-тан аз болуы керек",
     "merchant.imageUrlSet": "Сурет URL орнатылды",
+    "merchant.enterAddress": "Мекенжайды енгізіңіз",
+    "merchant.locationFound": "Орын табылды! Координаталар жаңартылды.",
+    "merchant.locationNotFound": "Орын табылмады. Дәлірек мекенжай енгізіп көріңіз.",
     "auth.signInRequired": "Суреттерді жүктеу үшін жүйеге кіріңіз",
   },
   ru: {
@@ -852,6 +858,9 @@ export const translations: Record<Language, Record<string, string>> = {
     "merchant.invalidImageType": "Выберите файл изображения",
     "merchant.imageTooLarge": "Изображение должно быть меньше 5MB",
     "merchant.imageUrlSet": "URL изображения установлен",
+    "merchant.enterAddress": "Введите адрес",
+    "merchant.locationFound": "Местоположение найдено! Координаты обновлены.",
+    "merchant.locationNotFound": "Местоположение не найдено. Попробуйте более точный адрес.",
     "auth.signInRequired": "Войдите для загрузки изображений",
   },
 };
