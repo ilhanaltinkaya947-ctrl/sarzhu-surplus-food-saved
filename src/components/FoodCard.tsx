@@ -1,4 +1,5 @@
-import { Star, Percent } from "lucide-react";
+import { Star, Percent, ArrowRight, Award } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/lib/utils";
 
 interface FoodCardProps {
@@ -138,12 +139,28 @@ export function FoodCard({
   );
 }
 
-// Marketing Banner Component
-export function MarketingBanner({ className }: { className?: string }) {
+// Featured Shop Banner Component - "Place of the Month"
+interface FeaturedShopBannerProps {
+  className?: string;
+  shop?: {
+    id: string;
+    name: string;
+    image_url: string | null;
+    description: string | null;
+  };
+  onExplore?: () => void;
+}
+
+export function FeaturedShopBanner({ className, shop, onExplore }: FeaturedShopBannerProps) {
+  const { t } = useLanguage();
+  const placeholderImage = "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600";
+
+  if (!shop) return null;
+
   return (
     <div
       className={cn(
-        "relative w-full rounded-2xl overflow-hidden bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600 p-5 shadow-lg",
+        "relative w-full rounded-2xl overflow-hidden bg-gradient-to-br from-primary via-primary to-amber-500 shadow-lg",
         className
       )}
     >
@@ -155,25 +172,48 @@ export function MarketingBanner({ className }: { className?: string }) {
         </svg>
       </div>
       
-      <div className="relative z-10">
-        <div className="flex items-center gap-2 mb-2">
-          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-            <span className="text-lg">🌱</span>
+      <div className="relative z-10 p-4">
+        {/* Header */}
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-8 h-8 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+            <Award className="h-4 w-4 text-primary-foreground" />
           </div>
-          <span className="text-sm font-medium text-white/80">Eco Initiative</span>
+          <span className="text-sm font-bold text-primary-foreground uppercase tracking-wide">
+            {t("featured.placeOfMonth")}
+          </span>
         </div>
         
-        <h2 className="text-xl font-bold text-white mb-1">
-          Save Food, Save Money
-        </h2>
-        <p className="text-white/90 text-sm mb-3">
-          Rescue delicious meals at up to 50% off
-        </p>
-        
-        <div className="inline-flex items-center gap-2 bg-white rounded-full px-4 py-2">
-          <span className="text-sm font-semibold text-emerald-600">Explore Deals</span>
-          <span className="text-emerald-600">→</span>
+        {/* Shop Card */}
+        <div className="flex gap-3 items-center">
+          <img
+            src={shop.image_url || placeholderImage}
+            alt={shop.name}
+            className="w-20 h-20 rounded-xl object-cover ring-2 ring-primary-foreground/30"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = placeholderImage;
+            }}
+          />
+          <div className="flex-1 min-w-0">
+            <h3 className="font-bold text-primary-foreground text-lg line-clamp-1">
+              {shop.name}
+            </h3>
+            <div className="flex items-center gap-1.5 mt-1">
+              <Star className="h-4 w-4 fill-primary-foreground text-primary-foreground" />
+              <span className="text-sm font-medium text-primary-foreground/90">
+                {t("featured.topRated")}
+              </span>
+            </div>
+          </div>
         </div>
+        
+        {/* Explore Button */}
+        <button
+          onClick={onExplore}
+          className="mt-4 w-full flex items-center justify-center gap-2 bg-primary-foreground text-primary rounded-xl px-4 py-3 font-semibold transition-all active:scale-[0.98]"
+        >
+          {t("featured.exploreShop")}
+          <ArrowRight className="h-4 w-4" />
+        </button>
       </div>
     </div>
   );
