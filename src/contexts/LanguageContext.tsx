@@ -631,6 +631,21 @@ export const translations: Record<Language, Record<string, string>> = {
     "days.fri": "Жм",
     "days.sat": "Сб",
     "days.sun": "Жс",
+    // Analytics
+    "merchant.tabs.analytics": "Талдау",
+    "analytics.lastWeek": "Апта",
+    "analytics.lastMonth": "Ай",
+    "analytics.allTime": "Барлығы",
+    "analytics.totalOrders": "Барлық тапсырыстар",
+    "analytics.revenue": "Табыс",
+    "analytics.pending": "Күтуде",
+    "analytics.completed": "Орындалды",
+    "analytics.dailySales": "Күнделікті сатылым",
+    "analytics.revenueChart": "Табыс трендi",
+    "analytics.orders": "тапсырыс",
+    "analytics.noData": "Сату деректері жоқ",
+    "analytics.startSelling": "Талдауды көру үшін сатуды бастаңыз",
+    "merchant.invalidQuantity": "Жарамды санды енгізіңіз",
   },
   ru: {
     // Onboarding
@@ -934,6 +949,21 @@ export const translations: Record<Language, Record<string, string>> = {
     "days.fri": "Пт",
     "days.sat": "Сб",
     "days.sun": "Вс",
+    // Analytics
+    "merchant.tabs.analytics": "Аналитика",
+    "analytics.lastWeek": "Неделя",
+    "analytics.lastMonth": "Месяц",
+    "analytics.allTime": "Всё время",
+    "analytics.totalOrders": "Всего заказов",
+    "analytics.revenue": "Выручка",
+    "analytics.pending": "В ожидании",
+    "analytics.completed": "Выполнено",
+    "analytics.dailySales": "Продажи по дням",
+    "analytics.revenueChart": "Тренд выручки",
+    "analytics.orders": "заказов",
+    "analytics.noData": "Нет данных о продажах",
+    "analytics.startSelling": "Начните продавать, чтобы видеть аналитику",
+    "merchant.invalidQuantity": "Введите корректное количество",
   },
 };
 

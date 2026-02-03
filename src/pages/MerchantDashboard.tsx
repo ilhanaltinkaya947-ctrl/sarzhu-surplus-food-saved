@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { AlertCircle, ArrowLeft, Store } from "lucide-react";
+import { ArrowLeft, Store, Globe } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useMarketplace } from "@/contexts/MarketplaceContext";
@@ -11,6 +11,12 @@ import { OrdersTab } from "@/components/merchant/OrdersTab";
 import { AnalyticsTab } from "@/components/merchant/AnalyticsTab";
 import { LocationSelector } from "@/components/merchant/LocationSelector";
 import { AddLocationModal } from "@/components/merchant/AddLocationModal";
+import { LanguageSelector } from "@/components/LanguageSelector";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export default function MerchantDashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -102,6 +108,19 @@ export default function MerchantDashboard() {
             </div>
             <p className="text-sm text-muted-foreground">{t("merchant.dashboard")}</p>
           </div>
+          
+          {/* Language Selector */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="p-2 rounded-xl hover:bg-secondary">
+                <Globe className="h-5 w-5" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-48" align="end">
+              <LanguageSelector />
+            </PopoverContent>
+          </Popover>
+          
           {displayShops.length === 1 && (
             <button
               onClick={() => setShowAddLocation(true)}
