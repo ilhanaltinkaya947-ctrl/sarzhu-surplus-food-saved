@@ -152,44 +152,49 @@ export function ProfileTab({ shop }: ProfileTabProps) {
           {t("merchant.businessHours")}
         </div>
         
-        <div className="space-y-3">
+        <div className="space-y-4">
           {DAY_OPTIONS.map((day) => {
             const dayHours = businessHours[day.id as keyof BusinessHours];
             const isClosed = !dayHours?.open && !dayHours?.close;
             
             return (
-              <div key={day.id} className="flex items-center gap-3">
-                <button
-                  onClick={() => toggleDayClosed(day.id)}
-                  className={`w-12 py-2 rounded-lg text-sm font-medium transition-all ${
-                    !isClosed
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground"
-                  }`}
-                >
-                  {t(day.labelKey)}
-                </button>
+              <div key={day.id} className="flex flex-col gap-2 p-3 rounded-xl bg-secondary/50">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">{t(day.labelKey)}</span>
+                  <button
+                    onClick={() => toggleDayClosed(day.id)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                      !isClosed
+                        ? "bg-green-500/20 text-green-600"
+                        : "bg-red-500/20 text-red-500"
+                    }`}
+                  >
+                    {!isClosed ? t("merchant.storeOpen") : t("merchant.storeClosed")}
+                  </button>
+                </div>
                 
-                {!isClosed ? (
-                  <div className="flex items-center gap-2 flex-1">
-                    <Input
-                      type="time"
-                      value={dayHours?.open || '09:00'}
-                      onChange={(e) => updateDayHours(day.id, 'open', e.target.value)}
-                      className="w-28 text-center text-sm"
-                    />
-                    <span className="text-muted-foreground">-</span>
-                    <Input
-                      type="time"
-                      value={dayHours?.close || '21:00'}
-                      onChange={(e) => updateDayHours(day.id, 'close', e.target.value)}
-                      className="w-28 text-center text-sm"
-                    />
+                {!isClosed && (
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <label className="text-xs text-muted-foreground mb-1 block">{t("merchant.opensAt")}</label>
+                      <Input
+                        type="time"
+                        value={dayHours?.open || '09:00'}
+                        onChange={(e) => updateDayHours(day.id, 'open', e.target.value)}
+                        className="h-12 text-center text-base font-medium"
+                      />
+                    </div>
+                    <span className="text-muted-foreground mt-5">—</span>
+                    <div className="flex-1">
+                      <label className="text-xs text-muted-foreground mb-1 block">{t("merchant.closesAt")}</label>
+                      <Input
+                        type="time"
+                        value={dayHours?.close || '21:00'}
+                        onChange={(e) => updateDayHours(day.id, 'close', e.target.value)}
+                        className="h-12 text-center text-base font-medium"
+                      />
+                    </div>
                   </div>
-                ) : (
-                  <span className="text-sm text-muted-foreground italic flex-1">
-                    {t("shop.currentlyClosed")}
-                  </span>
                 )}
               </div>
             );
