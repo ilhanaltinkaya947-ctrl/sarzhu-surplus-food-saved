@@ -1,11 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence, PanInfo } from "framer-motion";
+import { motion, PanInfo } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { TicketCard } from "@/components/orders/TicketCard";
-import { PickupSuccessScreen } from "@/components/orders/PickupSuccessScreen";
 import { EmptyState } from "@/components/orders/EmptyState";
-import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
@@ -21,14 +19,11 @@ interface Order {
 
 export default function OrdersPage() {
   const { user, loading: authLoading } = useAuth();
-  const { toast } = useToast();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"active" | "past">("active");
-  const [processingOrderId, setProcessingOrderId] = useState<string | null>(null);
-  const [successOrder, setSuccessOrder] = useState<Order | null>(null);
 
   const handleBack = () => navigate("/");
 
@@ -88,39 +83,6 @@ export default function OrdersPage() {
       fetchOrders();
     }
   }, [authLoading, fetchOrders]);
-
-  const handleConfirmPickup = async (order: Order) => {
-    setProcessingOrderId(order.id);
-
-    try {
-      const { error } = await supabase
-        .from("orders")
-        .update({ status: "picked_up" })
-        .eq("id", order.id);
-
-      if (error) throw error;
-
-      setSuccessOrder(order);
-      
-      setOrders(prev => 
-        prev.map(o => o.id === order.id ? { ...o, status: "picked_up" } : o)
-      );
-    } catch (error) {
-      console.error("Error confirming pickup:", error);
-      toast({
-        title: t("general.error"),
-        description: t("general.retry"),
-        variant: "destructive",
-      });
-    } finally {
-      setProcessingOrderId(null);
-    }
-  };
-
-  const handleCloseSuccess = () => {
-    setSuccessOrder(null);
-    setActiveTab("past");
-  };
 
   const activeOrders = orders.filter(o => o.status === "reserved" || o.status === "pending");
   const pastOrders = orders.filter(o => o.status === "picked_up" || o.status === "cancelled");
@@ -217,22 +179,11 @@ export default function OrdersPage() {
               <TicketCard
                 key={order.id}
                 order={order}
-                onConfirmPickup={() => handleConfirmPickup(order)}
-                isProcessing={processingOrderId === order.id}
               />
             ))}
           </motion.div>
         )}
       </main>
-
-      {successOrder && (
-        <PickupSuccessScreen
-          open={!!successOrder}
-          orderId={successOrder.id}
-          shopName={successOrder.shop_name}
-          onClose={handleCloseSuccess}
-        />
-      )}
     </motion.div>
   );
 }
