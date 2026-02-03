@@ -120,6 +120,53 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          photos: string[] | null
+          rating: number
+          shop_id: string
+          shop_owner_reply: string | null
+          shop_owner_reply_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          photos?: string[] | null
+          rating: number
+          shop_id: string
+          shop_owner_reply?: string | null
+          shop_owner_reply_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          photos?: string[] | null
+          rating?: number
+          shop_id?: string
+          shop_owner_reply?: string | null
+          shop_owner_reply_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shops: {
         Row: {
           business_hours: Json | null

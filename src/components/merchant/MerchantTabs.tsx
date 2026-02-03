@@ -1,10 +1,10 @@
-import { Home, Package, Zap, BarChart3 } from "lucide-react";
+import { Home, Package, Zap, BarChart3, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface MerchantTabsProps {
-  activeTab: "profile" | "products" | "orders" | "analytics";
-  onTabChange: (tab: "profile" | "products" | "orders" | "analytics") => void;
+  activeTab: "profile" | "products" | "orders" | "analytics" | "reviews";
+  onTabChange: (tab: "profile" | "products" | "orders" | "analytics" | "reviews") => void;
 }
 
 export function MerchantTabs({ activeTab, onTabChange }: MerchantTabsProps) {
@@ -13,6 +13,7 @@ export function MerchantTabs({ activeTab, onTabChange }: MerchantTabsProps) {
   const tabs = [
     { id: "orders" as const, icon: Zap, labelKey: "merchant.tabs.orders" },
     { id: "products" as const, icon: Package, labelKey: "merchant.tabs.products" },
+    { id: "reviews" as const, icon: Star, labelKey: "merchant.tabs.reviews" },
     { id: "analytics" as const, icon: BarChart3, labelKey: "merchant.tabs.analytics" },
     { id: "profile" as const, icon: Home, labelKey: "merchant.tabs.profile" },
   ];

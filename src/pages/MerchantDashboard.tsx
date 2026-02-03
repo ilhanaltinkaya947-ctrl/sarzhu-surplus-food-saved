@@ -9,6 +9,7 @@ import { ProfileTab } from "@/components/merchant/ProfileTab";
 import { ProductsTab } from "@/components/merchant/ProductsTab";
 import { OrdersTab } from "@/components/merchant/OrdersTab";
 import { AnalyticsTab } from "@/components/merchant/AnalyticsTab";
+import { ReviewsTab } from "@/components/merchant/ReviewsTab";
 import { LocationSelector } from "@/components/merchant/LocationSelector";
 import { AddLocationModal } from "@/components/merchant/AddLocationModal";
 import { LanguageSelector } from "@/components/LanguageSelector";
@@ -23,7 +24,7 @@ export default function MerchantDashboard() {
   const { shops, loading: shopsLoading, getUserShops } = useMarketplace();
   const { t } = useLanguage();
   
-  const [activeTab, setActiveTab] = useState<"profile" | "products" | "orders" | "analytics">("orders");
+  const [activeTab, setActiveTab] = useState<"profile" | "products" | "orders" | "analytics" | "reviews">("orders");
   const [showAddLocation, setShowAddLocation] = useState(false);
 
   // Get all shops owned by current user
@@ -137,6 +138,7 @@ export default function MerchantDashboard() {
         {activeTab === "profile" && <ProfileTab shop={selectedShop} />}
         {activeTab === "products" && <ProductsTab shop={selectedShop} />}
         {activeTab === "orders" && <OrdersTab shop={selectedShop} allShops={displayShops} />}
+        {activeTab === "reviews" && <ReviewsTab shop={selectedShop} allShops={displayShops} />}
         {activeTab === "analytics" && <AnalyticsTab shop={selectedShop} allShops={displayShops} />}
       </main>
 
