@@ -147,11 +147,11 @@ export default function OrdersPage() {
       dragElastic={{ left: 0, right: 0.3 }}
       onDragEnd={handleDragEnd}
     >
-      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm">
-        <div className="px-4 py-4 pt-safe flex items-center gap-3">
+      <header className="sticky top-0 z-40 bg-background border-b border-border">
+        <div className="px-4 py-3 flex items-center gap-3" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}>
           <button
             onClick={handleBack}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-foreground transition-all active:scale-95"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-foreground transition-all active:scale-95 touch-target"
           >
             <ChevronLeft className="h-6 w-6" />
           </button>
@@ -186,7 +186,7 @@ export default function OrdersPage() {
         )}
       </header>
 
-      <main className="px-4 pb-24">
+      <main className="px-4 pb-24 ios-scroll" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)' }}>
         {!user || orders.length === 0 ? (
           <EmptyState isLoggedIn={!!user} />
         ) : displayedOrders.length === 0 ? (

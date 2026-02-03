@@ -134,12 +134,12 @@ export default function ProfilePage() {
       onDragEnd={handleDragEnd}
     >
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="flex items-center justify-between px-4 py-3 pt-safe">
+      <header className="fixed top-0 left-0 right-0 z-40 bg-background border-b border-border">
+        <div className="flex items-center justify-between px-4 h-14" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
           {/* Back Button */}
           <button
             onClick={handleGoBack}
-            className="h-10 w-10 rounded-full flex items-center justify-center hover:bg-secondary transition-colors"
+            className="h-10 w-10 rounded-full flex items-center justify-center hover:bg-secondary transition-colors touch-target"
           >
             <ArrowLeft className="h-5 w-5 text-foreground" strokeWidth={2.5} />
           </button>
@@ -152,7 +152,8 @@ export default function ProfilePage() {
         </div>
       </header>
       
-      <main className="pt-20 pb-24 px-4">
+      {/* Main content with proper spacing for fixed header + safe area */}
+      <main className="px-4 pb-24 ios-scroll" style={{ paddingTop: 'calc(56px + env(safe-area-inset-top, 0px) + 16px)' }}>
         {/* Loyalty Status Card */}
         <div className="mb-6">
           <LoyaltyStatusCard />
