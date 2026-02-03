@@ -2,7 +2,7 @@ import { Utensils, Coffee, Cake, Salad, Crown, Lock, ShoppingBag } from "lucide-
 import { motion, PanInfo, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useState, useRef, useCallback, useMemo } from "react";
-import { FoodCard, MarketingBanner } from "./FoodCard";
+import { FoodCard, FeaturedShopBanner } from "./FoodCard";
 import { useProfile } from "@/hooks/useProfile";
 import { useTier } from "@/contexts/TierContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -338,14 +338,18 @@ export function BottomSheet({
           >
             {isOpen && (
               <div className="pb-4">
-                <div className="flex items-center justify-between mb-4 sticky top-0 bg-card py-3 -mx-4 px-4 z-10 border-b border-border/50 backdrop-blur-sm">
+                <div className="flex items-center justify-between mb-4 sticky top-0 bg-background py-3 -mx-4 px-4 z-10 border-b border-border shadow-sm">
                   <h3 className="text-lg font-bold text-foreground">
                     {t("bottomSheet.featuredDeals")}
                   </h3>
                   <button className="text-sm font-medium text-primary">{t("bottomSheet.seeAll")}</button>
                 </div>
 
-                <MarketingBanner className="mb-5" />
+                <FeaturedShopBanner 
+                  className="mb-5" 
+                  shop={filteredShops[0]}
+                  onExplore={() => filteredShops[0] && onShopClick?.(filteredShops[0])}
+                />
 
                 <div className="grid grid-cols-2 gap-3">
                   {filteredShops.map((shop) => {

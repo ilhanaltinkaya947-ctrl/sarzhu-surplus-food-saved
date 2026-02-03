@@ -222,6 +222,11 @@ export const translations: Record<Language, Record<string, string>> = {
     // Categories (extended)
     "category.restaurant": "Restaurant",
     
+    // Featured Shop
+    "featured.placeOfMonth": "Place of the Month",
+    "featured.exploreShop": "Explore Shop",
+    "featured.topRated": "Top Rated",
+    
     // Merchant Dashboard
     "merchant.dashboard": "Merchant Dashboard",
     "merchant.noShopFound": "No Shop Found",
@@ -498,6 +503,11 @@ export const translations: Record<Language, Record<string, string>> = {
     // Categories (extended)
     "category.restaurant": "Мейрамхана",
     
+    // Featured Shop
+    "featured.placeOfMonth": "Айдың орны",
+    "featured.exploreShop": "Қарау",
+    "featured.topRated": "Жоғары рейтинг",
+    
     // Merchant Dashboard
     "merchant.dashboard": "Сатушы панелі",
     "merchant.noShopFound": "Дүкен табылмады",
@@ -773,6 +783,11 @@ export const translations: Record<Language, Record<string, string>> = {
     
     // Categories (extended)
     "category.restaurant": "Ресторан",
+    
+    // Featured Shop
+    "featured.placeOfMonth": "Место месяца",
+    "featured.exploreShop": "Посмотреть",
+    "featured.topRated": "Лучший рейтинг",
     
     // Merchant Dashboard
     "merchant.dashboard": "Панель продавца",
