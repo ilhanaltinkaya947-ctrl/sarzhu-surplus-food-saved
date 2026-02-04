@@ -15,6 +15,9 @@ interface Order {
   bag_id: string;
   shop_name: string;
   shop_image: string | null;
+  shop_lat?: number;
+  shop_long?: number;
+  shop_address?: string | null;
 }
 
 export default function OrdersPage() {
@@ -52,7 +55,10 @@ export default function OrdersPage() {
             shop_id,
             shops!inner(
               name,
-              image_url
+              image_url,
+              lat,
+              long,
+              address
             )
           )
         `)
@@ -68,6 +74,9 @@ export default function OrdersPage() {
         bag_id: order.bag_id,
         shop_name: order.mystery_bags?.shops?.name || "Unknown Shop",
         shop_image: order.mystery_bags?.shops?.image_url,
+        shop_lat: order.mystery_bags?.shops?.lat,
+        shop_long: order.mystery_bags?.shops?.long,
+        shop_address: order.mystery_bags?.shops?.address,
       })) || [];
 
       setOrders(formattedOrders);

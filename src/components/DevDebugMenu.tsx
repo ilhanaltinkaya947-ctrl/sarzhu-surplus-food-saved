@@ -94,13 +94,6 @@ export function DevDebugMenu() {
           👑 Legend
         </button>
       </div>
-      {/* Merchant Mode Toggle */}
-      <button
-        onClick={handleMerchantToggle}
-        className="px-2 py-1 text-xs rounded bg-purple-500 text-white hover:bg-purple-600 transition-all font-semibold"
-      >
-        🏪 Merchant Mode
-      </button>
       {/* Replay Intro Button */}
       <button
         onClick={handleReplayIntro}

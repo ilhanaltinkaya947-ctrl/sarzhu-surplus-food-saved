@@ -1,9 +1,11 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { MapView } from "@/components/MapView";
 import { FloatingSearchBar } from "@/components/FloatingSearchBar";
 import { BottomSheet } from "@/components/BottomSheet";
 import { ShopDrawer } from "@/components/ShopDrawer";
 import { BasketDrawer } from "@/components/BasketDrawer";
+import { ActiveOrderBanner } from "@/components/ActiveOrderBanner";
 import { JoeChat } from "@/components/JoeChat";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -26,6 +28,7 @@ const categoryKeywords: Record<string, string[]> = {
 };
 
 export default function MapPage() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { shops, loading: shopsLoading } = useMarketplace();
   const [bags, setBags] = useState<MysteryBag[]>([]);
@@ -192,6 +195,11 @@ export default function MapPage() {
       {/* Floating Search Bar - z-20 */}
       <div className="pointer-events-auto">
         <FloatingSearchBar />
+      </div>
+
+      {/* Active Order Banner - z-30 */}
+      <div className="pointer-events-auto">
+        <ActiveOrderBanner onNavigateToOrders={() => navigate("/orders")} />
       </div>
 
       {/* Bottom Sheet - z-50, hides when drawer opens */}

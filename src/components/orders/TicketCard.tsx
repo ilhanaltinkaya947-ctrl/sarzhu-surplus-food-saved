@@ -1,5 +1,6 @@
-import { Clock, QrCode } from "lucide-react";
+import { Clock, QrCode, Navigation, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface TicketCardProps {
   order: {
@@ -8,10 +9,14 @@ interface TicketCardProps {
     created_at: string;
     shop_name: string;
     shop_image: string | null;
+    shop_lat?: number;
+    shop_long?: number;
+    shop_address?: string | null;
   };
 }
 
 export function TicketCard({ order }: TicketCardProps) {
+  const { t } = useLanguage();
   const shortOrderId = order.id.slice(0, 8).toUpperCase();
   
   const formatPickupTime = () => {
@@ -20,14 +25,22 @@ export function TicketCard({ order }: TicketCardProps) {
     const isToday = date.toDateString() === today.toDateString();
     
     if (isToday && order.status === "reserved") {
-      return "Today, 18:00 - 21:00";
+      return t("orders.todayPickup");
     }
-    return date.toLocaleDateString("en-US", {
+    return date.toLocaleDateString("ru-RU", {
       month: "short",
       day: "numeric",
       year: "numeric",
     });
   };
+
+  const open2GISRoute = () => {
+    if (!order.shop_lat || !order.shop_long) return;
+    const url = `https://2gis.kz/almaty/directions/points/${order.shop_long}%2C${order.shop_lat}?m=${order.shop_long}%2C${order.shop_lat}%2F16`;
+    window.open(url, '_blank');
+  };
+
+  const hasCoordinates = order.shop_lat && order.shop_long;
 
   return (
     <motion.div
@@ -45,18 +58,18 @@ export function TicketCard({ order }: TicketCardProps) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
         
         {/* Status Badge */}
-        {order.status === "reserved" && (
+        {(order.status === "reserved" || order.status === "pending") && (
           <div className="absolute top-3 right-3">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white shadow-lg">
               <Clock className="h-3 w-3" />
-              Reserved
+              {t("orders.reserved")}
             </span>
           </div>
         )}
         {order.status === "picked_up" && (
           <div className="absolute top-3 right-3">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-white shadow-lg">
-              Completed
+              {t("orders.completed")}
             </span>
           </div>
         )}
@@ -70,20 +83,41 @@ export function TicketCard({ order }: TicketCardProps) {
       </div>
 
       {/* Middle Section - Order Info */}
-      <div className="p-4 space-y-1">
-        {order.status === "reserved" ? (
+      <div className="p-4 space-y-2">
+        {(order.status === "reserved" || order.status === "pending") ? (
           <p className="text-sm font-semibold text-destructive">
-            Pickup {formatPickupTime()}
+            {t("orders.pickupBy")} {formatPickupTime()}
           </p>
         ) : (
           <p className="text-sm text-muted-foreground">
-            Picked up on {formatPickupTime()}
+            {t("orders.pickedUpOn")} {formatPickupTime()}
           </p>
         )}
+        
+        {order.shop_address && (
+          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+            <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
+            {order.shop_address}
+          </p>
+        )}
+        
         <p className="text-xs text-muted-foreground">
-          Order #{shortOrderId}
+          {t("orders.orderNumber")} #{shortOrderId}
         </p>
       </div>
+
+      {/* Route Button for Active Orders */}
+      {(order.status === "reserved" || order.status === "pending") && hasCoordinates && (
+        <div className="px-4 pb-3">
+          <button
+            onClick={open2GISRoute}
+            className="w-full py-3 rounded-xl bg-primary/10 text-primary font-semibold text-sm flex items-center justify-center gap-2 hover:bg-primary/20 transition-colors active:scale-[0.98]"
+          >
+            <Navigation className="h-4 w-4" />
+            {t("orders.openRoute")}
+          </button>
+        </div>
+      )}
 
       {/* Tear-off Separator */}
       <div className="relative px-4">
@@ -94,19 +128,19 @@ export function TicketCard({ order }: TicketCardProps) {
       </div>
 
       {/* Bottom Section - Info */}
-      {order.status === "reserved" ? (
+      {(order.status === "reserved" || order.status === "pending") ? (
         <div className="p-4 text-center space-y-2">
           <div className="flex items-center justify-center gap-2 text-primary">
             <QrCode className="h-5 w-5" />
-            <span className="text-sm font-semibold">Order #{shortOrderId}</span>
+            <span className="text-sm font-semibold">{t("orders.orderNumber")} #{shortOrderId}</span>
           </div>
           <p className="text-xs text-muted-foreground">
-            Show this code to staff when picking up
+            {t("orders.showCode")}
           </p>
         </div>
       ) : (
         <div className="p-4 text-center">
-          <span className="text-sm text-muted-foreground">Thanks for saving food! 🌱</span>
+          <span className="text-sm text-muted-foreground">{t("orders.thankYou")} 🌱</span>
         </div>
       )}
     </motion.div>

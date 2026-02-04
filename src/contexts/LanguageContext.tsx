@@ -118,6 +118,18 @@ export const translations: Record<Language, Record<string, string>> = {
     "orders.pickedUp": "Completed",
     "orders.pickupToday": "Pickup today",
     "orders.waitingPickup": "Ready for pickup",
+    "orders.openRoute": "Open Route in 2GIS",
+    "orders.orderNumber": "Order",
+    "orders.showCode": "Show this code to staff when picking up",
+    "orders.thankYou": "Thanks for saving food!",
+    "orders.todayPickup": "Today, 18:00 - 21:00",
+    "orders.pickedUpOn": "Picked up on",
+    "orders.completed": "Completed",
+    
+    // Basket (extended)
+    "basket.proceedToPayment": "Proceed to Payment",
+    "basket.expiry": "Expiry Date",
+    "basket.saveCard": "Save Card",
     
     // Pickup Success
     "success.title": "Rescue Successful! 🎉",
@@ -439,6 +451,18 @@ export const translations: Record<Language, Record<string, string>> = {
     "orders.pickupToday": "Бүгін алу",
     "orders.waitingPickup": "Алуға дайын",
     "orders.swipeConfirm": "Растау үшін сырғытыңыз",
+    "orders.openRoute": "2GIS-те маршрут ашу",
+    "orders.orderNumber": "Тапсырыс",
+    "orders.showCode": "Алу кезінде осы кодты қызметкерге көрсетіңіз",
+    "orders.thankYou": "Тамақты сақтағаныңыз үшін рахмет!",
+    "orders.todayPickup": "Бүгін, 18:00 - 21:00",
+    "orders.pickedUpOn": "Алынды",
+    "orders.completed": "Аяқталды",
+    
+    // Basket (extended)
+    "basket.proceedToPayment": "Төлемге өту",
+    "basket.expiry": "Жарамдылық мерзімі",
+    "basket.saveCard": "Картаны сақтау",
     
     // Pickup Success
     "success.title": "Сәтті құтқарылды! 🎉",
@@ -758,6 +782,18 @@ export const translations: Record<Language, Record<string, string>> = {
     "orders.pickupToday": "Забрать сегодня",
     "orders.waitingPickup": "Готово к выдаче",
     "orders.swipeConfirm": "Свайпните для подтверждения",
+    "orders.openRoute": "Открыть маршрут в 2GIS",
+    "orders.orderNumber": "Заказ",
+    "orders.showCode": "Покажите этот код сотруднику при получении",
+    "orders.thankYou": "Спасибо за спасение еды!",
+    "orders.todayPickup": "Сегодня, 18:00 - 21:00",
+    "orders.pickedUpOn": "Забрано",
+    "orders.completed": "Выполнено",
+    
+    // Basket (extended)
+    "basket.proceedToPayment": "Перейти к оплате",
+    "basket.expiry": "Срок действия",
+    "basket.saveCard": "Сохранить карту",
     
     // Pickup Success
     "success.title": "Успешно спасено! 🎉",
