@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Store, MapPin, Image, Tag, Save, Search, Loader2, Clock } from "lucide-react";
+import { Store, MapPin, Image, Tag, Save, Search, Loader2, Clock, Plus } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useMarketplace, Shop } from "@/contexts/MarketplaceContext";
 import { ImageUploader } from "./ImageUploader";
@@ -12,6 +12,7 @@ import { DAY_OPTIONS, BusinessHours, DEFAULT_BUSINESS_HOURS } from "@/lib/shopUt
 
 interface ProfileTabProps {
   shop: Shop;
+  onAddLocation?: () => void;
 }
 
 interface GeocodingResult {
@@ -52,7 +53,7 @@ async function geocodeAddress(address: string): Promise<{ lat: number; long: num
   }
 }
 
-export function ProfileTab({ shop }: ProfileTabProps) {
+export function ProfileTab({ shop, onAddLocation }: ProfileTabProps) {
   const { t } = useLanguage();
   const { updateShop } = useMarketplace();
   
@@ -301,6 +302,18 @@ export function ProfileTab({ shop }: ProfileTabProps) {
         <Save className="h-5 w-5 mr-2" />
         {saving ? t("merchant.saving") : t("merchant.saveChanges")}
       </Button>
+
+      {/* Add Location Button */}
+      {onAddLocation && (
+        <Button
+          onClick={onAddLocation}
+          variant="outline"
+          className="w-full h-14 rounded-xl font-semibold mt-4"
+        >
+          <Plus className="h-5 w-5 mr-2" />
+          {t("merchant.addLocation")}
+        </Button>
+      )}
     </div>
   );
 }

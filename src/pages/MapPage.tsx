@@ -3,6 +3,7 @@ import { MapView } from "@/components/MapView";
 import { FloatingSearchBar } from "@/components/FloatingSearchBar";
 import { BottomSheet } from "@/components/BottomSheet";
 import { ShopDrawer } from "@/components/ShopDrawer";
+import { BasketDrawer } from "@/components/BasketDrawer";
 import { JoeChat } from "@/components/JoeChat";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -35,6 +36,7 @@ export default function MapPage() {
   const [joeChatOpen, setJoeChatOpen] = useState(false);
   const [showJoeBadge, setShowJoeBadge] = useState(true);
   const [activeCategory, setActiveCategory] = useState("all");
+  const [basketOpen, setBasketOpen] = useState(false);
 
   // Filter shops based on active category
   const filteredShops = useMemo(() => {
@@ -202,6 +204,7 @@ export default function MapPage() {
           onJoeClick={handleJoeOpen}
           showJoeBadge={showJoeBadge}
           onCategoryChange={setActiveCategory}
+          onBasketClick={() => setBasketOpen(true)}
         />
       </div>
 
@@ -222,6 +225,15 @@ export default function MapPage() {
       {/* Joe Chat Modal */}
       <div className="pointer-events-auto">
         <JoeChat open={joeChatOpen} onClose={() => setJoeChatOpen(false)} />
+      </div>
+
+      {/* Basket Drawer */}
+      <div className="pointer-events-auto">
+        <BasketDrawer
+          open={basketOpen}
+          onOpenChange={setBasketOpen}
+          onPurchaseComplete={handleReservationComplete}
+        />
       </div>
     </div>
   );
