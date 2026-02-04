@@ -15,7 +15,6 @@ import { LanguageProvider } from "./contexts/LanguageContext";
 import { BasketProvider } from "./contexts/BasketContext";
 import { MarketplaceProvider } from "./contexts/MarketplaceContext";
 import { TierUnlockModal } from "./components/TierUnlockModal";
-import { DevDebugMenu } from "./components/DevDebugMenu";
 import { OnboardingFlow } from "./components/OnboardingFlow";
 import { AnimatePresence } from "framer-motion";
 
@@ -67,7 +66,6 @@ function AppContent() {
       <Toaster />
       <Sonner />
       <TierUnlockModalWrapper />
-      <DevDebugMenu />
       
       <AnimatePresence>
         {showOnboarding && (
