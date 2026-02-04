@@ -7,9 +7,9 @@ import { useProfile } from "@/hooks/useProfile";
 import { useTier } from "@/contexts/TierContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useMarketplace, Shop } from "@/contexts/MarketplaceContext";
+import { useBasket } from "@/contexts/BasketContext";
 import { isShopCurrentlyOpen } from "@/lib/shopUtils";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
 
 interface MysteryBag {
   id: string;
@@ -30,6 +30,7 @@ interface BottomSheetProps {
   selectedShop?: Shop | null;
   onJoeClick?: () => void;
   showJoeBadge?: boolean;
+  onBasketClick?: () => void;
 }
 
 // Height-based animation - button always visible
@@ -57,6 +58,7 @@ export function BottomSheet({
   selectedShop = null,
   onJoeClick,
   showJoeBadge = false,
+  onBasketClick,
 }: BottomSheetProps) {
   const [activeCategory, setActiveCategory] = useState("all");
   const [isOpen, setIsOpen] = useState(false);
@@ -64,7 +66,7 @@ export function BottomSheet({
   const { profile } = useProfile();
   const { currentTier, nextTierProgress, ordersToNextTier, nextTierName, cycleTierForDebug, completedOrders } = useTier();
   const { t } = useLanguage();
-  const navigate = useNavigate();
+  const { itemCount } = useBasket();
   
   const clickCountRef = useRef(0);
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -397,12 +399,17 @@ export function BottomSheet({
           >
             {/* Single Basket Button */}
             <button 
-              onClick={() => navigate("/orders")}
+              onClick={() => onBasketClick?.()}
               onPointerDown={(e) => e.stopPropagation()}
-              className="flex w-full h-14 items-center justify-center gap-3 rounded-xl font-semibold transition-all active:scale-[0.98] bg-primary text-primary-foreground"
+              className="relative flex w-full h-14 items-center justify-center gap-3 rounded-xl font-semibold transition-all active:scale-[0.98] bg-primary text-primary-foreground"
             >
               <ShoppingBag className="h-5 w-5" />
               {t("bottomSheet.basket")}
+              {itemCount > 0 && (
+                <span className="absolute right-4 flex h-6 w-6 items-center justify-center rounded-full bg-background text-foreground text-xs font-bold">
+                  {itemCount}
+                </span>
+              )}
             </button>
           </div>
         </div>

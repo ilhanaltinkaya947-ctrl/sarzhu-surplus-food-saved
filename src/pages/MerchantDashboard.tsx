@@ -30,21 +30,19 @@ export default function MerchantDashboard() {
   // Get all shops owned by current user
   const userShops = user ? getUserShops(user.id) : [];
   
-  // Use first shop as default, or fallback to first in list for demo
-  const [selectedShop, setSelectedShop] = useState(userShops[0] || shops[0] || null);
+  // Use first shop owned by user only
+  const [selectedShop, setSelectedShop] = useState(userShops[0] || null);
 
   // Update selected shop when shops load
   useEffect(() => {
     if (!selectedShop && userShops.length > 0) {
       setSelectedShop(userShops[0]);
-    } else if (!selectedShop && shops.length > 0) {
-      setSelectedShop(shops[0]);
     }
-    // If selected shop was deleted, select another
-    if (selectedShop && !shops.find(s => s.id === selectedShop.id)) {
-      setSelectedShop(userShops[0] || shops[0] || null);
+    // If selected shop was deleted, select another from user's shops
+    if (selectedShop && !userShops.find(s => s.id === selectedShop.id)) {
+      setSelectedShop(userShops[0] || null);
     }
-  }, [shops, userShops, selectedShop]);
+  }, [userShops, selectedShop]);
 
   // Keep selected shop in sync with shop updates
   useEffect(() => {
@@ -85,7 +83,7 @@ export default function MerchantDashboard() {
     );
   }
 
-  const displayShops = userShops.length > 0 ? userShops : [selectedShop];
+  const displayShops = userShops;
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -121,21 +119,12 @@ export default function MerchantDashboard() {
               <LanguageSelector />
             </PopoverContent>
           </Popover>
-          
-          {displayShops.length === 1 && (
-            <button
-              onClick={() => setShowAddLocation(true)}
-              className="text-xs text-primary font-medium"
-            >
-              + {t("merchant.addLocation")}
-            </button>
-          )}
         </div>
       </header>
 
       {/* Content */}
       <main className="px-6 py-6">
-        {activeTab === "profile" && <ProfileTab shop={selectedShop} />}
+        {activeTab === "profile" && <ProfileTab shop={selectedShop} onAddLocation={() => setShowAddLocation(true)} />}
         {activeTab === "products" && <ProductsTab shop={selectedShop} />}
         {activeTab === "orders" && <OrdersTab shop={selectedShop} allShops={displayShops} />}
         {activeTab === "reviews" && <ReviewsTab shop={selectedShop} allShops={displayShops} />}

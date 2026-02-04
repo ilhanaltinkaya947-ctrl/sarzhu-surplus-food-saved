@@ -180,6 +180,8 @@ export function MarketplaceProvider({ children }: { children: ReactNode }) {
           image_url: newShop.image_url,
           description: newShop.description,
           owner_id: newShop.owner_id,
+          address: newShop.address,
+          category: newShop.category,
         })
         .select()
         .single();
@@ -213,6 +215,8 @@ export function MarketplaceProvider({ children }: { children: ReactNode }) {
       if (updates.closing_time !== undefined) updateData.closing_time = updates.closing_time;
       if (updates.days_open !== undefined) updateData.days_open = updates.days_open;
       if (updates.business_hours !== undefined) updateData.business_hours = updates.business_hours;
+      if (updates.address !== undefined) updateData.address = updates.address;
+      if (updates.category !== undefined) updateData.category = updates.category;
 
       const { error } = await supabase
         .from("shops")
